@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人民币大小写转换、简繁双向转换与汇率换算工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #2c3e50 0%, #4a6491 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        header h1 i {
+            color: #ffd700;
+        }
+        
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+        }
+        
+        .converter-section {
+            flex: 1;
+            min-width: 320px;
+            padding: 25px;
+            border-right: 1px solid #eee;
+        }
+        
+        .converter-section:last-child {
+            border-right: none;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+            color: #2c3e50;
+        }
+        
+        .section-title i {
+            color: #3498db;
+            font-size: 1.5rem;
+        }
+        
+        .section-title h2 {
+            font-size: 1.5rem;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        
+        .currency-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .currency-row select, .currency-row input {
+            flex: 1;
+        }
+        
+        .currency-swap {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .swap-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #3498db;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        
+        .swap-btn:hover {
+            transform: rotate(180deg);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        button {
+            flex: 1;
+            min-width: 130px;
+            padding: 12px 15px;
+            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #convertToTraditional {
+            background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+        }
+        
+        #convertToTraditional:hover {
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        #convertToSimplified {
+            background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 100%);
+        }
+        
+        #convertToSimplified:hover {
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+        
+        #clearAll {
+            background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+        }
+        
+        #clearAll:hover {
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        #convertCurrency {
+            background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+        }
+        
+        #convertCurrency:hover {
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .result-box h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-box p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
+        .result-box#traditionalResult {
+            border-left-color: #2ecc71;
+        }
+        
+        .result-box#simplifiedResult {
+            border-left-color: #9b59b6;
+        }
+        
+        .result-box#exchangeResult {
+            border-left-color: #f39c12;
+        }
+        
+        .conversion-direction {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .conversion-direction select {
+            padding: 8px 12px;
+        }
+        
+        .conversion-direction i {
+            color: #3498db;
+            font-size: 1.1rem;
+        }
+        
+        .examples {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .examples h3 {
+            margin-bottom: 12px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .example-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .example-item:last-child {
+            border-bottom: none;
+        }
+        
+        .example-num {
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .example-chinese {
+            color: #2c3e50;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #f1f2f6;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            border-top: 1px solid #ddd;
+        }
+        
+        @media (max-width: 1200px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .converter-section {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            header h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .section-title h2 {
+                font-size: 1.3rem;
+            }
+            
+            button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-exchange-alt"></i>人民币转换与汇率计算工具</h1>
+            <p>人民币大小写转换、简体繁体双向转换与实时汇率换算</p>
+        </header>
+        
+        <div class="content">
+            <!-- 人民币大小写转换部分 -->
+            <section class="converter-section">
+                <div class="section-title">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <h2>人民币大小写转换</h2>
+                </div>
+                
+                <div class="input-group">
+                    <label for="amountInput"><i class="fas fa-yen-sign"></i> 请输入人民币金额（数字格式）</label>
+                    <input type="text" id="amountInput" placeholder="例如：1234.56">
+                </div>
+                
+                <div class="button-group">
+                    <button id="convertToChinese">
+                        <i class="fas fa-language"></i> 转换为中文大写
+                    </button>
+                </div>
+                
+                <div class="result-box">
+                    <h3><i class="fas fa-file-invoice-dollar"></i> 中文大写金额</h3>
+                    <p id="chineseResult">等待转换...</p>
+                </div>
+                
+                <div class="examples">
+                    <h3><i class="fas fa-lightbulb"></i> 转换示例</h3>
+                    <div class="example-item">
+                        <span class="example-num">1234.56</span>
+                        <span class="example-chinese">壹仟贰佰叁拾肆元伍角陆分</span>
+                    </div>
+                    <div class="example-item">
+                        <span class="example-num">10000</span>
+                        <span class="example-chinese">壹万元整</span>
+                    </div>
+                    <div class="example-item">
+                        <span class="example-num">0.5</span>
+                        <span class="example-chinese">伍角</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 简繁双向转换部分 -->
+            <section class="converter-section">
+                <div class="section-title">
+                    <i class="fas fa-language"></i>
+                    <h2>简体繁体双向转换</h2>
+                </div>
+                
+                <div class="conversion-direction">
+                    <select id="conversionType">
+                        <option value="toTraditional">简体 → 繁体</option>
+                        <option value="toSimplified">繁体 → 简体</option>
+                    </select>
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                
+                <div class="input-group">
+                    <label for="textInput"><i class="fas fa-font"></i> 请输入要转换的文本</label>
+                    <textarea id="textInput" placeholder="请输入需要转换的文本...">简体繁体转换是现代中文处理的重要功能，可以方便两岸三地的交流与沟通。</textarea>
+                </div>
+                
+                <div class="button-group">
+                    <button id="convertText">
+                        <i class="fas fa-exchange-alt"></i> 开始转换
+                    </button>
+                    <button id="clearAll">
+                        <i class="fas fa-eraser"></i> 清空所有
+                    </button>
+                </div>
+                
+                <div class="result-box" id="traditionalResult">
+                    <h3><i class="fas fa-file-alt"></i> 繁体中文结果</h3>
+                    <p id="traditionalResultText">等待转换...</p>
+                </div>
+                
+                <div class="result-box" id="simplifiedResult">
+                    <h3><i class="fas fa-file-alt"></i> 简体中文结果</h3>
+                    <p id="simplifiedResultText">等待转换...</p>
+                </div>
+                
+                <div class="examples">
+                    <h3><i class="fas fa-lightbulb"></i> 转换示例</h3>
+                    <div class="example-item">
+                        <span class="example-num">简体：学习</span>
+                        <span class="example-chinese">繁体：學習</span>
+                    </div>
+                    <div class="example-item">
+                        <span class="example-num">繁体：計算機</span>
+                        <span class="example-chinese">简体：计算机</span>
+                    </div>
+                    <div class="example-item">
+                        <span class="example-num">简体：语言转换</span>
+                        <span class="example-chinese">繁体：語言轉換</span>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 汇率换算部分 -->
+            <section class="converter-section">
+                <div class="section-title">
+                    <i class="fas fa-globe"></i>
+                    <h2>汇率换算</h2>
+                </div>
+                
+                <div class="input-group">
+                    <label for="fromCurrency"><i class="fas fa-arrow-right"></i> 从</label>
+                    <div class="currency-row">
+                        <select id="fromCurrency">
+                            <option value="CNY">人民币 (CNY)</option>
+                            <option value="USD">美元 (USD)</option>
+                            <option value="EUR">欧元 (EUR)</option>
+                            <option value="GBP">英镑 (GBP)</option>
+                            <option value="JPY">日元 (JPY)</option>
+                            <option value="HKD">港币 (HKD)</option>
+                            <option value="KRW">韩元 (KRW)</option>
+                            <option value="AUD">澳元 (AUD)</option>
+                            <option value="CAD">加元 (CAD)</option>
+                            <option value="SGD">新元 (SGD)</option>
+                        </select>
+                        <input type="number" id="fromAmount" placeholder="0.00" step="0.01" min="0" value="100">
+                    </div>
+                    
+                    <div class="currency-swap">
+                        <button class="swap-btn" id="swapCurrencies">
+                            <i class="fas fa-exchange-alt"></i>
+                        </button>
+                    </div>
+                    
+                    <label for="toCurrency"><i class="fas fa-arrow-right"></i> 到</label>
+                    <div class="currency-row">
+                        <select id="toCurrency">
+                            <option value="USD">美元 (USD)</option>
+                            <option value="CNY">人民币 (CNY)</option>
+                            <option value="EUR">欧元 (EUR)</option>
+                            <option value="GBP">英镑 (GBP)</option>
+                            <option value="JPY">日元 (JPY)</option>
+                            <option value="HKD">港币 (HKD)</option>
+                            <option value="KRW">韩元 (KRW)</option>
+                            <option value="AUD">澳元 (AUD)</option>
+                            <option value="CAD">加元 (CAD)</option>
+                            <option value="SGD">新元 (SGD)</option>
+                        </select>
+                        <input type="text" id="toAmount" placeholder="等待计算..." readonly>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="convertCurrency">
+                        <i class="fas fa-calculator"></i> 计算汇率
+                    </button>
+                    <button id="updateRates">
+                        <i class="fas fa-sync-alt"></i> 更新汇率
+                    </button>
+                </div>
+                
+                <div class="result-box" id="exchangeResult">
+                    <h3><i class="fas fa-chart-line"></i> 汇率信息</h3>
+                    <p id="exchangeRateInfo">1 CNY = 0.14 USD</p>
+                    <p id="exchangeTime" style="font-size: 0.9rem; color: #666; margin-top: 5px;">最后更新: 2023年10月</p>
+                </div>
+                
+                <div class="examples">
+                    <h3><i class="fas fa-lightbulb"></i> 常用汇率参考</h3>
+                    <div class="example-item">
+                        <span class="example-num">100 CNY</span>
+                        <span class="example-chinese">≈ 13.75 USD</span>
+                    </div>
+                    <div class="example-item">
+                        <span class="example-num">100 USD</span>
+                        <span class="example-chinese">≈ 727.00 CNY</span>
+                    </div>
+                    <div class="example-item">
+                        <span class="example-num">100 EUR</span>
+                        <span class="example-chinese">≈ 778.00 CNY</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>© 2023 人民币转换与汇率计算工具 | 汇率数据仅供参考，实际汇率以银行柜台成交价为准</p>
+        </footer>
+    </div>
+
+    <script>
+        // 简繁转换映射表（双向）
+        const charMap = {
+            '简': '簡', '体': '體', '学': '學', '习': '習', '现': '現', '代': '代',
+            '标': '標', '准': '準', '写': '寫', '法': '法', '主': '主', '要': '要',
+            '用': '用', '于': '於', '大': '大', '陆': '陸', '马': '馬', '来': '來',
+            '西': '西', '亚': '亞', '和': '和', '新': '新', '加': '加', '坡': '坡',
+            '等': '等', '地': '地', '繁': '繁', '则': '則', '台': '臺', '湾': '灣',
+            '香': '香', '港': '港', '澳': '澳', '门': '門', '区': '區', '域': '域',
+            '语': '語', '言': '言', '转': '轉', '换': '換', '计': '計', '算': '算',
+            '机': '機', '工': '工', '具': '具', '人': '人', '民': '民', '币': '幣',
+            '小': '小', '写': '寫', '与': '與', '是': '是', '数': '數', '字': '字',
+            '金': '金', '额': '額', '快': '快', '速': '速', '将': '將', '为': '為',
+            '或': '或', '本': '本', '仅': '僅', '供': '供', '参': '參', '考': '考',
+            '例': '例', '如': '如', '这': '這', '个': '個', '可': '可', '以': '以',
+            '帮': '幫', '助': '助', '您': '您', '进': '進', '行': '行', '在': '在',
+            '线': '線', '使': '使', '非': '非', '常': '常', '方': '方', '便': '便',
+            '通': '通', '过': '過', '上': '上', '部': '部', '分': '分', '实': '實',
+            '现': '現', '功': '功', '能': '能', '开': '開', '发': '發', '者': '者',
+            '制': '製', '作': '作', '处': '處', '理': '理', '重': '重', '交': '交',
+            '流': '流', '沟': '溝', '通': '通', '两': '兩', '岸': '岸', '三': '三',
+            '的': '的'
+        };
+
+        // 创建繁体到简体的反向映射
+        const traditionalToSimplifiedMap = {};
+        for (const [simplified, traditional] of Object.entries(charMap)) {
+            traditionalToSimplifiedMap[traditional] = simplified;
+        }
+
+        // 汇率数据（以CNY为基准）
+        const exchangeRates = {
+            CNY: 1,      // 人民币
+            USD: 0.1375, // 美元
+            EUR: 0.1285, // 欧元
+            GBP: 0.1120, // 英镑
+            JPY: 20.50,  // 日元
+            HKD: 1.075,  // 港币
+            KRW: 183.5,  // 韩元
+            AUD: 0.215,  // 澳元
+            CAD: 0.185,  // 加元
+            SGD: 0.187   // 新加坡元
+        };
+
+        // 货币符号映射
+        const currencySymbols = {
+            CNY: '¥',
+            USD: '$',
+            EUR: '€',
+            GBP: '£',
+            JPY: '¥',
+            HKD: 'HK$',
+            KRW: '₩',
+            AUD: 'A$',
+            CAD: 'C$',
+            SGD: 'S$'
+        };
+
+        // 货币名称映射
+        const currencyNames = {
+            CNY: '人民币',
+            USD: '美元',
+            EUR: '欧元',
+            GBP: '英镑',
+            JPY: '日元',
+            HKD: '港币',
+            KRW: '韩元',
+            AUD: '澳元',
+            CAD: '加元',
+            SGD: '新加坡元'
+        };
+
+        // 人民币数字转中文大写
+        function convertCurrencyToChinese(num) {
+            if (!num || isNaN(num) || parseFloat(num) === 0) {
+                return "零元整";
+            }
+            
+            let cleanNum = num.toString().replace(/[^\d.-]/g, '');
+            
+            if (isNaN(parseFloat(cleanNum))) {
+                return "请输入有效的数字金额";
+            }
+            
+            let isNegative = false;
+            if (parseFloat(cleanNum) < 0) {
+                isNegative = true;
+                cleanNum = Math.abs(parseFloat(cleanNum)).toString();
+            }
+            
+            let parts = cleanNum.split('.');
+            let integerPart = parts[0];
+            let decimalPart = parts.length > 1 ? parts[1] : '';
+            
+            if (decimalPart.length > 2) {
+                decimalPart = decimalPart.substring(0, 2);
+            }
+            
+            const chineseNumbers = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+            const chineseUnits = ['', '拾', '佰', '仟'];
+            const chineseBigUnits = ['', '万', '亿'];
+            
+            let chineseInteger = '';
+            if (integerPart === '0') {
+                chineseInteger = '零';
+            } else {
+                let integerStr = integerPart;
+                let unitIndex = 0;
+                let zeroFlag = false;
+                let result = '';
+                
+                for (let i = integerStr.length - 1; i >= 0; i--) {
+                    let digit = parseInt(integerStr[i]);
+                    let unit = chineseUnits[unitIndex];
+                    let bigUnit = '';
+                    
+                    if (unitIndex === 0 && i > 0) {
+                        bigUnit = chineseBigUnits[Math.floor((integerStr.length - i - 1) / 4)];
+                    }
+                    
+                    if (digit === 0) {
+                        zeroFlag = true;
+                    } else {
+                        if (zeroFlag) {
+                            result = chineseNumbers[0] + result;
+                            zeroFlag = false;
+                        }
+                        result = chineseNumbers[digit] + unit + bigUnit + result;
+                    }
+                    
+                    unitIndex = (unitIndex + 1) % 4;
+                }
+                
+                chineseInteger = result;
+            }
+            
+            let chineseDecimal = '';
+            if (decimalPart === '' || decimalPart === '00') {
+                chineseDecimal = '整';
+            } else {
+                if (decimalPart.length >= 1) {
+                    let jiao = parseInt(decimalPart[0]);
+                    if (jiao > 0) {
+                        chineseDecimal += chineseNumbers[jiao] + '角';
+                    }
+                }
+                if (decimalPart.length >= 2) {
+                    let fen = parseInt(decimalPart[1]);
+                    if (fen > 0) {
+                        chineseDecimal += chineseNumbers[fen] + '分';
+                    }
+                }
+                if (chineseDecimal === '') {
+                    chineseDecimal = '整';
+                }
+            }
+            
+            let result = (isNegative ? '负' : '') + chineseInteger + '元' + chineseDecimal;
+            return result.replace(/零仟零佰零拾零元/g, '零元')
+                        .replace(/零仟零佰零拾/g, '零')
+                        .replace(/零仟零佰/g, '零')
+                        .replace(/零佰零拾/g, '零')
+                        .replace(/零{2,}/g, '零')
+                        .replace(/零元/g, '元')
+                        .replace(/^元/, '零元')
+                        .replace(/零角零分$/, '整')
+                        .replace(/零角/, '')
+                        .replace(/零分$/, '');
+        }
+
+        // 简繁转换函数
+        function convertText(text, direction) {
+            if (!text) return '';
+            
+            let result = '';
+            for (let char of text) {
+                if (direction === 'toTraditional') {
+                    result += charMap[char] || char;
+                } else if (direction === 'toSimplified') {
+                    result += traditionalToSimplifiedMap[char] || char;
+                }
+            }
+            return result;
+        }
+
+        // 汇率换算函数
+        function calculateExchangeRate(fromCurrency, toCurrency, amount) {
+            // 如果基准货币相同，直接返回原金额
+            if (fromCurrency === toCurrency) {
+                return amount;
+            }
+            
+            // 先将金额转换为CNY，然后再转换为目标货币
+            const amountInCNY = amount / exchangeRates[fromCurrency];
+            const convertedAmount = amountInCNY * exchangeRates[toCurrency];
+            
+            return convertedAmount;
+        }
+
+        // 格式化货币金额
+        function formatCurrency(amount, currencyCode) {
+            const symbol = currencySymbols[currencyCode] || '';
+            const formattedAmount = parseFloat(amount).toLocaleString('zh-CN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            return `${symbol}${formattedAmount}`;
+        }
+
+        // 更新汇率显示
+        function updateExchangeRateDisplay() {
+            const fromCurrency = document.getElementById('fromCurrency').value;
+            const toCurrency = document.getElementById('toCurrency').value;
+            
+            if (fromCurrency === toCurrency) {
+                document.getElementById('exchangeRateInfo').textContent = 
+                    `1 ${currencyNames[fromCurrency]} = 1 ${currencyNames[toCurrency]}`;
+                return;
+            }
+            
+            // 计算汇率
+            const rate = calculateExchangeRate(fromCurrency, toCurrency, 1);
+            document.getElementById('exchangeRateInfo').textContent = 
+                `1 ${currencyNames[fromCurrency]} = ${rate.toFixed(4)} ${currencyNames[toCurrency]}`;
+        }
+
+        // 执行汇率换算
+        function performCurrencyConversion() {
+            const fromCurrency = document.getElementById('fromCurrency').value;
+            const toCurrency = document.getElementById('toCurrency').value;
+            const amount = parseFloat(document.getElementById('fromAmount').value) || 0;
+            
+            const convertedAmount = calculateExchangeRate(fromCurrency, toCurrency, amount);
+            document.getElementById('toAmount').value = formatCurrency(convertedAmount, toCurrency);
+            
+            updateExchangeRateDisplay();
+        }
+
+        // 初始化事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 人民币大小写转换
+            document.getElementById('convertToChinese').addEventListener('click', function() {
+                const input = document.getElementById('amountInput').value;
+                const result = convertCurrencyToChinese(input);
+                document.getElementById('chineseResult').textContent = result;
+            });
+
+            // 简繁转换
+            document.getElementById('convertText').addEventListener('click', function() {
+                const text = document.getElementById('textInput').value;
+                const direction = document.getElementById('conversionType').value;
+                
+                if (direction === 'toTraditional') {
+                    const traditionalText = convertText(text, 'toTraditional');
+                    document.getElementById('traditionalResultText').textContent = traditionalText;
+                    document.getElementById('simplifiedResultText').textContent = text;
+                } else {
+                    const simplifiedText = convertText(text, 'toSimplified');
+                    document.getElementById('simplifiedResultText').textContent = simplifiedText;
+                    document.getElementById('traditionalResultText').textContent = text;
+                }
+            });
+
+            // 清空所有
+            document.getElementById('clearAll').addEventListener('click', function() {
+                document.getElementById('amountInput').value = '';
+                document.getElementById('textInput').value = '简体繁体转换是现代中文处理的重要功能，可以方便两岸三地的交流与沟通。';
+                document.getElementById('chineseResult').textContent = '等待转换...';
+                document.getElementById('traditionalResultText').textContent = '等待转换...';
+                document.getElementById('simplifiedResultText').textContent = '等待转换...';
+                document.getElementById('fromAmount').value = '100';
+                document.getElementById('toAmount').value = '';
+                updateExchangeRateDisplay();
+            });
+
+            // 汇率换算
+            document.getElementById('convertCurrency').addEventListener('click', performCurrencyConversion);
+            
+            // 更新汇率
+            document.getElementById('updateRates').addEventListener('click', function() {
+                // 这里可以添加实际的API调用
+                // 目前使用模拟数据
+                alert('汇率已更新（模拟数据）');
+                const now = new Date();
+                document.getElementById('exchangeTime').textContent = 
+                    `最后更新: ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}:${now.getMinutes()}`;
+            });
+
+            // 货币互换
+            document.getElementById('swapCurrencies').addEventListener('click', function() {
+                const fromCurrency = document.getElementById('fromCurrency');
+                const toCurrency = document.getElementById('toCurrency');
+                const fromAmount = document.getElementById('fromAmount');
+                const toAmount = document.getElementById('toAmount');
+                
+                // 交换货币
+                const temp = fromCurrency.value;
+                fromCurrency.value = toCurrency.value;
+                toCurrency.value = temp;
+                
+                // 交换金额（如果toAmount有值）
+                if (toAmount.value && toAmount.value !== '') {
+                    const tempAmount = fromAmount.value;
+                    fromAmount.value = toAmount.value.replace(/[^\d.-]/g, '');
+                    toAmount.value = formatCurrency(tempAmount, toCurrency.value);
+                }
+                
+                updateExchangeRateDisplay();
+            });
+
+            // 输入变化时自动计算汇率
+            document.getElementById('fromAmount').addEventListener('input', performCurrencyConversion);
+            document.getElementById('fromCurrency').addEventListener('change', function() {
+                updateExchangeRateDisplay();
+                performCurrencyConversion();
+            });
+            document.getElementById('toCurrency').addEventListener('change', function() {
+                updateExchangeRateDisplay();
+                performCurrencyConversion();
+            });
+
+            // 初始化汇率显示
+            updateExchangeRateDisplay();
+            performCurrencyConversion();
+            
+            // 示例：点击示例金额可快速填充
+            document.querySelectorAll('.example-item .example-num').forEach(item => {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', function() {
+                    const text = this.textContent;
+                    if (text.includes('CNY')) {
+                        document.getElementById('amountInput').value = text.split(' ')[0];
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
