@@ -14,7 +14,8 @@
                 extend: {
                     colors: {
                         primary: '#165DFF',
-                        dark: '#1E293B'
+                        dark: '#1E293B',
+                        wechat: '#07C160'
                     },
                 }
             }
@@ -35,6 +36,13 @@
             @keyframes slide {
                 0% { transform: translateX(0); }
                 100% { transform: translateX(-50%); }
+            }
+            .fade-in {
+                animation: fadeIn 0.3s ease forwards;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: scale(0.95) translateY(10px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
             }
         }
     </style>
@@ -76,7 +84,7 @@
             <p class="text-[clamp(1.1rem,2vw,1.3rem)] opacity-95 mb-8 max-w-2xl mx-auto leading-relaxed">
                 专业技术团队，官方正版授权，售后全程无忧，一站式解决软件、系统、数据需求
             </p>
-            <a href="https://rmbtool.eu.cc/index.html#contact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+            <a href="javascript:void(0)" id="openContact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 立即咨询
             </a>
         </div>
@@ -255,18 +263,9 @@
                     </div>
                     <span class="text-xl font-semibold text-dark tracking-wide">Win_Mac_123</span>
                 </div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
-                            <i class="fa fa-qq text-blue-600 text-2xl"></i>
-                        </div>
-                        <span class="text-xl text-slate-700 font-medium">咨询QQ</span>
-                    </div>
-                    <span class="text-xl font-semibold text-dark tracking-wide">810803788</span>
-                </div>
             </div>
             <div class="mt-8">
-                <a href="weixin://dl/chat?Win_Mac_123" class="inline-flex items-center gap-2 bg-primary text-white font-semibold px-10 py-4 rounded-lg text-xl shadow-lg hover:bg-primary/90 hover:shadow-xl transition-all">
+                <a href="javascript:void(0)" id="openContactBtn" class="inline-flex items-center gap-2 bg-wechat text-white font-semibold px-10 py-4 rounded-lg text-xl shadow-lg hover:bg-wechat/90 hover:shadow-xl transition-all">
                     <i class="fa fa-weixin"></i>
                     立刻添加微信咨询
                 </a>
@@ -274,12 +273,38 @@
         </div>
     </section>
 
-    <!-- 右侧固定悬浮窗 -->
-    <a href="weixin://dl/chat?Win_Mac_123" 
-       class="fixed right-4 top-1/2 -translate-y-1/2 z-50 bg-green-600 text-white px-4 py-6 rounded-full shadow-xl hover:bg-green-500 hover:scale-105 transition-all flex flex-col items-center gap-1">
+    <!-- 右侧固定悬浮按钮 -->
+    <button id="openFloatContact" class="fixed right-4 top-1/2 -translate-y-1/2 z-40 bg-wechat text-white px-4 py-6 rounded-full shadow-xl hover:bg-wechat/90 hover:scale-105 transition-all flex flex-col items-center gap-1">
         <i class="fa fa-weixin text-2xl"></i>
         <span class="text-sm font-medium whitespace-nowrap">添加微信</span>
-    </a>
+    </button>
+
+    <!-- 弹窗遮罩 -->
+    <div id="contactModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full fade-in overflow-hidden">
+            <div class="p-6 flex justify-between items-center border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fa fa-weixin text-wechat text-3xl"></i>
+                    <h3 class="text-3xl font-bold text-slate-700">添加微信</h3>
+                </div>
+                <button id="closeModal" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <p class="text-slate-600 text-lg">添加请备注来意</p>
+                </div>
+                <div class="bg-slate-100 rounded-full px-6 py-4 flex items-center gap-3 mb-6">
+                    <i class="fa fa-weixin text-wechat text-2xl"></i>
+                    <span class="text-2xl font-semibold text-slate-700">微信号：Win_Mac_123</span>
+                </div>
+                <button id="copyBtn" class="w-full bg-primary hover:bg-primary/90 text-white text-xl font-semibold py-4 rounded-full transition-all mb-4">
+                    复制微信号
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- 页脚 -->
     <footer class="bg-dark text-slate-300 py-10">
@@ -306,6 +331,7 @@
 
     <!-- 实时时间更新JS -->
     <script>
+        // 更新时间
         function updateTime() {
             const now = new Date();
             const year = now.getFullYear();
@@ -320,6 +346,52 @@
         }
         updateTime();
         setInterval(updateTime, 1000);
+
+        // 弹窗控制
+        const modal = document.getElementById('contactModal');
+        const openBtns = [document.getElementById('openContact'), document.getElementById('openContactBtn'), document.getElementById('openFloatContact')];
+        const closeBtn = document.getElementById('closeModal');
+
+        openBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        });
+
+        modal.addEventListener('click', (e) => {
+            if(e.target === modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // 复制功能
+        document.getElementById('copyBtn').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText('Win_Mac_123');
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa fa-check"></i> 复制成功';
+                btn.classList.remove('bg-primary');
+                btn.classList.add('bg-wechat');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.add('bg-primary');
+                    btn.classList.remove('bg-wechat');
+                }, 2000);
+            } catch(e) {
+                alert('复制失败，请手动复制：Win_Mac_123');
+            }
+        });
     </script>
 </body>
 </html>
