@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>乐哲软件 - 专业正版软件技术服务商</title>
+    <title>软件下载 - 乐哲软件</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
@@ -18,144 +18,279 @@
             }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #165DFF 0%, #165DFF 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(22, 93, 255, 0.3);
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
- <!-- 导航栏 -->
-<nav class="bg-white shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-            <!-- 这里就是左上角跳转首页的部分，已经改好了 -->
-            <a href="https://rmbtool.eu.cc/index.html" class="text-xl md:text-2xl font-bold text-primary tracking-tight">乐哲软件</a>
-            <div class="hidden md:flex gap-10">
-                <a href="https://rmbtool.eu.cc/service.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">服务项目</a>
-                <a href="https://rmbtool.eu.cc/download.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">软件下载</a>
-                <a href="https://rmbtool.eu.cc/copyright.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">版权声明</a>
-                <a href="https://rmbtool.eu.cc/index.html#contact" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">联系我们</a>
+<body class="bg-gray-50 text-gray-800">
+    <!-- 导航栏 -->
+    <nav class="bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <a href="https://rmbtool.eu.cc/index.html" class="text-2xl font-bold text-primary">乐哲软件</a>
+                <div class="flex gap-8 items-center">
+                    <a href="https://rmbtool.eu.cc/service.html" class="text-gray-600 hover:text-primary transition-colors text-base">服务项目</a>
+                    <a href="https://rmbtool.eu.cc/download.html" class="text-primary font-semibold text-base">软件下载</a>
+                    <a href="https://rmbtool.eu.cc/copyright.html" class="text-gray-600 hover:text-primary transition-colors text-base">版权声明</a>
+                    <a href="https://rmbtool.eu.cc/index.html#contact" class="bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">联系我们</a>
+                </div>
             </div>
-            <button class="md:hidden text-slate-600 text-xl" id="mobile-menu-btn">
-                <i class="fa fa-bars"></i>
-            </button>
         </div>
-    </div>
-    <div class="md:hidden hidden bg-white border-t" id="mobile-menu">
-        <div class="px-4 py-3 space-y-2">
-            <a href="https://rmbtool.eu.cc/service.html" class="block py-2 text-slate-600 hover:text-primary">服务项目</a>
-            <a href="https://rmbtool.eu.cc/download.html" class="block py-2 text-slate-600 hover:text-primary">软件下载</a>
-            <a href="https://rmbtool.eu.cc/copyright.html" class="block py-2 text-slate-600 hover:text-primary">版权声明</a>
-            <a href="https://rmbtool.eu.cc/index.html#contact" class="block py-2 text-slate-600 hover:text-primary">联系我们</a>
-        </div>
-    </div>
-</nav>
+    </nav>
 
     <!-- 页面标题 -->
-    <header class="py-12 px-4 bg-white">
-        <div class="max-w-5xl mx-auto text-center">
-            <h1 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-dark text-shadow">官方软件安装包下载</h1>
-            <p class="text-slate-600 text-lg mt-3">所有安装包均为官方原版，无捆绑无后门，下载后可配合正版授权激活使用</p>
+    <header class="py-16 px-4 bg-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">官方正版软件下载</h1>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">安全、纯净的官方原版安装包，配合正版授权提供最佳使用体验</p>
         </div>
     </header>
 
-    <!-- 下载列表 -->
-    <section class="py-12 px-4 bg-slate-50">
-        <div class="max-w-4xl mx-auto">
-            <!-- Adobe 系列 -->
-            <div class="bg-white border border-slate-100 rounded-xl p-8 shadow-sm mb-6">
+    <!-- 软件分类导航 -->
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <div class="flex justify-center gap-4 mb-12">
+            <button class="px-6 py-2 bg-primary text-white rounded-lg">全部软件</button>
+            <button class="px-6 py-2 text-gray-600 hover:text-primary transition-colors">Adobe系列</button>
+            <button class="px-6 py-2 text-gray-600 hover:text-primary transition-colors">办公软件</button>
+            <button class="px-6 py-2 text-gray-600 hover:text-primary transition-colors">开发工具</button>
+        </div>
+
+        <!-- 软件下载列表 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+            <!-- Adobe Photoshop -->
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
                 <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-0">
-                        <i class="fa fa-paint-brush text-primary text-2xl"></i>
+                    <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        <i class="fa fa-photo text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold text-dark">Adobe 全系列官方安装包</h3>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Adobe Photoshop</h3>
+                        <p class="text-gray-500 text-sm">图像处理软件</p>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <a href="https://www.yuque.com/u34127441/mnhzwt/bzqbrrckvk7s3v0f?singleDoc#" target="_blank" class="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary hover:shadow-sm transition-all">
-                        <span class="text-lg font-medium">Adobe 全系列安装包合集</span>
-                        <div class="flex items-center gap-2 text-primary">
-                            点击前往下载
-                            <i class="fa fa-external-link"></i>
-                        </div>
-                    </a>
+                <p class="text-gray-600 mb-6 leading-relaxed">专业的图像编辑和处理工具，适用于摄影、设计等领域</p>
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 text-gray-700 mb-2">
+                        <i class="fa fa-hdd-o text-gray-400"></i>
+                        <span class="text-sm">版本: CC 2024</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fa fa-file-zip-o text-gray-400"></i>
+                        <span class="text-sm">大小: 2.8 GB</span>
+                    </div>
                 </div>
+                <a href="https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink" target="_blank" class="w-full block">
+                    <button class="w-full bg-primary text-white py-3 rounded-lg font-medium btn-primary">
+                        下载安装包
+                    </button>
+                </a>
             </div>
 
-            <!-- Autodesk 系列 -->
-            <div class="bg-white border border-slate-100 rounded-xl p-8 shadow-sm mb-6">
+            <!-- Adobe Illustrator -->
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
                 <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-0">
-                        <i class="fa fa-cube text-primary text-2xl"></i>
+                    <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center">
+                        <i class="fa fa-paint-brush text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold text-dark">Autodesk 设计类安装包</h3>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Adobe Illustrator</h3>
+                        <p class="text-gray-500 text-sm">矢量图形软件</p>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <a href="https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#" target="_blank" class="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary hover:shadow-sm transition-all">
-                        <span class="text-lg font-medium">Autodesk 全系列安装包合集</span>
-                        <div class="flex items-center gap-2 text-primary">
-                            点击前往下载
-                            <i class="fa fa-external-link"></i>
-                        </div>
-                    </a>
+                <p class="text-gray-600 mb-6 leading-relaxed">专业的矢量图形设计工具，适用于标志设计、插图等领域</p>
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 text-gray-700 mb-2">
+                        <i class="fa fa-hdd-o text-gray-400"></i>
+                        <span class="text-sm">版本: CC 2024</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fa fa-file-zip-o text-gray-400"></i>
+                        <span class="text-sm">大小: 2.5 GB</span>
+                    </div>
                 </div>
+                <a href="https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" target="_blank" class="w-full block">
+                    <button class="w-full bg-primary text-white py-3 rounded-lg font-medium btn-primary">
+                        下载安装包
+                    </button>
+                </a>
             </div>
 
-            <!-- Office 系列 -->
-            <div class="bg-white border border-slate-100 rounded-xl p-8 shadow-sm mb-6">
+            <!-- Adobe Lightroom -->
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
                 <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-0">
-                        <i class="fa fa-file-text text-primary text-2xl"></i>
+                    <div class="w-14 h-14 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
+                        <i class="fa fa-camera text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold text-dark">微软 Office 官方安装包</h3>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Adobe Lightroom</h3>
+                        <p class="text-gray-500 text-sm">摄影后期软件</p>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <a href="https://v6fsd03qf7.feishu.cn/drive/folder/W0OjfVUytlY00VdyNTIcl6zznTc" target="_blank" class="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:border-primary hover:shadow-sm transition-all">
-                        <span class="text-lg font-medium">Office 全系列安装包合集</span>
-                        <div class="flex items-center gap-2 text-primary">
-                            点击前往下载
-                            <i class="fa fa-external-link"></i>
-                        </div>
-                    </a>
+                <p class="text-gray-600 mb-6 leading-relaxed">专业的摄影后期处理软件，适用于照片管理和批量编辑</p>
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 text-gray-700 mb-2">
+                        <i class="fa fa-hdd-o text-gray-400"></i>
+                        <span class="text-sm">版本: CC 2024</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fa fa-file-zip-o text-gray-400"></i>
+                        <span class="text-sm">大小: 1.8 GB</span>
+                    </div>
                 </div>
+                <a href="https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J" target="_blank" class="w-full block">
+                    <button class="w-full bg-primary text-white py-3 rounded-lg font-medium btn-primary">
+                        下载安装包
+                    </button>
+                </a>
             </div>
 
-            <!-- 其他工具 -->
-            <div class="bg-white border border-slate-100 rounded-xl p-8 shadow-sm">
+            <!-- Adobe After Effects -->
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
                 <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center mb-0">
-                        <i class="fa fa-wrench text-primary text-2xl"></i>
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <i class="fa fa-film text-white text-2xl"></i>
                     </div>
-                    <h3 class="text-xl font-semibold text-dark">常用工具软件</h3>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Adobe After Effects</h3>
+                        <p class="text-gray-500 text-sm">视觉特效软件</p>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="p-4 border border-slate-100 rounded-lg text-slate-400 text-center">
-                        <span>待上传更新</span>
+                <p class="text-gray-600 mb-6 leading-relaxed">专业的视频特效和动态图形设计软件，适用于影视后期制作</p>
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 text-gray-700 mb-2">
+                        <i class="fa fa-hdd-o text-gray-400"></i>
+                        <span class="text-sm">版本: CC 2024</span>
                     </div>
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fa fa-file-zip-o text-gray-400"></i>
+                        <span class="text-sm">大小: 3.2 GB</span>
+                    </div>
+                </div>
+                <a href="https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg" target="_blank" class="w-full block">
+                    <button class="w-full bg-primary text-white py-3 rounded-lg font-medium btn-primary">
+                        下载安装包
+                    </button>
+                </a>
+            </div>
+
+            <!-- Adobe Premiere Pro -->
+            <div class="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+                        <i class="fa fa-video-camera text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">Adobe Premiere Pro</h3>
+                        <p class="text-gray-500 text-sm">视频编辑软件</p>
+                    </div>
+                </div>
+                <p class="text-gray-600 mb-6 leading-relaxed">专业的视频编辑软件，适用于电影、电视和网络视频制作</p>
+                <div class="mb-6">
+                    <div class="flex items-center gap-2 text-gray-700 mb-2">
+                        <i class="fa fa-hdd-o text-gray-400"></i>
+                        <span class="text-sm">版本: CC 2024</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-gray-700">
+                        <i class="fa fa-file-zip-o text-gray-400"></i>
+                        <span class="text-sm">大小: 3.1 GB</span>
+                    </div>
+                </div>
+                <a href="https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd" target="_blank" class="w-full block">
+                    <button class="w-full bg-primary text-white py-3 rounded-lg font-medium btn-primary">
+                        下载安装包
+                    </button>
+                </a>
+            </div>
+
+            <!-- 更多软件即将推出 -->
+            <div class="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center">
+                <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa fa-plus text-gray-400 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-2">更多软件</h3>
+                <p class="text-gray-500 text-center mb-4">持续更新中...</p>
+                <p class="text-gray-400 text-sm text-center">更多软件正在整理中，敬请期待</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注意事项 -->
+    <div class="bg-white border-t border-gray-100 py-12">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">下载说明</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-shield text-primary text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">官方原版</h3>
+                    <p class="text-gray-600 text-sm">所有软件均为官方原版安装包，无捆绑无后门</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-key text-primary text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">正版激活</h3>
+                    <p class="text-gray-600 text-sm">下载后需要配合正版授权进行激活使用</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa fa-life-ring text-primary text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-gray-900 mb-2">技术支持</h3>
+                    <p class="text-gray-600 text-sm">提供正版软件的技术支持和安装指导</p>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- 提示 -->
-    <section class="py-8 px-4 bg-primary/10">
-        <div class="max-w-3xl mx-auto text-center">
-            <p class="text-slate-700 text-lg">⚠️ 下载后如果需要激活授权，请联系我们获取正版激活服务</p>
-            <a href="https://rmbtool.eu.cc/index.html#contact" class="inline-flex items-center gap-2 mt-4 bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-all">
-                立即联系客服
-                <i class="fa fa-arrow-right"></i>
-            </a>
-        </div>
-    </section>
+    </div>
 
     <!-- 页脚 -->
     <footer class="bg-dark text-slate-300 py-10">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-lg mb-2">版权所有 © 2026 乐哲软件 保留所有权利</p>
-            <p class="text-slate-400">专业正版软件服务提供商</p>
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex flex-wrap justify-center gap-6 mb-4">
+                <a href="https://rmbtool.eu.cc/index.html" class="hover:text-white transition-colors">返回首页</a>
+                <a href="https://rmbtool.eu.cc/service.html" class="hover:text-white transition-colors">服务项目</a>
+                <a href="https://rmbtool.eu.cc/download.html" class="hover:text-white transition-colors">软件下载</a>
+                <a href="https://rmbtool.eu.cc/copyright.html" class="hover:text-white transition-colors">版权声明与投诉指引</a>
+            </div>
+            <div class="text-center">
+                <p class="text-lg mb-2">乐哲软件 —— 正版软件服务商</p>
+                <p class="text-slate-400">版权所有 © 2026 乐哲软件 保留所有权利</p>
+            </div>
         </div>
     </footer>
+
+    <script>
+        // 分类按钮切换
+        document.querySelectorAll('button:not(:first-child)').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除所有按钮的激活状态
+                document.querySelectorAll('button').forEach(b => {
+                    b.classList.remove('bg-primary', 'text-white');
+                    b.classList.add('text-gray-600');
+                });
+                // 添加激活状态到当前按钮
+                this.classList.remove('text-gray-600');
+                this.classList.add('bg-primary', 'text-white');
+            });
+        });
+    </script>
 </body>
 </html>
