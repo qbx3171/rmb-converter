@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>正版软件服务 - 专业正版软件技术服务提供商</title>
+    <title>正版软件服务 - 专业正版软件技术服务商</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- 不蒜子访问统计 -->
@@ -29,11 +29,18 @@
                 backdrop-filter: blur(10px);
                 background: rgba(255,255,255,0.8);
             }
+            .animate-slide {
+                animation: slide 25s linear infinite;
+            }
+            @keyframes slide {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+            }
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
-    <!-- 导航栏 - 新增状态栏（时间+访问量） -->
+    <!-- 导航栏 -->
     <nav class="bg-white/90 glass shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 py-2 md:py-0">
@@ -46,15 +53,9 @@
                     </div>
                 </div>
                 <div class="flex justify-between items-center gap-10 pb-2 md:pb-0">
-                    <!-- 时间组件 -->
                     <div class="flex items-center gap-2 text-slate-600">
                         <i class="fa fa-clock-o text-primary"></i>
                         <span id="current-time" class="font-medium"></span>
-                    </div>
-                    <!-- 访问统计 -->
-                    <div class="flex items-center gap-2 text-slate-600">
-                        <i class="fa fa-eye text-primary"></i>
-                        <span>总访问：<span id="busuanzi_value_site_pv" class="font-medium">--</span></span>
                     </div>
                 </div>
                 <div class="hidden md:flex gap-10">
@@ -75,20 +76,52 @@
             <p class="text-[clamp(1.1rem,2vw,1.3rem)] opacity-95 mb-8 max-w-2xl mx-auto leading-relaxed">
                 专业技术团队，官方正版授权，售后全程无忧，一站式解决软件、系统、数据需求
             </p>
-            <!-- 访问量组件 -->
-            <div class="flex items-center justify-center gap-8 mb-8">
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-shadow" id="uv-count">
-                        <span id="busuanzi_value_site_uv">--</span>
-                    </p>
-                    <p class="opacity-90 text-sm">独立访客</p>
-                </div>
-            </div>
-            <a href="#contact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+            <a href="https://rmbtool.eu.cc/index.html#contact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 立即咨询
             </a>
         </div>
     </header>
+
+    <!-- 品牌轮播图区域 -->
+    <section class="py-12 px-4 bg-white overflow-hidden">
+        <div class="max-w-5xl mx-auto mb-8 text-center">
+            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-dark">合作授权品牌</h2>
+            <p class="text-slate-500 text-lg mt-2">提供全品类主流正版软件授权服务</p>
+        </div>
+        <div class="relative max-w-5xl mx-auto bg-slate-50 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="absolute left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-r from-slate-50 to-transparent"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-slate-50 to-transparent"></div>
+            <div class="flex whitespace-nowrap py-14 overflow-hidden">
+                <div class="flex animate-slide items-center gap-16 px-16">
+                    <div class="flex flex-col items-center justify-center w-40 opacity-100 transition-all">
+                        <img src="https://ts3.tc.mm.bing.net/th/id/OIP-C.kF3Dut-nMBgTupBR0gWcagHaDm?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Adobe" class="h-12 object-contain mb-2">
+                        <span class="text-xl font-medium text-slate-700">Adobe</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center w-40 opacity-100 transition-all">
+                        <img src="https://ts3.tc.mm.bing.net/th/id/OIP-C.6Y88rI-rbxi-90C9FzrMTgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Autodesk" class="h-12 object-contain mb-2">
+                        <span class="text-xl font-medium text-slate-700">Autodesk</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center w-48 opacity-100 transition-all">
+                        <img src="https://gd-hbimg.huaban.com/23e080c402af97c53795c8da11baff669924ca1f26b03-OU8TRe_fw658" alt="Microsoft Office" class="h-12 object-contain mb-2">
+                        <span class="text-xl font-medium text-slate-700">Microsoft Office</span>
+                    </div>
+                    <!-- 复制一份实现无缝滚动 -->
+                    <div class="flex flex-col items-center justify-center w-40 opacity-100 transition-all">
+                        <img src="https://ts3.tc.mm.bing.net/th/id/OIP-C.kF3Dut-nMBgTupBR0gWcagHaDm?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Adobe" class="h-12 object-contain mb-2">
+                        <span class="text-xl font-medium text-slate-700">Adobe</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center w-40 opacity-100 transition-all">
+                        <img src="https://ts3.tc.mm.bing.net/th/id/OIP-C.6Y88rI-rbxi-90C9FzrMTgHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Autodesk" class="h-12 object-contain mb-2">
+                        <span class="text-xl font-medium text-slate-700">Autodesk</span>
+                    </div>
+                    <div class="flex flex-col items-center justify-center w-48 opacity-100 transition-all">
+                        <img src="https://gd-hbimg.huaban.com/23e080c402af97c53795c8da11baff669924ca1f26b03-OU8TRe_fw658" alt="Microsoft Office" class="h-12 object-contain mb-2">
+                        <span class="text-xl font-medium text-slate-700">Microsoft Office</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- 主营业务预览 -->
     <section class="py-16 px-4 bg-white">
@@ -96,30 +129,30 @@
             <h2 class="text-[clamp(1.6rem,3vw,2.2rem)] font-bold text-dark mb-3">我们的主营业务</h2>
             <p class="text-slate-500 text-lg mb-10">全品类正版软件+专业技术服务，覆盖各类办公设计需求</p>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
-                    <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
-                    <p class="text-gray-700 font-medium">Adobe 正版授权</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto mb-10">
+                <div class="bg-slate-50 rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
+                    <i class="fa fa-check-circle text-primary text-xl mb-3"></i>
+                    <p class="text-gray-700 font-medium text-lg">Adobe 正版授权</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
-                    <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
-                    <p class="text-gray-700 font-medium">Autodesk 正版授权</p>
+                <div class="bg-slate-50 rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
+                    <i class="fa fa-check-circle text-primary text-xl mb-3"></i>
+                    <p class="text-gray-700 font-medium text-lg">Autodesk 正版授权</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
-                    <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
-                    <p class="text-gray-700 font-medium">Office 正版授权</p>
+                <div class="bg-slate-50 rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
+                    <i class="fa fa-check-circle text-primary text-xl mb-3"></i>
+                    <p class="text-gray-700 font-medium text-lg">Office 正版授权</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
-                    <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
-                    <p class="text-gray-700 font-medium">系统重装优化</p>
+                <div class="bg-slate-50 rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
+                    <i class="fa fa-check-circle text-primary text-xl mb-3"></i>
+                    <p class="text-gray-700 font-medium text-lg">系统重装优化</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
-                    <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
-                    <p class="text-gray-700 font-medium">Adobe插件安装</p>
+                <div class="bg-slate-50 rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
+                    <i class="fa fa-check-circle text-primary text-xl mb-3"></i>
+                    <p class="text-gray-700 font-medium text-lg">Adobe插件安装</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
-                    <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
-                    <p class="text-gray-700 font-medium">专业数据恢复</p>
+                <div class="bg-slate-50 rounded-xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
+                    <i class="fa fa-check-circle text-primary text-xl mb-3"></i>
+                    <p class="text-gray-700 font-medium text-lg">专业数据恢复</p>
                 </div>
             </div>
             <a href="https://rmbtool.eu.cc/service.html" class="inline-flex items-center gap-2 text-primary font-semibold text-lg hover:gap-3 transition-all">
@@ -129,7 +162,7 @@
         </div>
     </section>
 
-    <!-- 信任背书 - 简约版 -->
+    <!-- 信任背书 -->
     <section class="py-14 px-4 bg-gradient-to-r from-slate-100 to-slate-50">
         <div class="max-w-5xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -165,7 +198,6 @@
             <p class="text-slate-600 text-lg mb-10">有任何需求都可以直接联系我们，1小时内响应，当日即可完成服务</p>
 
             <div class="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl shadow-lg p-10 max-w-lg mx-auto hover:shadow-xl transition-all duration-300">
-                <!-- 微信联系方式 -->
                 <div class="flex items-center justify-between mb-7 pb-7 border-b border-slate-200">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
@@ -175,7 +207,6 @@
                     </div>
                     <span class="text-xl font-semibold text-dark tracking-wide">Win_Mac_123</span>
                 </div>
-                <!-- QQ联系方式 -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
@@ -195,28 +226,33 @@
         </div>
     </section>
 
-    <!-- 右侧固定添加微信悬浮窗 -->
+    <!-- 右侧固定悬浮窗 -->
     <a href="weixin://dl/chat?Win_Mac_123" 
        class="fixed right-4 top-1/2 -translate-y-1/2 z-50 bg-green-600 text-white px-4 py-6 rounded-full shadow-xl hover:bg-green-500 hover:scale-105 transition-all flex flex-col items-center gap-1">
         <i class="fa fa-weixin text-2xl"></i>
         <span class="text-sm font-medium whitespace-nowrap">添加微信</span>
     </a>
 
-    <!-- 页脚访问统计 -->
+    <!-- 页脚 -->
     <footer class="bg-dark text-slate-300 py-10">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <div class="flex flex-wrap justify-center items-center gap-6 mb-4">
                 <div class="flex items-center gap-2">
+                    <i class="fa fa-eye text-primary"></i>
+                    <span>总访问：<span id="busuanzi_value_site_pv" class="text-white">--</span></span>
+                </div>
+                <div class="flex items-center gap-2">
                     <i class="fa fa-users text-primary"></i>
-                    <span>今日访客：<span id="busuanzi_value_daily_pv" class="text-white">--</span></span>
+                    <span>独立访客：<span id="busuanzi_value_site_uv" class="text-white">--</span></span>
                 </div>
                 <div class="flex items-center gap-2">
                     <i class="fa fa-link text-primary"></i>
-                    <span>本站地址：<a href="https://rmbtool.eu.cc" class="text-white hover:text-primary transition-colors">rmbtool.eu.cc</a></span>
+                    <span>本站域名：<a href="https://rmbtool.eu.cc" target="_blank" class="text-white hover:text-primary transition-colors">rmbtool.eu.cc</a></span>
                 </div>
             </div>
-            <p class="text-lg mb-2">版权所有 © 2026 Win_Mac_123 保留所有权利</p>
+            <p class="text-lg mb-2">版权所有 © 2026 正版软件服务 保留所有权利</p>
             <p class="text-slate-400">专业正版软件服务提供商</p>
+            <p class="text-slate-400 mt-2">访问域名：<a href="https://rmbtool.eu.cc" target="_blank" class="text-white hover:text-primary">https://rmbtool.eu.cc</a> 可正常访问全站</p>
         </div>
     </footer>
 
@@ -234,7 +270,6 @@
             const week = weekArr[now.getDay()];
             document.getElementById('current-time').innerText = `${year}年${month}月${day}日 ${hour}:${minute}:${second} ${week}`;
         }
-        // 初始化+每秒更新
         updateTime();
         setInterval(updateTime, 1000);
     </script>
