@@ -6,6 +6,8 @@
     <title>正版软件服务 - 专业正版软件技术服务提供商</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 不蒜子访问统计 -->
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -23,19 +25,42 @@
             .text-shadow {
                 text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
+            .glass {
+                backdrop-filter: blur(10px);
+                background: rgba(255,255,255,0.8);
+            }
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
-    <!-- 导航栏 - 新增软件下载入口 -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
+    <!-- 导航栏 - 新增状态栏（时间+访问量） -->
+    <nav class="bg-white/90 glass shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="text-2xl font-bold text-primary tracking-tight">正版软件服务</div>
-                <div class="flex gap-10">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-2 py-2 md:py-0">
+                <div class="flex justify-between items-center md:h-16">
+                    <div class="text-2xl font-bold text-primary tracking-tight">正版软件服务</div>
+                    <div class="flex md:hidden gap-4">
+                        <a href="https://rmbtool.eu.cc/service.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">服务</a>
+                        <a href="https://rmbtool.eu.cc/download.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">下载</a>
+                        <a href="https://rmbtool.eu.cc/index.html#contact" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">联系</a>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center gap-10 pb-2 md:pb-0">
+                    <!-- 时间组件 -->
+                    <div class="flex items-center gap-2 text-slate-600">
+                        <i class="fa fa-clock-o text-primary"></i>
+                        <span id="current-time" class="font-medium"></span>
+                    </div>
+                    <!-- 访问统计 -->
+                    <div class="flex items-center gap-2 text-slate-600">
+                        <i class="fa fa-eye text-primary"></i>
+                        <span>总访问：<span id="busuanzi_value_site_pv" class="font-medium">--</span></span>
+                    </div>
+                </div>
+                <div class="hidden md:flex gap-10">
                     <a href="https://rmbtool.eu.cc/service.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">服务项目</a>
                     <a href="https://rmbtool.eu.cc/download.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">软件下载</a>
-                    <a href="https://rmbtool.eu.cc/index.html" class="text-primary font-semibold transition-colors text-base">联系我们</a>
+                    <a href="https://rmbtool.eu.cc/index.html#contact" class="text-primary font-semibold transition-colors text-base">联系我们</a>
                 </div>
             </div>
         </div>
@@ -48,8 +73,17 @@
                 靠谱正版软件服务<br>为您解决所有软件需求
             </h1>
             <p class="text-[clamp(1.1rem,2vw,1.3rem)] opacity-95 mb-8 max-w-2xl mx-auto leading-relaxed">
-                10年+行业经验，官方正版授权，售后全程无忧，一站式解决软件、系统、数据需求
+                专业技术团队，官方正版授权，售后全程无忧，一站式解决软件、系统、数据需求
             </p>
+            <!-- 访问量组件 -->
+            <div class="flex items-center justify-center gap-8 mb-8">
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-shadow" id="uv-count">
+                        <span id="busuanzi_value_site_uv">--</span>
+                    </p>
+                    <p class="opacity-90 text-sm">独立访客</p>
+                </div>
+            </div>
             <a href="#contact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 立即咨询
             </a>
@@ -63,27 +97,27 @@
             <p class="text-slate-500 text-lg mb-10">全品类正版软件+专业技术服务，覆盖各类办公设计需求</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10">
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
                     <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
                     <p class="text-gray-700 font-medium">Adobe 正版授权</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
                     <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
                     <p class="text-gray-700 font-medium">Autodesk 正版授权</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
                     <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
                     <p class="text-gray-700 font-medium">Office 正版授权</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
                     <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
                     <p class="text-gray-700 font-medium">系统重装优化</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
                     <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
                     <p class="text-gray-700 font-medium">Adobe插件安装</p>
                 </div>
-                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                <div class="bg-slate-50 rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all hover:-translate-y-1">
                     <i class="fa fa-check-circle text-primary text-xl mb-2"></i>
                     <p class="text-gray-700 font-medium">专业数据恢复</p>
                 </div>
@@ -95,21 +129,30 @@
         </div>
     </section>
 
-    <!-- 信任背书 -->
-    <section class="py-14 px-4 bg-slate-100">
-        <div class="max-w-5xl mx-auto text-center">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center">
-                    <p class="text-4xl font-bold text-primary mb-2">1000+</p>
-                    <p class="text-slate-600 text-lg">服务客户</p>
+    <!-- 信任背书 - 简约版 -->
+    <section class="py-14 px-4 bg-gradient-to-r from-slate-100 to-slate-50">
+        <div class="max-w-5xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-user-o text-primary text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-primary mb-2">100<span class="text-xl align-top">+</span></p>
+                    <p class="text-slate-600 text-base">服务客户</p>
                 </div>
-                <div class="text-center">
-                    <p class="text-4xl font-bold text-primary mb-2">99.8%</p>
-                    <p class="text-slate-600 text-lg">好评满意度</p>
+                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-users text-primary text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-primary mb-2">专业团队</p>
+                    <p class="text-slate-600 text-base">一对一服务</p>
                 </div>
-                <div class="text-center">
-                    <p class="text-4xl font-bold text-primary mb-2">7*24</p>
-                    <p class="text-slate-600 text-lg">售后技术支持</p>
+                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa fa-headphones text-primary text-xl"></i>
+                    </div>
+                    <p class="text-3xl font-bold text-primary mb-2">7<span class="text-xl align-top">*</span>24</p>
+                    <p class="text-slate-600 text-base">售后技术支持</p>
                 </div>
             </div>
         </div>
@@ -152,12 +195,48 @@
         </div>
     </section>
 
-    <!-- 页脚 -->
+    <!-- 右侧固定添加微信悬浮窗 -->
+    <a href="weixin://dl/chat?Win_Mac_123" 
+       class="fixed right-4 top-1/2 -translate-y-1/2 z-50 bg-green-600 text-white px-4 py-6 rounded-full shadow-xl hover:bg-green-500 hover:scale-105 transition-all flex flex-col items-center gap-1">
+        <i class="fa fa-weixin text-2xl"></i>
+        <span class="text-sm font-medium whitespace-nowrap">添加微信</span>
+    </a>
+
+    <!-- 页脚访问统计 -->
     <footer class="bg-dark text-slate-300 py-10">
         <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex flex-wrap justify-center items-center gap-6 mb-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa fa-users text-primary"></i>
+                    <span>今日访客：<span id="busuanzi_value_daily_pv" class="text-white">--</span></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa fa-link text-primary"></i>
+                    <span>本站地址：<a href="https://rmbtool.eu.cc" class="text-white hover:text-primary transition-colors">rmbtool.eu.cc</a></span>
+                </div>
+            </div>
             <p class="text-lg mb-2">版权所有 © 2026 Win_Mac_123 保留所有权利</p>
             <p class="text-slate-400">专业正版软件服务提供商</p>
         </div>
     </footer>
+
+    <!-- 实时时间更新JS -->
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            const second = String(now.getSeconds()).padStart(2, '0');
+            const weekArr = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+            const week = weekArr[now.getDay()];
+            document.getElementById('current-time').innerText = `${year}年${month}月${day}日 ${hour}:${minute}:${second} ${week}`;
+        }
+        // 初始化+每秒更新
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
 </body>
 </html>
