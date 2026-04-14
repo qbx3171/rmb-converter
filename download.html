@@ -2,643 +2,810 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>乐哲软件 - 专业正版软件技术服务商</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#165DFF',
-                        dark: '#1E293B'
-                    },
-                }
-            }
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>乐哲软件中心 · 专业创意工具库 | 官方原版资源</title>
+    <!-- SEO & 域名 -->
+    <meta name="description" content="乐哲软件 - 提供Adobe、Autodesk等官方原版软件安装包，支持Windows/Mac，无捆绑无后门。">
+    <meta name="keywords" content="乐哲软件,Adobe下载,Autodesk,软件下载,Mac软件,Windows软件">
+    <link rel="canonical" href="https://www.lezhesoft.cn/">
+    <!-- 字体 & 图标库 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .filter-btn.active {
-                background-color: #165DFF !important;
-                color: white !important;
-            }
-            .card-hover {
-                transition: all 0.3s ease;
-            }
-            .card-hover:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f9fe;
+            color: #121826;
+            line-height: 1.5;
+        }
+
+        /* 平滑滚动 & 滚动条 */
+        html {
+            scroll-behavior: smooth;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #eef2f8;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b9cadb;
+            border-radius: 10px;
+        }
+
+        .app-wrapper {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 32px 56px;
+        }
+
+        /* 全新顶部导航：左侧logo + 中间导航 + 右侧搜索 */
+        .top-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 80px;
+            margin: 24px 0 28px;
+            padding: 8px 28px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.02), 0 1px 2px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.7);
+        }
+        .logo-area {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .logo-text {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(125deg, #0F2B4D, #1E6DFF, #A855F7);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .domain-badge {
+            background: #eef3fc;
+            border-radius: 40px;
+            padding: 4px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #1E6DFF;
+        }
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            font-weight: 500;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #2c3f5c;
+            transition: 0.2s;
+            font-size: 15px;
+        }
+        .nav-links a.active, .nav-links a:hover {
+            color: #1E6DFF;
+        }
+        .top-search {
+            background: white;
+            border-radius: 48px;
+            padding: 6px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 260px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid #e2edf7;
+            transition: all 0.2s;
+        }
+        .top-search i {
+            color: #8ba0bc;
+            font-size: 16px;
+        }
+        .top-search input {
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+            font-weight: 400;
+        }
+        .top-search:focus-within {
+            border-color: #1E6DFF;
+            box-shadow: 0 0 0 3px rgba(30,109,255,0.1);
+        }
+
+        /* 英雄区 + 统计卡片 */
+        .hero-stats-wrap {
+            background: linear-gradient(110deg, #FFFFFF 0%, #F0F7FF 100%);
+            border-radius: 40px;
+            padding: 24px 32px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid #eef2ff;
+        }
+        .hero-text h2 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, #1A2C42, #1E6DFF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .hero-text p {
+            color: #4a627a;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+        .stats-group {
+            display: flex;
+            gap: 28px;
+            background: white;
+            padding: 8px 28px;
+            border-radius: 60px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.02);
+        }
+        .stat-card {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f2b4d;
+        }
+        .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b85a4;
+        }
+
+        /* 筛选面板 */
+        .filter-panel {
+            background: white;
+            border-radius: 36px;
+            padding: 20px 28px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.02);
+            border: 1px solid #eef2fc;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 28px;
+        }
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+        .filter-label {
+            font-weight: 600;
+            font-size: 13px;
+            background: #f0f4fa;
+            padding: 5px 14px;
+            border-radius: 32px;
+            color: #2c405c;
+        }
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .filter-chip {
+            background: #f1f5f9;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #2f405b;
+        }
+        .filter-chip i {
+            margin-right: 6px;
+        }
+        .filter-chip.active {
+            background: #1E6DFF;
+            color: white;
+            box-shadow: 0 4px 10px rgba(30,109,255,0.2);
+        }
+
+        /* 软件网格 */
+        .software-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
+        }
+        .software-card {
+            background: #ffffff;
+            border-radius: 32px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            border: 1px solid #eef3fc;
+            box-shadow: 0 10px 22px -8px rgba(0, 0, 0, 0.04);
+        }
+        .software-card:hover {
+            transform: translateY(-5px);
+            border-color: #d4e2fc;
+            box-shadow: 0 24px 36px -12px rgba(0, 0, 0, 0.12);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .software-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(145deg, #14273e, #1f3b5c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .status-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 50px;
+        }
+        .status-uploaded {
+            background: #e1f7ea;
+            color: #1f7840;
+        }
+        .status-pending {
+            background: #f0f2f5;
+            color: #6c7a8f;
+        }
+        .version-tag {
+            display: inline-block;
+            background: #f0f4fc;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 500;
+            margin: 10px 0 12px;
+        }
+        .description {
+            color: #4f657f;
+            font-size: 14px;
+            line-height: 1.45;
+            margin: 8px 0 18px;
+            min-height: 66px;
+        }
+        .os-tags {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .os-badge {
+            background: #f4f8fe;
+            border-radius: 32px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .download-btn {
+            width: 100%;
+            border: none;
+            border-radius: 40px;
+            padding: 12px 0;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-active {
+            background: #1E6DFF;
+            color: white;
+            box-shadow: 0 4px 8px rgba(30,109,255,0.2);
+        }
+        .btn-active:hover {
+            background: #0f5be6;
+            transform: scale(0.98);
+        }
+        .btn-pending {
+            background: #eef2f8;
+            color: #7e92ac;
+            cursor: not-allowed;
+        }
+        .empty-state {
+            background: white;
+            border-radius: 48px;
+            padding: 60px 24px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        /* 浮动添加按钮 */
+        .floating-add {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            background: #1E6DFF;
+            width: 58px;
+            height: 58px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 12px 24px rgba(30,109,255,0.4);
+            transition: 0.2s;
+            z-index: 100;
+            border: none;
+        }
+        .floating-add:hover {
+            background: #0c54d6;
+            transform: scale(1.02);
+        }
+
+        /* 模态框 */
+        .modal-mask {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(18, 24, 38, 0.6);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-container {
+            background: white;
+            max-width: 540px;
+            width: 90%;
+            border-radius: 48px;
+            padding: 32px;
+            box-shadow: 0 40px 60px rgba(0,0,0,0.3);
+            animation: fadeUp 0.2s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .modal-container h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .form-item {
+            margin-bottom: 20px;
+        }
+        .form-item label {
+            font-weight: 600;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .form-item input, .form-item select, .form-item textarea {
+            width: 100%;
+            padding: 12px 18px;
+            border-radius: 28px;
+            border: 1px solid #dce5f0;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+        }
+        .form-item input:focus, .form-item select:focus {
+            border-color: #1E6DFF;
+        }
+        .checkbox-group {
+            display: flex;
+            gap: 24px;
+            margin-top: 6px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .btn-cancel {
+            background: #f0f4fa;
+            border: none;
+            padding: 10px 26px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-confirm {
+            background: #1E6DFF;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        footer {
+            margin-top: 64px;
+            text-align: center;
+            font-size: 13px;
+            color: #8aa0bc;
+            border-top: 1px solid #e2ecf5;
+            padding-top: 28px;
+        }
+
+        @media (max-width: 860px) {
+            .app-wrapper { padding: 0 20px 40px; }
+            .top-nav { flex-direction: column; align-items: stretch; border-radius: 40px; padding: 16px 20px; }
+            .nav-links { justify-content: center; }
+            .top-search { width: 100%; }
+            .filter-panel { flex-direction: column; align-items: flex-start; }
+            .hero-stats-wrap { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
-    <!-- 导航栏 -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="text-2xl font-bold text-primary tracking-tight">乐哲软件</div>
-                <div class="flex gap-10">
-                    <a href="https://www.lezhesoft.cn/service.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">服务项目</a>
-                    <a href="https://www.lezhesoft.cn/download.html" class="text-primary font-semibold transition-colors text-base">软件下载</a>
-                    <a href="https://www.lezhesoft.cn/index.html#contact" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">联系我们</a>
-                </div>
+<body>
+<div class="app-wrapper">
+    <!-- 顶部导航：符合跳转要求 首页index.html，服务项目service.html，联系我们index.html -->
+    <div class="top-nav">
+        <div class="logo-area">
+            <span class="logo-text">乐哲软件</span>
+            <span class="domain-badge"><i class="fas fa-globe"></i> www.lezhesoft.cn</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" id="linkHome">首页</a>
+            <a href="service.html" id="linkServices">服务项目</a>
+            <a href="index.html" class="active" id="linkDownload">软件下载</a>
+            <a href="index.html" id="linkContact">联系我们</a>
+        </div>
+        <div class="top-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="globalSearchInput" placeholder="搜索软件名称、描述...">
+        </div>
+    </div>
+
+    <!-- 英雄区 + 统计数字 -->
+    <div class="hero-stats-wrap">
+        <div class="hero-text">
+            <h2>官方原版·安全纯净</h2>
+            <p>所有安装包均为官方原版，无捆绑无后门，下载后可配合正版授权激活</p>
+        </div>
+        <div class="stats-group" id="statsContainer">
+            <div class="stat-card"><div class="stat-number" id="totalCountHero">0</div><div class="stat-label">总软件</div></div>
+            <div class="stat-card"><div class="stat-number" id="windowsCountHero">0</div><div class="stat-label"><i class="fab fa-windows"></i> Windows</div></div>
+            <div class="stat-card"><div class="stat-number" id="macCountHero">0</div><div class="stat-label"><i class="fab fa-apple"></i> macOS</div></div>
+        </div>
+    </div>
+
+    <!-- 筛选面板 -->
+    <div class="filter-panel">
+        <div class="filter-section">
+            <span class="filter-label"><i class="fas fa-layer-group"></i> 分类</span>
+            <div class="filter-buttons" id="categoryFilters">
+                <button data-cat="all" class="filter-chip active">全部</button>
+                <button data-cat="Adobe系列" class="filter-chip">Adobe系列</button>
+                <button data-cat="Autodesk系列" class="filter-chip">Autodesk系列</button>
+                <button data-cat="其他软件" class="filter-chip">其他软件</button>
             </div>
         </div>
-    </nav>
-
-    <!-- 页面标题 -->
-    <header class="py-12 px-4 bg-white">
-        <div class="max-w-5xl mx-auto text-center">
-            <h1 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-dark text-shadow">官方软件安装包下载</h1>
-            <p class="text-slate-600 text-lg mt-3">所有安装包均为官方原版，无捆绑无后门，下载后可配合正版授权激活使用</p>
-        </div>
-    </header>
-
-    <!-- 分类筛选 -->
-    <section class="py-6 px-4 bg-white">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-dark">软件分类目录</h2>
-                    <p class="text-slate-500 text-sm">点击分类筛选软件，绿色按钮表示已上传，灰色按钮表示待上传</p>
-                </div>
-                
-                <!-- 分类筛选按钮 -->
-                <div class="flex flex-wrap gap-2" id="filter-buttons">
-                    <button onclick="filterSoftware('all')" class="filter-btn px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium active">
-                        全部软件
-                    </button>
-                    <button onclick="filterSoftware('adobe')" class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
-                        Adobe系列
-                    </button>
-                    <button onclick="filterSoftware('autodesk')" class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
-                        Autodesk系列
-                    </button>
-                    <button onclick="filterSoftware('other')" class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
-                        其他软件
-                    </button>
-                    <button onclick="filterSoftware('available')" class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
-                        已上传
-                    </button>
-                    <button onclick="filterSoftware('coming-soon')" class="filter-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors">
-                        待上传
-                    </button>
-                </div>
+        <div class="filter-section">
+            <span class="filter-label"><i class="fas fa-microchip"></i> 平台</span>
+            <div class="filter-buttons" id="osFilters">
+                <button data-os="all" class="filter-chip active">全部</button>
+                <button data-os="Windows" class="filter-chip"><i class="fab fa-windows"></i> Windows</button>
+                <button data-os="Mac" class="filter-chip"><i class="fab fa-apple"></i> macOS</button>
             </div>
         </div>
-    </section>
-
-    <!-- 软件目录 -->
-    <section class="py-12 px-4 bg-slate-50">
-        <div class="max-w-7xl mx-auto">
-            <!-- Adobe 系列 -->
-            <div class="software-category bg-white border border-slate-100 rounded-xl p-8 shadow-sm mb-8">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 bg-gradient-to-br from-pink-500 to-red-500 rounded-full flex items-center justify-center">
-                        <i class="fa fa-paint-brush text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-dark">Adobe 设计系列</h2>
-                        <p class="text-slate-500">版本：CS6-2026</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Photoshop -->
-                    <div class="software-card adobe available bg-white border border-slate-200 rounded-lg p-6 card-hover">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-photo text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Photoshop</h3>
-                                <p class="text-slate-500 text-sm">图像处理软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的图像编辑和处理工具，适用于摄影、设计等领域</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: CS6-2026</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">已上传</span>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Adobe</span>
-                        </div>
-                        <a href="https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink" target="_blank" class="w-full block">
-                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                                下载安装包
-                            </button>
-                        </a>
-                    </div>
-
-                    <!-- Illustrator -->
-                    <div class="software-card adobe available bg-white border border-slate-200 rounded-lg p-6 card-hover">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-paint-brush text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Illustrator</h3>
-                                <p class="text-slate-500 text-sm">矢量图形软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的矢量图形设计工具，适用于标志设计、插图等领域</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: CS6-2026</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">已上传</span>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Adobe</span>
-                        </div>
-                        <a href="https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" target="_blank" class="w-full block">
-                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                                下载安装包
-                            </button>
-                        </a>
-                    </div>
-
-                    <!-- Lightroom -->
-                    <div class="software-card adobe available bg-white border border-slate-200 rounded-lg p-6 card-hover">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-camera text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Lightroom</h3>
-                                <p class="text-slate-500 text-sm">摄影后期软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的摄影后期处理软件，适用于照片管理和批量编辑</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: CS6-2026</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">已上传</span>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Adobe</span>
-                        </div>
-                        <a href="https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J" target="_blank" class="w-full block">
-                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                                下载安装包
-                            </button>
-                        </a>
-                    </div>
-
-                    <!-- After Effects -->
-                    <div class="software-card adobe available bg-white border border-slate-200 rounded-lg p-6 card-hover">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-film text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">After Effects</h3>
-                                <p class="text-slate-500 text-sm">视觉特效软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的视频特效和动态图形设计软件，适用于影视后期制作</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: CS6-2026</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">已上传</span>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Adobe</span>
-                        </div>
-                        <a href="https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg" target="_blank" class="w-full block">
-                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                                下载安装包
-                            </button>
-                        </a>
-                    </div>
-
-                    <!-- Premiere Pro -->
-                    <div class="software-card adobe available bg-white border border-slate-200 rounded-lg p-6 card-hover">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-video-camera text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Premiere Pro</h3>
-                                <p class="text-slate-500 text-sm">视频编辑软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的视频编辑软件，适用于电影、电视和网络视频制作</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: CS6-2026</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">已上传</span>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Adobe</span>
-                        </div>
-                        <a href="https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd" target="_blank" class="w-full block">
-                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                                下载安装包
-                            </button>
-                        </a>
-                    </div>
-
-                    <!-- Adobe Audition -->
-                    <div class="software-card adobe coming-soon bg-white border border-slate-200 rounded-lg p-6 card-hover opacity-70">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-music text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Adobe Audition</h3>
-                                <p class="text-slate-500 text-sm">音频编辑软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的音频编辑和混音软件，适用于播客、视频音效、音乐制作</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: CS6-2026</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">待上传</span>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Adobe</span>
-                        </div>
-                        <button class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
-                            即将上传
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Autodesk 系列 -->
-            <div class="software-category bg-white border border-slate-100 rounded-xl p-8 shadow-sm mb-8">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center">
-                        <i class="fa fa-cogs text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-dark">Autodesk 工程系列</h2>
-                        <p class="text-slate-500">版本：2024</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- AutoCAD -->
-                    <div class="software-card autodesk available bg-white border border-slate-200 rounded-lg p-6 card-hover">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-pencil-square-o text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">AutoCAD</h3>
-                                <p class="text-slate-500 text-sm">CAD设计软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的计算机辅助设计软件，广泛应用于建筑、工程和制造领域</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: 2024</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">已上传</span>
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Autodesk</span>
-                        </div>
-                        <a href="https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#" target="_blank" class="w-full block">
-                            <button class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                                下载安装包
-                            </button>
-                        </a>
-                    </div>
-
-                    <!-- Revit -->
-                    <div class="software-card autodesk coming-soon bg-white border border-slate-200 rounded-lg p-6 card-hover opacity-70">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-building text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Revit</h3>
-                                <p class="text-slate-500 text-sm">BIM建筑设计软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的建筑信息模型软件，适用于建筑设计、MEP和结构设计</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: 2024</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">待上传</span>
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Autodesk</span>
-                        </div>
-                        <button class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
-                            即将上传
-                        </button>
-                    </div>
-
-                    <!-- 3ds Max -->
-                    <div class="software-card autodesk coming-soon bg-white border border-slate-200 rounded-lg p-6 card-hover opacity-70">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-cube text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">3ds Max</h3>
-                                <p class="text-slate-500 text-sm">三维建模和渲染软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的三维建模、动画和渲染软件，广泛应用于游戏和影视制作</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: 2024</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">待上传</span>
-                            <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Autodesk</span>
-                        </div>
-                        <button class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
-                            即将上传
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 其他软件系列 -->
-            <div class="software-category bg-white border border-slate-100 rounded-xl p-8 shadow-sm">
-                <div class="flex items-center gap-4 mb-6">
-                    <div class="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <i class="fa fa-desktop text-white text-2xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-dark">其他软件系列</h2>
-                        <p class="text-slate-500">各类专业软件</p>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Microsoft Office -->
-                    <div class="software-card other coming-soon bg-white border border-slate-200 rounded-lg p-6 card-hover opacity-70">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-file-word-o text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Microsoft Office</h3>
-                                <p class="text-slate-500 text-sm">办公套件软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">全面的办公软件套件，包括Word、Excel、PowerPoint等</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: 2021</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">待上传</span>
-                            <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">其他</span>
-                        </div>
-                        <button class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
-                            即将上传
-                        </button>
-                    </div>
-
-                    <!-- Final Cut Pro -->
-                    <div class="software-card other coming-soon bg-white border border-slate-200 rounded-lg p-6 card-hover opacity-70">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-video-camera text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">Final Cut Pro</h3>
-                                <p class="text-slate-500 text-sm">视频编辑软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">专业的视频编辑软件，适用于Mac平台，提供先进的编辑功能</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: 10.6</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">待上传</span>
-                            <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">其他</span>
-                        </div>
-                        <button class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
-                            即将上传
-                        </button>
-                    </div>
-
-                    <!-- SketchUp -->
-                    <div class="software-card other coming-soon bg-white border border-slate-200 rounded-lg p-6 card-hover opacity-70">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
-                                <i class="fa fa-cube text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-dark">SketchUp Pro</h3>
-                                <p class="text-slate-500 text-sm">3D建模软件</p>
-                            </div>
-                        </div>
-                        <p class="text-slate-600 text-sm mb-4 leading-relaxed">直观易用的3D建模软件，适用于建筑、室内设计和景观设计</p>
-                        <div class="flex items-center gap-2 text-slate-700 mb-4">
-                            <i class="fa fa-hdd-o text-slate-400"></i>
-                            <span class="text-sm">版本: 2023</span>
-                        </div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">待上传</span>
-                            <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-medium rounded-full">其他</span>
-                        </div>
-                        <button class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
-                            即将上传
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 统计信息 -->
-    <div class="bg-white py-12 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <div class="text-3xl font-bold text-primary mb-2" id="available-count">6</div>
-                    <p class="text-slate-600">已上传软件</p>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-primary mb-2" id="coming-soon-count">5</div>
-                    <p class="text-slate-600">待上传软件</p>
-                </div>
-                <div>
-                    <div class="text-3xl font-bold text-primary mb-2" id="total-count">11</div>
-                    <p class="text-slate-600">总计软件</p>
-                </div>
+        <div class="filter-section">
+            <span class="filter-label"><i class="fas fa-flag-checkered"></i> 状态</span>
+            <div class="filter-buttons" id="statusFilters">
+                <button data-status="all" class="filter-chip active">全部</button>
+                <button data-status="uploaded" class="filter-chip"><i class="fas fa-check-circle"></i> 已上传</button>
+                <button data-status="pending" class="filter-chip"><i class="fas fa-clock"></i> 待上传</button>
             </div>
         </div>
     </div>
 
-    <!-- 注意事项 -->
-    <div class="bg-white border-t border-slate-100 py-12">
-        <div class="max-w-4xl mx-auto px-4">
-            <h2 class="text-2xl font-bold text-dark mb-6 text-center">下载说明</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center p-6">
-                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-shield text-primary text-xl"></i>
-                    </div>
-                    <h3 class="font-bold text-dark mb-2">官方原版</h3>
-                    <p class="text-slate-600 text-sm">所有软件均为官方原版安装包，无捆绑无后门</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-key text-primary text-xl"></i>
-                    </div>
-                    <h3 class="font-bold text-dark mb-2">正版激活</h3>
-                    <p class="text-slate-600 text-sm">下载后需要配合正版授权进行激活使用</p>
-                </div>
-                <div class="text-center p-6">
-                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-life-ring text-primary text-xl"></i>
-                    </div>
-                    <h3 class="font-bold text-dark mb-2">技术支持</h3>
-                    <p class="text-slate-600 text-sm">提供正版软件的技术支持和安装指导</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 页脚 -->
-    <footer class="bg-dark text-slate-300 py-10">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p class="text-lg mb-2">乐哲软件 - 专业正版软件技术服务商</p>
-            <p class="text-slate-400">版权所有 © 2026 乐哲软件 保留所有权利</p>
-        </div>
+    <!-- 软件网格 -->
+    <div id="softwareGridContainer" class="software-grid"></div>
+    <footer>
+        <i class="fas fa-download"></i> 乐哲软件中心 · 所有安装包均为官方原版，无捆绑后门<br>域名 www.lezhesoft.cn | 托管于GitHub Pages | 正版授权体验
     </footer>
+</div>
 
-    <script>
-        // 筛选功能实现
-        function filterSoftware(category) {
-            const cards = document.querySelectorAll('.software-card');
-            const categories = document.querySelectorAll('.software-category');
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            
-            // 更新按钮状态
-            filterButtons.forEach(btn => {
-                btn.classList.remove('active', 'bg-primary', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-700');
-            });
-            
-            // 激活当前筛选按钮（修复按钮索引问题）
-            let activeBtn = null;
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            
-            switch(category) {
-                case 'all':
-                    activeBtn = filterBtns[0];
-                    break;
-                case 'adobe':
-                    activeBtn = filterBtns[1];
-                    break;
-                case 'autodesk':
-                    activeBtn = filterBtns[2];
-                    break;
-                case 'other':
-                    activeBtn = filterBtns[3];
-                    break;
-                case 'available':
-                    activeBtn = filterBtns[4];
-                    break;
-                case 'coming-soon':
-                    activeBtn = filterBtns[5];
-                    break;
+<button class="floating-add" id="openUploadModalBtn"><i class="fas fa-plus"></i></button>
+
+<!-- 添加软件模态框 -->
+<div id="uploadModal" class="modal-mask">
+    <div class="modal-container">
+        <h3><i class="fas fa-cloud-upload-alt"></i> 上传新软件</h3>
+        <div class="form-item">
+            <label>软件名称 *</label>
+            <input type="text" id="newName" placeholder="例: DaVinci Resolve">
+        </div>
+        <div class="form-item">
+            <label>分类 *</label>
+            <select id="newCategory">
+                <option value="Adobe系列">Adobe系列</option>
+                <option value="Autodesk系列">Autodesk系列</option>
+                <option value="其他软件">其他软件</option>
+            </select>
+        </div>
+        <div class="form-item">
+            <label>支持的操作系统 * (可多选)</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" value="Windows" class="os-multi"> Windows</label>
+                <label><input type="checkbox" value="Mac" class="os-multi"> macOS</label>
+            </div>
+        </div>
+        <div class="form-item">
+            <label>版本号</label>
+            <input type="text" id="newVersion" placeholder="2026 / 最新版">
+        </div>
+        <div class="form-item">
+            <label>软件描述</label>
+            <textarea id="newDesc" rows="2" placeholder="功能介绍..."></textarea>
+        </div>
+        <div class="form-item">
+            <label>上传状态</label>
+            <div class="radio-group">
+                <label><input type="radio" name="uploadStatus" value="uploaded" checked> 已上传 (可下载)</label>
+                <label><input type="radio" name="uploadStatus" value="pending"> 待上传 (即将开放)</label>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="closeModalBtn">取消</button>
+            <button class="btn-confirm" id="confirmAddBtn">确认添加</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 软件数据 (包含已上传+待上传) ----------
+    let softwareLibrary = [
+        { id: 1, name: "Photoshop", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的图像编辑和处理工具，适用于摄影、设计等领域", status: "uploaded" },
+        { id: 2, name: "Illustrator", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的矢量图形设计工具，适用于标志设计、插图等领域", status: "uploaded" },
+        { id: 3, name: "Lightroom", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的摄影后期处理软件，适用于照片管理和批量编辑", status: "uploaded" },
+        { id: 4, name: "After Effects", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效与动态图形软件，电影级后期合成", status: "uploaded" },
+        { id: 5, name: "Premiere Pro", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业视频编辑软件，剪辑调色音频一站式", status: "uploaded" },
+        { id: 6, name: "Audition", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业音频编辑工作站，录音混音修复", status: "uploaded" },
+        { id: 7, name: "AutoCAD", category: "Autodesk系列", osSupport: ["Windows","Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模行业标准", status: "uploaded" },
+        { id: 8, name: "Maya", category: "Autodesk系列", osSupport: ["Windows","Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件", status: "uploaded" },
+        { id: 9, name: "3ds Max", category: "Autodesk系列", osSupport: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选", status: "uploaded" },
+        { id: 10, name: "Sketch", category: "其他软件", osSupport: ["Mac"], version: "100", description: "轻量级UI/UX设计工具，矢量编辑与原型设计", status: "uploaded" },
+        { id: 11, name: "Figma", category: "其他软件", osSupport: ["Windows","Mac"], version: "2026", description: "协作式界面设计工具，云端实时协作", status: "uploaded" },
+        { id: 12, name: "Blender", category: "其他软件", osSupport: ["Windows","Mac"], version: "4.2", description: "开源全能3D创作套件，建模雕刻动画渲染", status: "uploaded" },
+        { id: 13, name: "Revit", category: "Autodesk系列", osSupport: ["Windows"], version: "2026", description: "建筑信息模型BIM软件，建筑设计施工", status: "uploaded" },
+        { id: 14, name: "Substance 3D Painter", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "即将发布", description: "3D纹理绘制工具，物理材质渲染", status: "pending" },
+        { id: 15, name: "Fusion 360", category: "Autodesk系列", osSupport: ["Windows","Mac"], version: "2026 Beta", description: "云端三维CAD/CAM，工业设计协作", status: "pending" },
+        { id: 16, name: "Capture One", category: "其他软件", osSupport: ["Windows","Mac"], version: "2025", description: "专业级RAW图像处理与联机拍摄", status: "pending" }
+    ];
+
+    // 筛选状态
+    let currentCategory = "all";
+    let currentOS = "all";
+    let currentStatus = "all";
+    let searchKeyword = "";
+
+    // DOM 元素
+    const gridContainer = document.getElementById("softwareGridContainer");
+    const searchInput = document.getElementById("globalSearchInput");
+    const categoryBtns = document.querySelectorAll("#categoryFilters .filter-chip");
+    const osBtns = document.querySelectorAll("#osFilters .filter-chip");
+    const statusBtns = document.querySelectorAll("#statusFilters .filter-chip");
+    const openModalBtn = document.getElementById("openUploadModalBtn");
+    const modal = document.getElementById("uploadModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const confirmAddBtn = document.getElementById("confirmAddBtn");
+
+    // 更新统计
+    function updateStatsUI() {
+        const total = softwareLibrary.length;
+        const winCount = softwareLibrary.filter(sw => sw.osSupport.includes("Windows")).length;
+        const macCount = softwareLibrary.filter(sw => sw.osSupport.includes("Mac")).length;
+        document.getElementById("totalCountHero").innerText = total;
+        document.getElementById("windowsCountHero").innerText = winCount;
+        document.getElementById("macCountHero").innerText = macCount;
+    }
+
+    // 过滤逻辑
+    function getFilteredSoftware() {
+        return softwareLibrary.filter(sw => {
+            if (currentCategory !== "all" && sw.category !== currentCategory) return false;
+            if (currentOS !== "all" && !sw.osSupport.includes(currentOS)) return false;
+            if (currentStatus !== "all" && sw.status !== currentStatus) return false;
+            if (searchKeyword.trim() !== "") {
+                const kw = searchKeyword.trim().toLowerCase();
+                const matchName = sw.name.toLowerCase().includes(kw);
+                const matchDesc = sw.description.toLowerCase().includes(kw);
+                if (!matchName && !matchDesc) return false;
             }
-            
-            if (activeBtn) {
-                activeBtn.classList.remove('bg-gray-100', 'text-gray-700');
-                activeBtn.classList.add('active', 'bg-primary', 'text-white');
-            }
-            
-            // 显示/隐藏卡片
-            cards.forEach(card => {
-                if (category === 'all') {
-                    // 显示所有卡片和分类
-                    card.style.display = 'block';
-                    card.closest('.software-category').style.display = 'block';
-                } else if (category === 'available') {
-                    // 只显示已上传的卡片
-                    if (card.classList.contains('available')) {
-                        card.style.display = 'block';
-                        card.closest('.software-category').style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                        // 检查该分类下是否还有可见的卡片
-                        const categoryContainer = card.closest('.software-category');
-                        const visibleCards = categoryContainer.querySelectorAll('.software-card[style="display: block"]');
-                        if (visibleCards.length === 0) {
-                            categoryContainer.style.display = 'none';
-                        }
-                    }
-                } else if (category === 'coming-soon') {
-                    // 只显示待上传的卡片
-                    if (card.classList.contains('coming-soon')) {
-                        card.style.display = 'block';
-                        card.closest('.software-category').style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                        // 检查该分类下是否还有可见的卡片
-                        const categoryContainer = card.closest('.software-category');
-                        const visibleCards = categoryContainer.querySelectorAll('.software-card[style="display: block"]');
-                        if (visibleCards.length === 0) {
-                            categoryContainer.style.display = 'none';
-                        }
-                    }
-                } else {
-                    // 按系列筛选
-                    if (card.classList.contains(category)) {
-                        card.style.display = 'block';
-                        card.closest('.software-category').style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                        // 检查该分类下是否还有可见的卡片
-                        const categoryContainer = card.closest('.software-category');
-                        const visibleCards = categoryContainer.querySelectorAll('.software-card[style="display: block"]');
-                        if (visibleCards.length === 0) {
-                            categoryContainer.style.display = 'none';
-                        }
-                    }
-                }
-            });
-            
-            // 更新统计信息
-            updateStats();
+            return true;
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // 渲染网格
+    function renderGrid() {
+        const filtered = getFilteredSoftware();
+        if (filtered.length === 0) {
+            gridContainer.innerHTML = `<div class="empty-state"><i class="fas fa-box-open" style="font-size: 48px; opacity: 0.6;"></i><p style="margin-top: 20px; font-weight: 500;">暂无匹配的软件，试试清除筛选或上传新软件～</p></div>`;
+            updateStatsUI();
+            return;
         }
-        
-        // 更新统计信息
-        function updateStats() {
-            const availableCards = document.querySelectorAll('.software-card.available');
-            const comingSoonCards = document.querySelectorAll('.software-card.coming-soon');
-            const totalCards = document.querySelectorAll('.software-card');
-            
-            document.getElementById('available-count').textContent = availableCards.length;
-            document.getElementById('coming-soon-count').textContent = comingSoonCards.length;
-            document.getElementById('total-count').textContent = totalCards.length;
-        }
-        
-        // 页面加载时更新统计
-        document.addEventListener('DOMContentLoaded', function() {
-            updateStats();
-            
-            // 确保所有软件初始时都显示
-            const categories = document.querySelectorAll('.software-category');
-            const cards = document.querySelectorAll('.software-card');
-            
-            categories.forEach(category => {
-                category.style.display = 'block';
-            });
-            
-            cards.forEach(card => {
-                card.style.display = 'block';
+        const cardsHtml = filtered.map(sw => {
+            const isUploaded = sw.status === "uploaded";
+            const statusClass = isUploaded ? "status-uploaded" : "status-pending";
+            const statusText = isUploaded ? "已上传" : "待上传";
+            const btnClass = isUploaded ? "btn-active" : "btn-pending";
+            const btnDisabled = isUploaded ? "" : "disabled";
+            const btnText = isUploaded ? '<i class="fas fa-download"></i> 下载安装包' : '<i class="fas fa-hourglass-half"></i> 即将开放';
+            const osTagsHtml = sw.osSupport.map(os => {
+                const icon = os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>';
+                return `<span class="os-badge">${icon} ${os}</span>`;
+            }).join('');
+            return `
+                <div class="software-card" data-id="${sw.id}">
+                    <div class="card-header">
+                        <span class="software-name">${escapeHtml(sw.name)}</span>
+                        <span class="status-badge ${statusClass}"><i class="fas ${isUploaded ? 'fa-check-circle' : 'fa-clock'}"></i> ${statusText}</span>
+                    </div>
+                    <div class="version-tag"><i class="far fa-code-branch"></i> 版本 ${escapeHtml(sw.version)}</div>
+                    <div class="description">${escapeHtml(sw.description)}</div>
+                    <div class="os-tags">${osTagsHtml}</div>
+                    <button class="download-btn ${btnClass}" ${btnDisabled} data-name="${escapeHtml(sw.name)}" data-status="${sw.status}">${btnText}</button>
+                </div>
+            `;
+        }).join('');
+        gridContainer.innerHTML = cardsHtml;
+        // 绑定下载模拟事件
+        document.querySelectorAll('.download-btn.btn-active').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const softName = btn.getAttribute('data-name');
+                alert(`✅ 正在模拟下载：${softName} 官方安装包\n（所有安装包均为官方原版，无捆绑无后门）`);
             });
         });
-    </script>
+        updateStatsUI();
+    }
+
+    function refreshAll() {
+        renderGrid();
+    }
+
+    // 绑定筛选事件
+    function bindEvents() {
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.getAttribute('data-cat');
+                currentCategory = val;
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                refreshAll();
+            });
+        });
+        osBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.getAttribute('data-os');
+                currentOS = val;
+                osBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                refreshAll();
+            });
+        });
+        statusBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.getAttribute('data-status');
+                currentStatus = val;
+                statusBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                refreshAll();
+            });
+        });
+        searchInput.addEventListener('input', (e) => {
+            searchKeyword = e.target.value;
+            refreshAll();
+        });
+    }
+
+    // 模态框逻辑：添加新软件
+    function showModal() {
+        modal.style.display = "flex";
+        document.getElementById("newName").value = "";
+        document.getElementById("newCategory").value = "Adobe系列";
+        document.querySelectorAll(".os-multi").forEach(cb => cb.checked = false);
+        document.getElementById("newVersion").value = "2026";
+        document.getElementById("newDesc").value = "";
+        document.querySelector("input[name='uploadStatus'][value='uploaded']").checked = true;
+    }
+    function hideModal() { modal.style.display = "none"; }
+    function addNewSoftware() {
+        const name = document.getElementById("newName").value.trim();
+        if (!name) { alert("请填写软件名称"); return; }
+        const category = document.getElementById("newCategory").value;
+        const version = document.getElementById("newVersion").value.trim() || "最新版";
+        const description = document.getElementById("newDesc").value.trim() || "专业的创意工具，支持正版授权";
+        const osSelected = Array.from(document.querySelectorAll(".os-multi:checked")).map(cb => cb.value);
+        if (osSelected.length === 0) { alert("请至少选择一个支持的操作系统"); return; }
+        const statusRadio = document.querySelector("input[name='uploadStatus']:checked").value;
+        const newId = softwareLibrary.length > 0 ? Math.max(...softwareLibrary.map(s => s.id)) + 1 : 100;
+        softwareLibrary.push({
+            id: newId, name, category, osSupport: osSelected, version, description, status: statusRadio
+        });
+        hideModal();
+        // 重置筛选为全部
+        currentCategory = "all"; currentOS = "all"; currentStatus = "all"; searchKeyword = "";
+        searchInput.value = "";
+        categoryBtns.forEach(btn => { if(btn.getAttribute('data-cat') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); });
+        osBtns.forEach(btn => { if(btn.getAttribute('data-os') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); });
+        statusBtns.forEach(btn => { if(btn.getAttribute('data-status') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); });
+        refreshAll();
+        alert(`✨ 软件“${name}”已成功添加，状态为【${statusRadio === 'uploaded' ? '已上传' : '待上传'}】`);
+    }
+
+    openModalBtn.addEventListener("click", showModal);
+    closeModalBtn.addEventListener("click", hideModal);
+    confirmAddBtn.addEventListener("click", addNewSoftware);
+    window.addEventListener("click", (e) => { if (e.target === modal) hideModal(); });
+
+    // 初始化
+    function init() {
+        bindEvents();
+        refreshAll();
+        // 注意：导航链接已经直接指向对应的html文件，无需额外拦截。
+        // 为防止用户点击“服务项目”时因不存在service.html而报错，可做友好提示（可选）。
+        // 但用户明确要求跳转到 service.html 和 index.html，所以不做拦截，直接由浏览器处理。
+        // 若需要提醒页面建设中，可取消注释下面代码（但会阻止跳转，注释掉以保证用户要求）。
+        /*
+        const services = document.getElementById("linkServices");
+        if(services) {
+            services.addEventListener("click", (e) => {
+                e.preventDefault();
+                alert("「服务项目」页面正在建设中，即将开放。");
+            });
+        }
+        */
+    }
+    init();
+</script>
 </body>
 </html>
