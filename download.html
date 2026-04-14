@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>乐哲软件 · 创意工具库 | 官方原版下载</title>
-    <meta name="description" content="乐哲软件 - 提供Adobe、Autodesk等官方原版软件安装包，无捆绑无后门。">
-    <meta name="keywords" content="乐哲软件,Adobe下载,Autodesk,软件下载,Mac软件,Windows软件">
+    <meta name="description" content="乐哲软件 - 提供Adobe、Autodesk、C4D、草图大师、犀牛等官方原版软件安装包，无捆绑无后门。">
+    <meta name="keywords" content="乐哲软件,Adobe下载,Autodesk,软件下载,Mac软件,Windows软件,C4D,草图大师,犀牛,插件">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -143,6 +143,7 @@
         .category-tabs {
             display: flex;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -231,6 +232,7 @@
             display: flex;
             gap: 12px;
             margin-bottom: 16px;
+            flex-wrap: wrap;
         }
 
         .os-badge {
@@ -469,6 +471,10 @@
             <button class="tab-btn active" data-cat="all">全部</button>
             <button class="tab-btn" data-cat="adobe">Adobe系列</button>
             <button class="tab-btn" data-cat="autodesk">Autodesk系列</button>
+            <button class="tab-btn" data-cat="c4d">Cinema 4D</button>
+            <button class="tab-btn" data-cat="sketchup">草图大师</button>
+            <button class="tab-btn" data-cat="rhino">犀牛软件</button>
+            <button class="tab-btn" data-cat="plugin">插件工具</button>
         </div>
     </div>
 
@@ -499,16 +505,28 @@
 </div>
 
 <script>
-    // ==================== 软件数据 ====================
+    // ==================== 软件数据（已整合新增软件） ====================
     const softwareData = [
+        // Adobe 系列
         { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink" },
         { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" },
         { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink" },
         { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg" },
         { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd" },
+        // Autodesk 系列
         { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#" },
         { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg" },
-        { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?" }
+        { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?" },
+        // Cinema 4D
+        { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?" },
+        // 草图大师（SketchUp）
+        { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?" },
+        // 犀牛软件 Rhino Win
+        { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?" },
+        // 犀牛软件 Rhino Mac
+        { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?" },
+        // Adobe 插件全套
+        { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2025最新整合", description: "PS/AI/AE/PR/LR等全套插件，提升效率必备。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888" }
     ];
 
     let currentCategory = "all";
