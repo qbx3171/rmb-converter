@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>乐哲软件 · 软件下载 | 官方原版资源</title>
+    <meta name="description" content="乐哲软件 - 提供Adobe、Autodesk等官方原版软件安装包">
+    <meta name="keywords" content="乐哲软件,Adobe下载,Autodesk,软件下载">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f4f9fe; color: #121826; line-height: 1.5; }
+        .app-wrapper { max-width: 1440px; margin: 0 auto; padding: 0 32px 56px; }
+        .top-nav {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); border-radius: 80px;
+            margin: 24px 0 28px; padding: 8px 28px; border: 1px solid rgba(255,255,255,0.7);
+        }
+        .logo-text { font-size: 26px; font-weight: 800; background: linear-gradient(125deg, #0F2B4D, #1E6DFF, #A855F7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .domain-badge { background: #eef3fc; border-radius: 40px; padding: 4px 14px; font-size: 12px; font-weight: 500; color: #1E6DFF; }
+        .nav-links { display: flex; gap: 32px; font-weight: 500; }
+        .nav-links a { text-decoration: none; color: #2c3f5c; transition: 0.2s; font-size: 15px; }
+        .nav-links a.active, .nav-links a:hover { color: #1E6DFF; }
+        .top-search { background: white; border-radius: 48px; padding: 6px 20px; display: flex; align-items: center; gap: 12px; min-width: 260px; border: 1px solid #e2edf7; }
+        .top-search input { border: none; background: transparent; padding: 10px 0; font-size: 14px; width: 100%; outline: none; }
+        .hero-stats-wrap {
+            background: linear-gradient(110deg, #FFFFFF 0%, #F0F7FF 100%); border-radius: 40px; padding: 24px 32px; margin-bottom: 32px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; border: 1px solid #eef2ff;
+        }
+        .hero-text h2 { font-size: 26px; font-weight: 700; background: linear-gradient(135deg, #1A2C42, #1E6DFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .stats-group { display: flex; gap: 28px; background: white; padding: 8px 28px; border-radius: 60px; }
+        .stat-number { font-size: 28px; font-weight: 800; color: #0f2b4d; }
+        .stat-label { font-size: 12px; font-weight: 500; color: #6b85a4; }
+        .filter-panel {
+            background: white; border-radius: 36px; padding: 20px 28px; margin-bottom: 40px;
+            display: flex; flex-wrap: wrap; align-items: center; gap: 28px; border: 1px solid #eef2fc;
+        }
+        .filter-label { font-weight: 600; font-size: 13px; background: #f0f4fa; padding: 5px 14px; border-radius: 32px; }
+        .filter-chip { background: #f1f5f9; border: none; padding: 6px 18px; border-radius: 40px; font-size: 13px; font-weight: 500; cursor: pointer; }
+        .filter-chip.active { background: #1E6DFF; color: white; }
+        .software-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .software-card {
+            background: #ffffff; border-radius: 28px; padding: 18px 20px; transition: all 0.3s ease;
+            border: 1px solid #eef3fc; box-shadow: 0 8px 18px -6px rgba(0,0,0,0.04);
+        }
+        .software-card:hover { transform: translateY(-4px); border-color: #d4e2fc; }
+        .software-name { font-size: 18px; font-weight: 700; background: linear-gradient(145deg, #14273e, #1f3b5c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .status-badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 50px; }
+        .status-uploaded { background: #e1f7ea; color: #1f7840; }
+        .status-pending { background: #f0f2f5; color: #6c7a8f; }
+        .version-tag { background: #f0f4fc; padding: 3px 10px; border-radius: 30px; font-size: 11px; display: inline-block; margin: 8px 0 10px; }
+        .description { color: #4f657f; font-size: 13px; margin: 6px 0 14px; min-height: 58px; }
+        .os-tags { display: flex; gap: 10px; margin-bottom: 16px; }
+        .os-badge { background: #f4f8fe; border-radius: 28px; padding: 3px 10px; font-size: 11px; display: inline-flex; align-items: center; gap: 5px; }
+        .download-btn { width: 100%; border: none; border-radius: 40px; padding: 10px 0; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-active { background: #1E6DFF; color: white; }
+        .btn-active:hover { background: #0f5be6; }
+        .btn-pending { background: #eef2f8; color: #7e92ac; cursor: not-allowed; }
+        footer { margin-top: 56px; text-align: center; font-size: 12px; color: #8aa0bc; border-top: 1px solid #e2ecf5; padding-top: 24px; }
+        @media (max-width: 860px) { .app-wrapper { padding: 0 20px 40px; } .top-nav { flex-direction: column; } }
+
+        /* 客服组件样式 */
+        .chatbot-container { position: fixed; z-index: 200; right: 32px; bottom: 110px; }
+        .chat-toggle { width: 60px; height: 60px; background: linear-gradient(135deg, #1E6DFF, #A855F7); border-radius: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 25px -5px rgba(30,109,255,0.5); color: white; font-size: 28px; }
+        .chat-window { position: absolute; bottom: 80px; right: 0; width: 380px; height: 520px; background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 32px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25); }
+        .chat-header { background: linear-gradient(125deg, #1E6DFF, #8B5CF6); color: white; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; cursor: grab; }
+        .chat-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 28px; height: 28px; border-radius: 20px; cursor: pointer; }
+        .chat-messages { flex: 1; padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+        .message { max-width: 85%; padding: 10px 16px; border-radius: 24px; font-size: 13px; }
+        .message.customer { background: linear-gradient(135deg, #1E6DFF, #3B82F6); color: white; align-self: flex-end; }
+        .message.bot { background: white; color: #1a2c42; align-self: flex-start; border: 1px solid #eef2fc; }
+        .message strong { font-size: 11px; display: block; margin-bottom: 4px; }
+        .message small { font-size: 9px; opacity: 0.6; margin-top: 6px; display: block; text-align: right; }
+        .chat-input-area { display: flex; padding: 14px; background: white; border-top: 1px solid #eef2fc; gap: 10px; }
+        .chat-input-area input { flex: 1; border: 1px solid #e2e8f0; border-radius: 30px; padding: 12px 18px; outline: none; }
+        .chat-input-area button { background: linear-gradient(135deg, #1E6DFF, #8B5CF6); border: none; border-radius: 30px; padding: 0 24px; color: white; cursor: pointer; }
+        .chat-status { font-size: 10px; padding: 8px; text-align: center; color: #4f657f; border-top: 1px solid #eef2fc; }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <div class="top-nav">
+        <div class="logo-area"><span class="logo-text">乐哲软件</span><span class="domain-badge"><i class="fas fa-globe"></i> www.lezhesoft.cn</span></div>
+        <div class="nav-links"><a href="#">首页</a><a href="#">服务项目</a><a href="#" class="active">软件下载</a><a href="#">联系我们</a></div>
+        <div class="top-search"><i class="fas fa-search"></i><input type="text" id="globalSearchInput" placeholder="搜索软件名称、描述..."></div>
+    </div>
+
+    <div class="hero-stats-wrap">
+        <div class="hero-text"><h2>官方原版·安全纯净</h2><p>所有安装包均为官方原版，无捆绑无后门</p></div>
+        <div class="stats-group"><div class="stat-card"><div class="stat-number" id="totalCountHero">0</div><div class="stat-label">总软件</div></div>
+        <div class="stat-card"><div class="stat-number" id="windowsCountHero">0</div><div class="stat-label"><i class="fab fa-windows"></i> Windows</div></div>
+        <div class="stat-card"><div class="stat-number" id="macCountHero">0</div><div class="stat-label"><i class="fab fa-apple"></i> macOS</div></div></div>
+    </div>
+
+    <div class="filter-panel">
+        <div class="filter-section"><span class="filter-label"><i class="fas fa-layer-group"></i> 分类</span>
+            <div class="filter-buttons" id="categoryFilters">
+                <button data-cat="all" class="filter-chip active">全部</button>
+                <button data-cat="Adobe系列" class="filter-chip">Adobe系列</button>
+                <button data-cat="Autodesk系列" class="filter-chip">Autodesk系列</button>
+                <button data-cat="其他软件" class="filter-chip">其他软件</button>
+            </div>
+        </div>
+        <div class="filter-section"><span class="filter-label"><i class="fas fa-microchip"></i> 平台</span>
+            <div class="filter-buttons" id="osFilters">
+                <button data-os="all" class="filter-chip active">全部</button>
+                <button data-os="Windows" class="filter-chip"><i class="fab fa-windows"></i> Windows</button>
+                <button data-os="Mac" class="filter-chip"><i class="fab fa-apple"></i> macOS</button>
+            </div>
+        </div>
+        <div class="filter-section"><span class="filter-label"><i class="fas fa-flag-checkered"></i> 状态</span>
+            <div class="filter-buttons" id="statusFilters">
+                <button data-status="all" class="filter-chip active">全部</button>
+                <button data-status="uploaded" class="filter-chip"><i class="fas fa-check-circle"></i> 已上传</button>
+                <button data-status="pending" class="filter-chip"><i class="fas fa-clock"></i> 待上传</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="softwareGridContainer" class="software-grid"></div>
+    <footer><i class="fas fa-download"></i> 乐哲软件中心 · 官方原版<br>www.lezhesoft.cn</footer>
+</div>
+
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="chat-toggle" id="chatToggleBtn"><i class="fas fa-comment-dots"></i></div>
+    <div class="chat-window" id="chatWindow" style="display: none;">
+        <div class="chat-header" id="chatHeaderDrag"><span><i class="fas fa-robot"></i> 乐哲麦 · 智能客服</span><button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button></div>
+        <div class="chat-messages" id="chatMessagesList"></div>
+        <div class="chat-input-area"><input type="text" id="chatInput" placeholder="输入您的需求或问题..."><button id="chatSendBtn">发送</button></div>
+        <div class="chat-status" id="chatStatus">✨ 在线 · 乐哲麦为您服务</div>
+    </div>
+</div>
+
+<script>
+    // 客服系统
+    const API_BASE = '/api';
+    let clientId = localStorage.getItem('lezhe_client_id');
+    if (!clientId) {
+        clientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+        localStorage.setItem('lezhe_client_id', clientId);
+    }
+
+    async function fetchMessages() {
+        const res = await fetch(`${API_BASE}/messages/${clientId}`);
+        if (!res.ok) throw new Error('获取失败');
+        return res.json();
+    }
+
+    async function sendMessage(text) {
+        const res = await fetch(`${API_BASE}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId, text, sender: 'customer' })
+        });
+        if (!res.ok) throw new Error('发送失败');
+        return res.json();
+    }
+
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+
+    async function renderMessages() {
+        const container = document.getElementById('chatMessagesList');
+        if (!container) return;
+        const messages = await fetchMessages();
+        container.innerHTML = '';
+        if (messages.length === 0) {
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.className = 'message bot';
+            welcomeDiv.innerHTML = `<strong>乐哲麦</strong>您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～`;
+            container.appendChild(welcomeDiv);
+        } else {
+            messages.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `message ${msg.sender === 'customer' ? 'customer' : 'bot'}`;
+                const displayName = msg.sender === 'customer' ? '我' : (msg.senderName || '乐哲麦');
+                const timeStr = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                msgDiv.innerHTML = `<strong>${escapeHtml(displayName)}</strong>${escapeHtml(msg.text)}<small>${timeStr}</small>`;
+                container.appendChild(msgDiv);
+            });
+        }
+        container.scrollTop = container.scrollHeight;
+    }
+
+    let pollingInterval = null, chatVisible = false, lastMsgCount = 0;
+    function startPolling() {
+        if (pollingInterval) clearInterval(pollingInterval);
+        pollingInterval = setInterval(async () => {
+            if (chatVisible) {
+                const messages = await fetchMessages();
+                if (messages.length !== lastMsgCount) {
+                    renderMessages();
+                    lastMsgCount = messages.length;
+                }
+            }
+        }, 3000);
+    }
+
+    const chatToggle = document.getElementById('chatToggleBtn');
+    const chatWindow = document.getElementById('chatWindow');
+    const chatClose = document.getElementById('chatCloseBtn');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+    const chatInput = document.getElementById('chatInput');
+
+    async function openChat() {
+        chatWindow.style.display = 'flex';
+        chatVisible = true;
+        await renderMessages();
+        const messages = await fetchMessages();
+        lastMsgCount = messages.length;
+        startPolling();
+    }
+    function closeChat() { chatWindow.style.display = 'none'; chatVisible = false; if (pollingInterval) clearInterval(pollingInterval); }
+
+    chatToggle.addEventListener('click', () => { if (chatWindow.style.display === 'none') openChat(); else closeChat(); });
+    chatClose.addEventListener('click', closeChat);
+    chatSendBtn.addEventListener('click', async () => { const text = chatInput.value.trim(); if (!text) return; await sendMessage(text); chatInput.value = ''; await renderMessages(); });
+    chatInput.addEventListener('keypress', async (e) => { if (e.key === 'Enter') { const text = chatInput.value.trim(); if (!text) return; await sendMessage(text); chatInput.value = ''; await renderMessages(); } });
+    chatWindow.style.display = 'none';
+
+    // 拖拽
+    const dragContainer = document.getElementById('chatbotContainer');
+    const dragHandle = document.getElementById('chatHeaderDrag');
+    let isDragging = false, startX, startY, startRight, startBottom;
+    function getPos() { const style = getComputedStyle(dragContainer); return { right: parseFloat(style.right) || 32, bottom: parseFloat(style.bottom) || 110 }; }
+    dragHandle.addEventListener('mousedown', (e) => { if (e.target.closest('.chat-close')) return; e.preventDefault(); isDragging = true; startX = e.clientX; startY = e.clientY; const pos = getPos(); startRight = pos.right; startBottom = pos.bottom; dragContainer.style.transition = 'none'; });
+    window.addEventListener('mousemove', (e) => { if (!isDragging) return; e.preventDefault(); const dx = e.clientX - startX, dy = e.clientY - startY; let newRight = startRight - dx, newBottom = startBottom - dy; newRight = Math.min(Math.max(10, newRight), window.innerWidth - 70); newBottom = Math.min(Math.max(10, newBottom), window.innerHeight - 90); dragContainer.style.right = newRight + 'px'; dragContainer.style.bottom = newBottom + 'px'; });
+    window.addEventListener('mouseup', () => { isDragging = false; dragContainer.style.transition = ''; });
+</script>
+
+<script>
+    // 软件库数据
+    let softwareLibrary = [
+        { id: 1, name: "Photoshop", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的图像编辑和处理工具", status: "uploaded", downloadUrl: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc" },
+        { id: 2, name: "Illustrator", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的矢量图形设计工具", status: "uploaded", downloadUrl: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" },
+        { id: 3, name: "Lightroom", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的摄影后期处理软件", status: "uploaded", downloadUrl: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J" },
+        { id: 4, name: "After Effects", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效与动态图形软件", status: "uploaded", downloadUrl: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg" },
+        { id: 5, name: "Premiere Pro", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业视频编辑软件", status: "pending", downloadUrl: null },
+        { id: 6, name: "Audition", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业音频编辑工作站", status: "pending", downloadUrl: null },
+        { id: 7, name: "AutoCAD", category: "Autodesk系列", osSupport: ["Windows","Mac"], version: "2025", description: "计算机辅助设计", status: "pending", downloadUrl: null },
+        { id: 8, name: "Maya", category: "Autodesk系列", osSupport: ["Windows","Mac"], version: "2026", description: "三维动画、建模、渲染", status: "pending", downloadUrl: null },
+        { id: 9, name: "3ds Max", category: "Autodesk系列", osSupport: ["Windows"], version: "2025", description: "专业三维建模、动画", status: "uploaded", downloadUrl: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg" },
+        { id: 10, name: "Sketch", category: "其他软件", osSupport: ["Mac"], version: "100", description: "UI/UX设计工具", status: "pending", downloadUrl: null },
+        { id: 11, name: "Figma", category: "其他软件", osSupport: ["Windows","Mac"], version: "2026", description: "协作式界面设计", status: "pending", downloadUrl: null },
+        { id: 12, name: "Blender", category: "其他软件", osSupport: ["Windows","Mac"], version: "4.2", description: "开源3D创作套件", status: "pending", downloadUrl: null },
+        { id: 13, name: "Revit", category: "Autodesk系列", osSupport: ["Windows"], version: "2026", description: "建筑信息模型BIM", status: "pending", downloadUrl: null },
+        { id: 14, name: "Substance 3D Painter", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "即将发布", description: "3D纹理绘制", status: "pending", downloadUrl: null },
+        { id: 15, name: "Fusion 360", category: "Autodesk系列", osSupport: ["Windows","Mac"], version: "2026 Beta", description: "云端CAD/CAM", status: "pending", downloadUrl: null },
+        { id: 16, name: "Capture One", category: "其他软件", osSupport: ["Windows","Mac"], version: "2025", description: "RAW图像处理", status: "pending", downloadUrl: null }
+    ];
+    let currentCategory = "all", currentOS = "all", currentStatus = "all", searchKeyword = "";
+    const gridContainer = document.getElementById("softwareGridContainer");
+    const searchInput = document.getElementById("globalSearchInput");
+    const categoryBtns = document.querySelectorAll("#categoryFilters .filter-chip");
+    const osBtns = document.querySelectorAll("#osFilters .filter-chip");
+    const statusBtns = document.querySelectorAll("#statusFilters .filter-chip");
+    function updateStatsUI() {
+        document.getElementById("totalCountHero").innerText = softwareLibrary.length;
+        document.getElementById("windowsCountHero").innerText = softwareLibrary.filter(sw => sw.osSupport.includes("Windows")).length;
+        document.getElementById("macCountHero").innerText = softwareLibrary.filter(sw => sw.osSupport.includes("Mac")).length;
+    }
+    function getFilteredSoftware() {
+        return softwareLibrary.filter(sw => {
+            if (currentCategory !== "all" && sw.category !== currentCategory) return false;
+            if (currentOS !== "all" && !sw.osSupport.includes(currentOS)) return false;
+            if (currentStatus !== "all" && sw.status !== currentStatus) return false;
+            if (searchKeyword.trim()) { const kw = searchKeyword.trim().toLowerCase(); return sw.name.toLowerCase().includes(kw) || sw.description.toLowerCase().includes(kw); }
+            return true;
+        });
+    }
+    function escapeHtmlSoft(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+    function renderGrid() {
+        const filtered = getFilteredSoftware();
+        if (filtered.length === 0) { gridContainer.innerHTML = `<div class="empty-state">暂无匹配软件</div>`; updateStatsUI(); return; }
+        gridContainer.innerHTML = filtered.map(sw => {
+            const hasRealLink = sw.downloadUrl && sw.downloadUrl.trim();
+            const statusClass = hasRealLink ? "status-uploaded" : "status-pending";
+            const statusText = hasRealLink ? "已上传" : "待上传";
+            const btnClass = hasRealLink ? "btn-active" : "btn-pending";
+            const btnDisabled = hasRealLink ? "" : "disabled";
+            const btnText = hasRealLink ? '<i class="fas fa-download"></i> 下载安装包' : '<i class="fas fa-hourglass-half"></i> 待上传';
+            const osTagsHtml = sw.osSupport.map(os => `<span class="os-badge">${os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>'} ${os}</span>`).join('');
+            return `<div class="software-card"><div class="card-header"><span class="software-name">${escapeHtmlSoft(sw.name)}</span><span class="status-badge ${statusClass}">${statusText}</span></div><div class="version-tag">版本 ${escapeHtmlSoft(sw.version)}</div><div class="description">${escapeHtmlSoft(sw.description)}</div><div class="os-tags">${osTagsHtml}</div><button class="download-btn ${btnClass}" ${btnDisabled} data-url="${hasRealLink ? escapeHtmlSoft(sw.downloadUrl) : ''}" data-name="${escapeHtmlSoft(sw.name)}">${btnText}</button></div>`;
+        }).join('');
+        document.querySelectorAll('.download-btn').forEach(btn => { btn.addEventListener('click', () => { const url = btn.dataset.url; if (url) window.open(url, '_blank'); else alert('暂未提供下载链接'); }); });
+        updateStatsUI();
+    }
+    function bindEvents() {
+        categoryBtns.forEach(btn => btn.addEventListener('click', () => { currentCategory = btn.dataset.cat; categoryBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderGrid(); }));
+        osBtns.forEach(btn => btn.addEventListener('click', () => { currentOS = btn.dataset.os; osBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderGrid(); }));
+        statusBtns.forEach(btn => btn.addEventListener('click', () => { currentStatus = btn.dataset.status; statusBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); renderGrid(); }));
+        searchInput.addEventListener('input', (e) => { searchKeyword = e.target.value; renderGrid(); });
+    }
+    bindEvents(); renderGrid();
+</script>
+</body>
+</html>
