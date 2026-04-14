@@ -443,6 +443,74 @@
             color: #4f657f;
             border-top: 1px solid #eef2fc;
         }
+
+        /* 验证模态框（不显示具体口令） */
+        .verify-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .verify-modal.active {
+            display: flex;
+        }
+        .verify-content {
+            background: white;
+            border-radius: 32px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
+        }
+        .verify-content h3 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #1E6DFF;
+        }
+        .verify-content p {
+            color: #4a627a;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .verify-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        .verify-input:focus {
+            border-color: #1E6DFF;
+        }
+        .verify-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .verify-btn {
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .verify-btn.confirm {
+            background: #1E6DFF;
+            color: white;
+        }
+        .verify-btn.cancel {
+            background: #eef2f8;
+            color: #2c405c;
+        }
     </style>
 </head>
 <body>
@@ -487,7 +555,20 @@
     </footer>
 </div>
 
-<!-- 客服聊天窗口（纯前端模拟，无后端API） -->
+<!-- 验证模态框（不显示具体口令） -->
+<div id="verifyModal" class="verify-modal">
+    <div class="verify-content">
+        <h3><i class="fab fa-weixin"></i> 添加微信获取口令</h3>
+        <p>请添加微信 <strong>Win_Mac_123</strong><br>我们会在微信上发送给您下载口令。</p>
+        <input type="text" id="verifyCode" class="verify-input" placeholder="请输入收到的口令">
+        <div class="verify-buttons">
+            <button class="verify-btn cancel" id="cancelVerify">取消</button>
+            <button class="verify-btn confirm" id="confirmVerify">验证并下载</button>
+        </div>
+    </div>
+</div>
+
+<!-- 客服聊天窗口（纯前端模拟） -->
 <div class="chatbot-container" id="chatbotContainer">
     <div class="chat-toggle" id="chatToggleBtn"><i class="fas fa-comment-dots"></i></div>
     <div class="chat-window" id="chatWindow" style="display: none;">
@@ -505,9 +586,9 @@
 </div>
 
 <script>
-    // ==================== 软件数据（新增 Creative Cloud） ====================
+    // ==================== 软件数据 ====================
     const softwareData = [
-        // Adobe 系列（新增 Creative Cloud）
+        // Adobe 系列
         { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud" },
         { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink" },
         { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" },
@@ -520,22 +601,33 @@
         { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?" },
         // Cinema 4D
         { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?" },
-        // 草图大师（SketchUp）
+        // 草图大师
         { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?" },
         // 犀牛软件 Rhino Win
         { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?" },
         // 犀牛软件 Rhino Mac
         { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?" },
-        // Adobe 插件全套
+        // Adobe 插件全套（直接跳转）
         { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888" }
     ];
 
+    // 不需要验证的软件名称列表（直接跳转）
+    const noVerifyList = ["Creative Cloud", "Adobe 插件全套"];
+    const VALID_PASSWORD = "Win_Mac_123";   // 正确的口令
+
     let currentCategory = "all";
     let searchKeyword = "";
+    let pendingUrl = null;
 
     const gridContainer = document.getElementById("softwareGridContainer");
     const searchInput = document.getElementById("searchInput");
     const categoryBtns = document.querySelectorAll("#categoryTabs .tab-btn");
+
+    // 模态框元素
+    const verifyModal = document.getElementById("verifyModal");
+    const verifyCodeInput = document.getElementById("verifyCode");
+    const confirmVerifyBtn = document.getElementById("confirmVerify");
+    const cancelVerifyBtn = document.getElementById("cancelVerify");
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -558,6 +650,16 @@
         });
     }
 
+    function handleDownload(sw) {
+        if (noVerifyList.includes(sw.name)) {
+            window.open(sw.url, '_blank');
+        } else {
+            pendingUrl = sw.url;
+            verifyModal.classList.add('active');
+            verifyCodeInput.value = '';
+        }
+    }
+
     function renderGrid() {
         const filtered = getFilteredSoftware();
         if (filtered.length === 0) {
@@ -572,7 +674,7 @@
             }).join('');
             const iconClass = sw.icon || "fa-download";
             return `
-                <div class="software-card" data-url="${escapeHtml(sw.url)}">
+                <div class="software-card" data-name="${escapeHtml(sw.name)}" data-url="${escapeHtml(sw.url)}">
                     <div class="card-header">
                         <div class="card-icon"><i class="fas ${iconClass}"></i></div>
                         <div class="software-name">${escapeHtml(sw.name)}</div>
@@ -588,11 +690,37 @@
 
         document.querySelectorAll('.software-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                const url = card.getAttribute('data-url');
-                if (url) window.open(url, '_blank');
+                const name = card.getAttribute('data-name');
+                const sw = softwareData.find(s => s.name === name);
+                if (sw) handleDownload(sw);
             });
         });
     }
+
+    // 验证逻辑
+    function verifyAndDownload() {
+        const code = verifyCodeInput.value.trim();
+        if (code === VALID_PASSWORD) {
+            if (pendingUrl) {
+                window.open(pendingUrl, '_blank');
+                pendingUrl = null;
+            }
+            verifyModal.classList.remove('active');
+        } else {
+            alert("口令错误，请确认后重试。");
+        }
+    }
+
+    function closeModal() {
+        verifyModal.classList.remove('active');
+        pendingUrl = null;
+    }
+
+    confirmVerifyBtn.addEventListener('click', verifyAndDownload);
+    cancelVerifyBtn.addEventListener('click', closeModal);
+    verifyModal.addEventListener('click', (e) => {
+        if (e.target === verifyModal) closeModal();
+    });
 
     function bindEvents() {
         categoryBtns.forEach(btn => {
@@ -614,7 +742,6 @@
 
     // ==================== 纯前端客服模拟（无后端API） ====================
     (function() {
-        // 存储消息的数组（仅当前会话）
         let messages = [];
         const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
 
@@ -626,7 +753,6 @@
         const chatClose = document.getElementById('chatCloseBtn');
         const chatStatus = document.getElementById('chatStatus');
 
-        // 渲染消息
         function renderMessages() {
             chatMessagesDiv.innerHTML = '';
             if (messages.length === 0) {
@@ -647,34 +773,27 @@
             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
-        // 添加消息并自动回复
         function addMessage(text, sender) {
             messages.push({ text, sender, timestamp: new Date() });
             renderMessages();
         }
 
-        // 机器人回复（避免重复）
         function botReply() {
             const lastMsg = messages[messages.length - 1];
             if (lastMsg && lastMsg.sender === 'bot' && lastMsg.text === botReplyText) return;
             addMessage(botReplyText, 'bot');
         }
 
-        // 发送客户消息
         function sendCustomerMessage(text) {
             if (!text.trim()) return;
             addMessage(text.trim(), 'customer');
-            // 模拟机器人延迟回复
-            setTimeout(() => {
-                botReply();
-            }, 500);
+            setTimeout(() => { botReply(); }, 500);
             if (chatStatus) chatStatus.innerText = '📤 消息已发送，乐哲麦思考中...';
             setTimeout(() => {
                 if (chatStatus) chatStatus.innerText = '✨ 在线 · 乐哲麦为您服务';
             }, 2000);
         }
 
-        // 打开/关闭窗口
         function openChat() {
             chatWindow.style.display = 'flex';
             renderMessages();
