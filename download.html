@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>乐哲软件 · 创意工具库 | 官方原版下载</title>
     <meta name="description" content="乐哲软件 - 提供Adobe、Autodesk、C4D、草图大师、犀牛等官方原版软件安装包，无捆绑无后门。">
-    <meta name="keywords" content="乐哲软件,Adobe下载,Autodesk,软件下载,Mac软件,Windows软件,C4D,草图大师,犀牛,插件">
+    <meta name="keywords" content="乐哲软件,Adobe下载,Autodesk,软件下载,Mac软件,Windows软件,C4D,草图大师,犀牛,插件,Creative Cloud">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -505,9 +505,10 @@
 </div>
 
 <script>
-    // ==================== 软件数据（已整合新增软件，并更新Adobe插件全套描述） ====================
+    // ==================== 软件数据（新增 Creative Cloud） ====================
     const softwareData = [
-        // Adobe 系列
+        // Adobe 系列（新增 Creative Cloud）
+        { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud" },
         { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink" },
         { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" },
         { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink" },
@@ -525,7 +526,7 @@
         { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?" },
         // 犀牛软件 Rhino Mac
         { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?" },
-        // Adobe 插件全套（已更新描述和版本）
+        // Adobe 插件全套
         { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888" }
     ];
 
