@@ -578,8 +578,312 @@
     </div>
 </div>
 
+<!-- 动态客服组件 HTML/CSS -->
+<style>
+    /* 客服组件 - 不干扰原布局 */
+    .chatbot-container {
+        position: fixed;
+        bottom: 110px;
+        right: 32px;
+        z-index: 200;
+        font-family: 'Inter', sans-serif;
+    }
+    .chat-toggle {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #1E6DFF, #A855F7);
+        border-radius: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(30,109,255,0.4);
+        transition: all 0.2s;
+        color: white;
+        font-size: 26px;
+    }
+    .chat-toggle:hover {
+        transform: scale(1.02);
+        background: linear-gradient(135deg, #0f5be6, #9b3df5);
+    }
+    .chat-window {
+        position: absolute;
+        bottom: 70px;
+        right: 0;
+        width: 360px;
+        height: 480px;
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid rgba(30,109,255,0.2);
+        transition: all 0.2s;
+    }
+    .chat-header {
+        background: #1E6DFF;
+        color: white;
+        padding: 16px 20px;
+        font-weight: 700;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .chat-header span i {
+        margin-right: 8px;
+    }
+    .chat-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .chat-messages {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f8fafd;
+    }
+    .message {
+        max-width: 85%;
+        padding: 10px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        line-height: 1.4;
+        word-wrap: break-word;
+    }
+    .message.customer {
+        background: #1E6DFF;
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+    }
+    .message.admin {
+        background: #eef2f8;
+        color: #1a2c42;
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+    }
+    .message small {
+        display: block;
+        font-size: 10px;
+        opacity: 0.7;
+        margin-top: 4px;
+    }
+    .chat-input-area {
+        display: flex;
+        padding: 12px;
+        background: white;
+        border-top: 1px solid #eef2fc;
+        gap: 8px;
+    }
+    .chat-input-area input {
+        flex: 1;
+        border: 1px solid #dce5f0;
+        border-radius: 40px;
+        padding: 10px 16px;
+        font-size: 13px;
+        outline: none;
+    }
+    .chat-input-area button {
+        background: #1E6DFF;
+        border: none;
+        border-radius: 40px;
+        padding: 0 20px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .chat-status {
+        font-size: 10px;
+        padding: 5px 12px;
+        background: #eef2f8;
+        text-align: center;
+        color: #4f657f;
+    }
+    @media (max-width: 560px) {
+        .chat-window { width: 300px; right: -20px; }
+        .chatbot-container { right: 16px; bottom: 100px; }
+        .floating-add { right: 16px; bottom: 32px; }
+    }
+</style>
+
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="chat-toggle" id="chatToggleBtn">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+    <div class="chat-window" id="chatWindow" style="display: none;">
+        <div class="chat-header">
+            <span><i class="fas fa-headset"></i> 在线客服</span>
+            <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="chat-messages" id="chatMessagesList">
+            <div class="message admin">👋 您好！我是乐哲软件客服，有任何需求或问题请留言，我们会尽快回复您～</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="输入您的需求或问题...">
+            <button id="chatSendBtn">发送</button>
+        </div>
+        <div class="chat-status" id="chatStatus">在线 · 客服响应中</div>
+    </div>
+</div>
+
 <script>
-    // ---------- 软件数据：只有PS/AI/LR/AE/3DMAX 拥有真实下载链接，其余均为待上传 ----------
+    // ========== 客服聊天组件逻辑 (与后端API通信) ==========
+    (function() {
+        // 生成或获取唯一的客户ID
+        let clientId = localStorage.getItem('lezhe_client_id');
+        if (!clientId) {
+            clientId = 'client_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+            localStorage.setItem('lezhe_client_id', clientId);
+        }
+        
+        const API_BASE = '/api'; // 后端API根路径
+        let pollingInterval = null;
+        let chatWindowVisible = false;
+        
+        // DOM 元素
+        const chatToggle = document.getElementById('chatToggleBtn');
+        const chatWindow = document.getElementById('chatWindow');
+        const chatClose = document.getElementById('chatCloseBtn');
+        const chatMessagesDiv = document.getElementById('chatMessagesList');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatStatusSpan = document.getElementById('chatStatus');
+        
+        // 辅助函数: 获取历史消息
+        async function fetchMessages() {
+            try {
+                const res = await fetch(`${API_BASE}/messages/${clientId}`);
+                if (!res.ok) throw new Error();
+                const messages = await res.json();
+                renderMessages(messages);
+            } catch (err) {
+                console.warn('获取消息失败', err);
+                if (chatStatusSpan) chatStatusSpan.innerText = '连接中...';
+            }
+        }
+        
+        // 渲染消息列表
+        function renderMessages(messages) {
+            if (!chatMessagesDiv) return;
+            // 保留原始DOM？ 清空但保留可能没有历史消息时，可显示欢迎语，但避免重复清空欢迎语。正确方式：先清空，再渲染所有
+            // 但为了防止覆盖欢迎语导致空窗，如果有消息则全量渲染，若没有消息则显示默认欢迎语。
+            chatMessagesDiv.innerHTML = '';
+            if (!messages || messages.length === 0) {
+                // 显示默认欢迎语
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.className = 'message admin';
+                welcomeDiv.innerText = '👋 您好！我是乐哲软件客服，有任何需求或问题请留言，我们会尽快回复您～';
+                chatMessagesDiv.appendChild(welcomeDiv);
+            } else {
+                messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${msg.sender === 'customer' ? 'customer' : 'admin'}`;
+                    msgDiv.innerHTML = `${escapeHtml(msg.text)}<small>${new Date(msg.timestamp).toLocaleTimeString()}</small>`;
+                    chatMessagesDiv.appendChild(msgDiv);
+                });
+            }
+            // 滚动到底部
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // 发送消息
+        async function sendMessage(text) {
+            if (!text.trim()) return;
+            const message = {
+                clientId: clientId,
+                text: text.trim(),
+                sender: 'customer'
+            };
+            try {
+                const res = await fetch(`${API_BASE}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(message)
+                });
+                if (!res.ok) throw new Error('发送失败');
+                chatInput.value = '';
+                // 发送成功后重新拉取消息
+                await fetchMessages();
+                // 可选：告知用户消息已发送
+                if (chatStatusSpan) chatStatusSpan.innerText = '消息已发送，客服会尽快回复';
+                setTimeout(() => {
+                    if (chatStatusSpan) chatStatusSpan.innerText = '在线 · 客服响应中';
+                }, 2000);
+            } catch (err) {
+                alert('发送失败，请稍后重试');
+                console.error(err);
+            }
+        }
+        
+        // 开始轮询新消息
+        function startPolling() {
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(() => {
+                if (chatWindowVisible) {
+                    fetchMessages();
+                }
+            }, 4000);
+        }
+        
+        // 界面控制
+        function openChat() {
+            chatWindow.style.display = 'flex';
+            chatWindowVisible = true;
+            fetchMessages();
+            startPolling();
+        }
+        function closeChat() {
+            chatWindow.style.display = 'none';
+            chatWindowVisible = false;
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+        
+        chatToggle.addEventListener('click', () => {
+            if (chatWindow.style.display === 'none' || !chatWindowVisible) {
+                openChat();
+            } else {
+                closeChat();
+            }
+        });
+        chatClose.addEventListener('click', closeChat);
+        chatSendBtn.addEventListener('click', () => sendMessage(chatInput.value));
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage(chatInput.value);
+        });
+        
+        // 初始隐藏聊天窗口，不轮询，打开时才轮询
+        chatWindow.style.display = 'none';
+        chatWindowVisible = false;
+        // 确保页面加载完成后测试API连通性 (不主动拉取)
+        window.addEventListener('load', () => {
+            // 静默测试API，不影响体验
+            fetch(`${API_BASE}/messages/${clientId}`).catch(e => console.log("等待后端启动"));
+        });
+    })();
+</script>
+
+<script>
+    // ========== 原有软件库脚本 (保持不变，仅融合客服组件不冲突) ==========
     let softwareLibrary = [
         { id: 1, name: "Photoshop", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的图像编辑和处理工具，适用于摄影、设计等领域", status: "uploaded", downloadUrl: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc" },
         { id: 2, name: "Illustrator", category: "Adobe系列", osSupport: ["Windows","Mac"], version: "CS6-2026", description: "专业的矢量图形设计工具，适用于标志设计、插图等领域", status: "uploaded", downloadUrl: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" },
@@ -598,13 +902,7 @@
         { id: 15, name: "Fusion 360", category: "Autodesk系列", osSupport: ["Windows","Mac"], version: "2026 Beta", description: "云端三维CAD/CAM，工业设计协作", status: "pending", downloadUrl: null },
         { id: 16, name: "Capture One", category: "其他软件", osSupport: ["Windows","Mac"], version: "2025", description: "专业级RAW图像处理与联机拍摄", status: "pending", downloadUrl: null }
     ];
-
-    // 筛选状态
-    let currentCategory = "all";
-    let currentOS = "all";
-    let currentStatus = "all";
-    let searchKeyword = "";
-
+    let currentCategory = "all", currentOS = "all", currentStatus = "all", searchKeyword = "";
     const gridContainer = document.getElementById("softwareGridContainer");
     const searchInput = document.getElementById("globalSearchInput");
     const categoryBtns = document.querySelectorAll("#categoryFilters .filter-chip");
@@ -614,8 +912,6 @@
     const modal = document.getElementById("uploadModal");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const confirmAddBtn = document.getElementById("confirmAddBtn");
-
-    // 更新统计
     function updateStatsUI() {
         const total = softwareLibrary.length;
         const winCount = softwareLibrary.filter(sw => sw.osSupport.includes("Windows")).length;
@@ -624,8 +920,6 @@
         document.getElementById("windowsCountHero").innerText = winCount;
         document.getElementById("macCountHero").innerText = macCount;
     }
-
-    // 过滤逻辑
     function getFilteredSoftware() {
         return softwareLibrary.filter(sw => {
             if (currentCategory !== "all" && sw.category !== currentCategory) return false;
@@ -640,155 +934,27 @@
             return true;
         });
     }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // 渲染卡片：根据是否有 downloadUrl 决定按钮行为
+    function escapeHtmlSoft(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;});}
     function renderGrid() {
         const filtered = getFilteredSoftware();
-        if (filtered.length === 0) {
-            gridContainer.innerHTML = `<div class="empty-state"><i class="fas fa-box-open" style="font-size: 48px; opacity: 0.6;"></i><p style="margin-top: 20px; font-weight: 500;">暂无匹配的软件，试试清除筛选或上传新软件～</p></div>`;
-            updateStatsUI();
-            return;
-        }
-        const cardsHtml = filtered.map(sw => {
-            const hasRealLink = sw.downloadUrl && sw.downloadUrl.trim() !== "";
-            // 显示状态徽章：如果有真实链接则显示“已上传”，否则显示“待上传”
-            const displayStatus = hasRealLink ? "uploaded" : "pending";
-            const statusClass = displayStatus === "uploaded" ? "status-uploaded" : "status-pending";
-            const statusText = displayStatus === "uploaded" ? "已上传" : "待上传";
-            const btnClass = hasRealLink ? "btn-active" : "btn-pending";
-            const btnDisabled = hasRealLink ? "" : "disabled";
-            const btnText = hasRealLink ? '<i class="fas fa-download"></i> 下载安装包' : '<i class="fas fa-hourglass-half"></i> 待上传';
-            const osTagsHtml = sw.osSupport.map(os => {
-                const icon = os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>';
-                return `<span class="os-badge">${icon} ${os}</span>`;
-            }).join('');
-            return `
-                <div class="software-card" data-id="${sw.id}">
-                    <div class="card-header">
-                        <span class="software-name">${escapeHtml(sw.name)}</span>
-                        <span class="status-badge ${statusClass}"><i class="fas ${displayStatus === 'uploaded' ? 'fa-check-circle' : 'fa-clock'}"></i> ${statusText}</span>
-                    </div>
-                    <div class="version-tag">版本 ${escapeHtml(sw.version)}</div>
-                    <div class="description">${escapeHtml(sw.description)}</div>
-                    <div class="os-tags">${osTagsHtml}</div>
-                    <button class="download-btn ${btnClass}" ${btnDisabled} data-url="${hasRealLink ? escapeHtml(sw.downloadUrl) : ''}" data-name="${escapeHtml(sw.name)}">${btnText}</button>
-                </div>
-            `;
-        }).join('');
+        if (filtered.length === 0) { gridContainer.innerHTML = `<div class="empty-state"><i class="fas fa-box-open" style="font-size: 48px; opacity: 0.6;"></i><p style="margin-top: 20px; font-weight: 500;">暂无匹配的软件，试试清除筛选或上传新软件～</p></div>`; updateStatsUI(); return; }
+        const cardsHtml = filtered.map(sw => { const hasRealLink = sw.downloadUrl && sw.downloadUrl.trim() !== ""; const displayStatus = hasRealLink ? "uploaded" : "pending"; const statusClass = displayStatus === "uploaded" ? "status-uploaded" : "status-pending"; const statusText = displayStatus === "uploaded" ? "已上传" : "待上传"; const btnClass = hasRealLink ? "btn-active" : "btn-pending"; const btnDisabled = hasRealLink ? "" : "disabled"; const btnText = hasRealLink ? '<i class="fas fa-download"></i> 下载安装包' : '<i class="fas fa-hourglass-half"></i> 待上传'; const osTagsHtml = sw.osSupport.map(os => { const icon = os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>'; return `<span class="os-badge">${icon} ${os}</span>`; }).join(''); return `<div class="software-card" data-id="${sw.id}"><div class="card-header"><span class="software-name">${escapeHtmlSoft(sw.name)}</span><span class="status-badge ${statusClass}"><i class="fas ${displayStatus === 'uploaded' ? 'fa-check-circle' : 'fa-clock'}"></i> ${statusText}</span></div><div class="version-tag">版本 ${escapeHtmlSoft(sw.version)}</div><div class="description">${escapeHtmlSoft(sw.description)}</div><div class="os-tags">${osTagsHtml}</div><button class="download-btn ${btnClass}" ${btnDisabled} data-url="${hasRealLink ? escapeHtmlSoft(sw.downloadUrl) : ''}" data-name="${escapeHtmlSoft(sw.name)}">${btnText}</button></div>`; }).join('');
         gridContainer.innerHTML = cardsHtml;
-        // 绑定下载按钮事件：有真实链接则打开新窗口，否则提示待上传
-        document.querySelectorAll('.download-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const url = btn.getAttribute('data-url');
-                const softName = btn.getAttribute('data-name');
-                if (url && url.trim() !== "") {
-                    window.open(url, '_blank');
-                } else {
-                    alert(`⏳ “${softName}” 暂未提供下载链接，敬请期待后续上传。`);
-                }
-            });
-        });
+        document.querySelectorAll('.download-btn').forEach(btn => { btn.addEventListener('click', (e) => { e.stopPropagation(); const url = btn.getAttribute('data-url'); const softName = btn.getAttribute('data-name'); if (url && url.trim() !== "") { window.open(url, '_blank'); } else { alert(`⏳ “${softName}” 暂未提供下载链接，敬请期待后续上传。`); } }); });
         updateStatsUI();
     }
-
-    function refreshAll() {
-        renderGrid();
-    }
-
-    // 绑定筛选器
+    function refreshAll() { renderGrid(); }
     function bindEvents() {
-        categoryBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const val = btn.getAttribute('data-cat');
-                currentCategory = val;
-                categoryBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                refreshAll();
-            });
-        });
-        osBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const val = btn.getAttribute('data-os');
-                currentOS = val;
-                osBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                refreshAll();
-            });
-        });
-        statusBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const val = btn.getAttribute('data-status');
-                currentStatus = val;
-                statusBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                refreshAll();
-            });
-        });
-        searchInput.addEventListener('input', (e) => {
-            searchKeyword = e.target.value;
-            refreshAll();
-        });
+        categoryBtns.forEach(btn => { btn.addEventListener('click', () => { currentCategory = btn.getAttribute('data-cat'); categoryBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); refreshAll(); }); });
+        osBtns.forEach(btn => { btn.addEventListener('click', () => { currentOS = btn.getAttribute('data-os'); osBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); refreshAll(); }); });
+        statusBtns.forEach(btn => { btn.addEventListener('click', () => { currentStatus = btn.getAttribute('data-status'); statusBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); refreshAll(); }); });
+        searchInput.addEventListener('input', (e) => { searchKeyword = e.target.value; refreshAll(); });
     }
-
-    // 模态框：添加新软件（新软件默认没有下载链接，状态由用户选择）
-    function showModal() {
-        modal.style.display = "flex";
-        document.getElementById("newName").value = "";
-        document.getElementById("newCategory").value = "Adobe系列";
-        document.querySelectorAll(".os-multi").forEach(cb => cb.checked = false);
-        document.getElementById("newVersion").value = "2026";
-        document.getElementById("newDesc").value = "";
-        document.querySelector("input[name='uploadStatus'][value='uploaded']").checked = true;
-    }
+    function showModal() { modal.style.display = "flex"; document.getElementById("newName").value = ""; document.getElementById("newCategory").value = "Adobe系列"; document.querySelectorAll(".os-multi").forEach(cb => cb.checked = false); document.getElementById("newVersion").value = "2026"; document.getElementById("newDesc").value = ""; document.querySelector("input[name='uploadStatus'][value='uploaded']").checked = true; }
     function hideModal() { modal.style.display = "none"; }
-    function addNewSoftware() {
-        const name = document.getElementById("newName").value.trim();
-        if (!name) { alert("请填写软件名称"); return; }
-        const category = document.getElementById("newCategory").value;
-        const version = document.getElementById("newVersion").value.trim() || "最新版";
-        const description = document.getElementById("newDesc").value.trim() || "专业的创意工具，支持正版授权";
-        const osSelected = Array.from(document.querySelectorAll(".os-multi:checked")).map(cb => cb.value);
-        if (osSelected.length === 0) { alert("请至少选择一个支持的操作系统"); return; }
-        const statusRadio = document.querySelector("input[name='uploadStatus']:checked").value;
-        const newId = softwareLibrary.length > 0 ? Math.max(...softwareLibrary.map(s => s.id)) + 1 : 100;
-        softwareLibrary.push({
-            id: newId, name, category, osSupport: osSelected, version, description,
-            status: statusRadio,
-            downloadUrl: null
-        });
-        hideModal();
-        // 重置筛选为全部
-        currentCategory = "all"; currentOS = "all"; currentStatus = "all"; searchKeyword = "";
-        searchInput.value = "";
-        categoryBtns.forEach(btn => { if(btn.getAttribute('data-cat') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); });
-        osBtns.forEach(btn => { if(btn.getAttribute('data-os') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); });
-        statusBtns.forEach(btn => { if(btn.getAttribute('data-status') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); });
-        refreshAll();
-        alert(`✨ 软件“${name}”已成功添加。注意：未配置下载链接，点击下载会提示“待上传”。`);
-    }
-
-    openModalBtn.addEventListener("click", showModal);
-    closeModalBtn.addEventListener("click", hideModal);
-    confirmAddBtn.addEventListener("click", addNewSoftware);
-    window.addEventListener("click", (e) => { if (e.target === modal) hideModal(); });
-
-    // 初始化
-    function init() {
-        bindEvents();
-        refreshAll();
-    }
-    init();
+    function addNewSoftware() { const name = document.getElementById("newName").value.trim(); if (!name) { alert("请填写软件名称"); return; } const category = document.getElementById("newCategory").value; const version = document.getElementById("newVersion").value.trim() || "最新版"; const description = document.getElementById("newDesc").value.trim() || "专业的创意工具，支持正版授权"; const osSelected = Array.from(document.querySelectorAll(".os-multi:checked")).map(cb => cb.value); if (osSelected.length === 0) { alert("请至少选择一个支持的操作系统"); return; } const statusRadio = document.querySelector("input[name='uploadStatus']:checked").value; const newId = softwareLibrary.length > 0 ? Math.max(...softwareLibrary.map(s => s.id)) + 1 : 100; softwareLibrary.push({ id: newId, name, category, osSupport: osSelected, version, description, status: statusRadio, downloadUrl: null }); hideModal(); currentCategory = "all"; currentOS = "all"; currentStatus = "all"; searchKeyword = ""; searchInput.value = ""; categoryBtns.forEach(btn => { if(btn.getAttribute('data-cat') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); }); osBtns.forEach(btn => { if(btn.getAttribute('data-os') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); }); statusBtns.forEach(btn => { if(btn.getAttribute('data-status') === 'all') btn.classList.add('active'); else btn.classList.remove('active'); }); refreshAll(); alert(`✨ 软件“${name}”已成功添加。`); }
+    openModalBtn.addEventListener("click", showModal); closeModalBtn.addEventListener("click", hideModal); confirmAddBtn.addEventListener("click", addNewSoftware); window.addEventListener("click", (e) => { if (e.target === modal) hideModal(); });
+    bindEvents(); refreshAll();
 </script>
 </body>
 </html>
