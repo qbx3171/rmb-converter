@@ -9,553 +9,91 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ========== 完整样式（保证布局不变）========== */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#f0f4f9; color:#1a2c3e; line-height:1.5; scroll-behavior:smooth; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:#e2e8f0; }
+        ::-webkit-scrollbar-thumb { background:#94a3b8; border-radius:10px; }
+        .app-wrapper { max-width:1400px; margin:0 auto; padding:0 32px 56px; }
+        .top-nav { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; background:rgba(255,255,255,0.8); backdrop-filter:blur(16px); border-radius:80px; margin:24px 0 40px; padding:8px 28px; border:1px solid rgba(0,0,0,0.05); box-shadow:0 4px 12px rgba(0,0,0,0.02); }
+        .logo-area { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+        .logo-text { font-size:26px; font-weight:800; background:linear-gradient(125deg,#0F2B4D,#1E6DFF,#A855F7); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-0.5px; }
+        .domain-badge { background:#eef3fc; border-radius:40px; padding:4px 14px; font-size:12px; font-weight:500; color:#1E6DFF; }
+        .nav-links { display:flex; gap:32px; font-weight:500; }
+        .nav-links a { text-decoration:none; color:#2c3f5c; transition:0.2s; font-size:15px; }
+        .nav-links a.active, .nav-links a:hover { color:#1E6DFF; }
+        .search-filter-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; margin-bottom:40px; background:white; padding:12px 24px; border-radius:60px; box-shadow:0 2px 8px rgba(0,0,0,0.02); border:1px solid #eef2fc; }
+        .search-box { flex:1; min-width:200px; display:flex; align-items:center; gap:10px; background:#f8fafc; border-radius:40px; padding:8px 20px; border:1px solid #e2edf7; }
+        .search-box i { color:#8ba0bc; }
+        .search-box input { border:none; background:transparent; width:100%; font-size:14px; outline:none; padding:8px 0; }
+        .category-tabs { display:flex; gap:12px; flex-wrap:wrap; }
+        .tab-btn { background:#f1f5f9; border:none; padding:8px 24px; border-radius:40px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; color:#2c405c; }
+        .tab-btn.active { background:#1E6DFF; color:white; box-shadow:0 4px 10px rgba(30,109,255,0.2); }
+        .tab-btn:hover:not(.active) { background:#e2e8f0; }
+        .software-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px; margin-top:20px; }
+        .software-card { background:white; border-radius:28px; padding:24px 22px; transition:all 0.25s ease; border:1px solid #eef3fc; box-shadow:0 8px 20px -6px rgba(0,0,0,0.05); cursor:pointer; }
+        .software-card:hover { transform:translateY(-5px); border-color:#1E6DFF; box-shadow:0 20px 30px -12px rgba(30,109,255,0.15); }
+        .card-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+        .card-icon { font-size:42px; color:#1E6DFF; }
+        .software-name { font-size:22px; font-weight:700; color:#0f2b4d; }
+        .version { font-size:12px; background:#f0f4fc; padding:4px 12px; border-radius:40px; display:inline-block; margin:8px 0 12px; color:#1E6DFF; font-weight:500; }
+        .description { color:#4a627a; font-size:13px; line-height:1.5; margin:8px 0 16px; }
+        .os-tags { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+        .os-badge { background:#f4f8fe; border-radius:40px; padding:4px 12px; font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:6px; color:#2c405c; }
+        .download-hint { font-size:12px; color:#1E6DFF; display:flex; align-items:center; gap:6px; margin-top:12px; border-top:1px solid #eef2fc; padding-top:14px; }
+        footer { margin-top:70px; text-align:center; font-size:12px; color:#6b85a4; border-top:1px solid #e2ecf5; padding-top:28px; }
+        .no-results { text-align:center; padding:60px; background:white; border-radius:48px; color:#6b85a4; grid-column:1/-1; }
+        @media (max-width:860px) { .app-wrapper { padding:0 20px 40px; } .top-nav { flex-direction:column; align-items:stretch; border-radius:40px; padding:16px 20px; } .nav-links { justify-content:center; } .search-filter-bar { flex-direction:column; align-items:stretch; } .category-tabs { justify-content:center; } }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f0f4f9;
-            color: #1a2c3e;
-            line-height: 1.5;
-            scroll-behavior: smooth;
-        }
+        /* 客服聊天窗口 */
+        .chatbot-container { position:fixed; z-index:200; right:32px; bottom:110px; cursor:default; }
+        .chat-toggle { width:60px; height:60px; background:linear-gradient(135deg,#1E6DFF,#A855F7); border-radius:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 25px -5px rgba(30,109,255,0.5); transition:all 0.3s; color:white; font-size:28px; }
+        .chat-toggle:hover { transform:scale(1.05); box-shadow:0 15px 30px -5px rgba(30,109,255,0.6); }
+        .chat-window { position:absolute; bottom:80px; right:0; width:380px; height:520px; background:white; border-radius:32px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 45px -12px rgba(0,0,0,0.2); border:1px solid #eef2fc; }
+        .chat-header { background:linear-gradient(125deg,#1E6DFF,#8B5CF6); color:white; padding:18px 20px; font-weight:700; display:flex; justify-content:space-between; align-items:center; cursor:grab; }
+        .chat-close { background:rgba(255,255,255,0.2); border:none; color:white; width:28px; height:28px; border-radius:20px; cursor:pointer; }
+        .chat-messages { flex:1; padding:18px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; background:#f8fafd; }
+        .message { max-width:85%; padding:10px 16px; border-radius:24px; font-size:13px; }
+        .message.customer { background:#1E6DFF; color:white; align-self:flex-end; border-bottom-right-radius:6px; }
+        .message.bot { background:#eef2f8; color:#1a2c42; align-self:flex-start; border-bottom-left-radius:6px; }
+        .message strong { font-size:11px; opacity:0.8; display:block; margin-bottom:4px; }
+        .message small { font-size:9px; opacity:0.6; margin-top:6px; display:block; text-align:right; }
+        .chat-input-area { display:flex; padding:14px; background:white; border-top:1px solid #eef2fc; gap:10px; }
+        .chat-input-area input { flex:1; border:1px solid #e2e8f0; border-radius:30px; padding:12px 18px; font-size:13px; outline:none; }
+        .chat-input-area button { background:#1E6DFF; border:none; border-radius:30px; padding:0 24px; color:white; font-weight:600; cursor:pointer; }
+        .chat-status { font-size:10px; padding:8px; text-align:center; color:#4f657f; border-top:1px solid #eef2fc; }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #e2e8f0;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 10px;
-        }
-
-        .app-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 32px 56px;
-        }
-
-        /* 导航栏 */
-        .top-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(16px);
-            border-radius: 80px;
-            margin: 24px 0 40px;
-            padding: 8px 28px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-        }
-
-        .logo-area {
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .logo-text {
-            font-size: 26px;
-            font-weight: 800;
-            background: linear-gradient(125deg, #0F2B4D, #1E6DFF, #A855F7);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .domain-badge {
-            background: #eef3fc;
-            border-radius: 40px;
-            padding: 4px 14px;
-            font-size: 12px;
-            font-weight: 500;
-            color: #1E6DFF;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 32px;
-            font-weight: 500;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #2c3f5c;
-            transition: 0.2s;
-            font-size: 15px;
-        }
-
-        .nav-links a.active,
-        .nav-links a:hover {
-            color: #1E6DFF;
-        }
-
-        /* 搜索 + 分类栏 */
-        .search-filter-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 40px;
-            background: white;
-            padding: 12px 24px;
-            border-radius: 60px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-            border: 1px solid #eef2fc;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 200px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f8fafc;
-            border-radius: 40px;
-            padding: 8px 20px;
-            border: 1px solid #e2edf7;
-        }
-
-        .search-box i {
-            color: #8ba0bc;
-        }
-
-        .search-box input {
-            border: none;
-            background: transparent;
-            width: 100%;
-            font-size: 14px;
-            outline: none;
-            padding: 8px 0;
-        }
-
-        .category-tabs {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background: #f1f5f9;
-            border: none;
-            padding: 8px 24px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #2c405c;
-        }
-
-        .tab-btn.active {
-            background: #1E6DFF;
-            color: white;
-            box-shadow: 0 4px 10px rgba(30, 109, 255, 0.2);
-        }
-
-        .tab-btn:hover:not(.active) {
-            background: #e2e8f0;
-        }
-
-        /* 软件网格 */
-        .software-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 28px;
-            margin-top: 20px;
-        }
-
-        .software-card {
-            background: white;
-            border-radius: 28px;
-            padding: 24px 22px;
-            transition: all 0.25s ease;
-            border: 1px solid #eef3fc;
-            box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.05);
-            cursor: pointer;
-        }
-
-        .software-card:hover {
-            transform: translateY(-5px);
-            border-color: #1E6DFF;
-            box-shadow: 0 20px 30px -12px rgba(30, 109, 255, 0.15);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            margin-bottom: 16px;
-        }
-
-        .card-icon {
-            font-size: 42px;
-            color: #1E6DFF;
-        }
-
-        .software-name {
-            font-size: 22px;
-            font-weight: 700;
-            color: #0f2b4d;
-        }
-
-        .version {
-            font-size: 12px;
-            background: #f0f4fc;
-            padding: 4px 12px;
-            border-radius: 40px;
-            display: inline-block;
-            margin: 8px 0 12px;
-            color: #1E6DFF;
-            font-weight: 500;
-        }
-
-        .description {
-            color: #4a627a;
-            font-size: 13px;
-            line-height: 1.5;
-            margin: 8px 0 16px;
-        }
-
-        .os-tags {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-
-        .os-badge {
-            background: #f4f8fe;
-            border-radius: 40px;
-            padding: 4px 12px;
-            font-size: 12px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: #2c405c;
-        }
-
-        .download-hint {
-            font-size: 12px;
-            color: #1E6DFF;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 12px;
-            border-top: 1px solid #eef2fc;
-            padding-top: 14px;
-        }
-
-        footer {
-            margin-top: 70px;
-            text-align: center;
-            font-size: 12px;
-            color: #6b85a4;
-            border-top: 1px solid #e2ecf5;
-            padding-top: 28px;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 60px;
-            background: white;
-            border-radius: 48px;
-            color: #6b85a4;
-            grid-column: 1 / -1;
-        }
-
-        @media (max-width: 860px) {
-            .app-wrapper {
-                padding: 0 20px 40px;
-            }
-            .top-nav {
-                flex-direction: column;
-                align-items: stretch;
-                border-radius: 40px;
-                padding: 16px 20px;
-            }
-            .nav-links {
-                justify-content: center;
-            }
-            .search-filter-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .category-tabs {
-                justify-content: center;
-            }
-        }
-
-        /* 客服聊天窗口（纯前端模拟） */
-        .chatbot-container {
-            position: fixed;
-            z-index: 200;
-            right: 32px;
-            bottom: 110px;
-            cursor: default;
-        }
-
-        .chat-toggle {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #1E6DFF, #A855F7);
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 10px 25px -5px rgba(30, 109, 255, 0.5);
-            transition: all 0.3s;
-            color: white;
-            font-size: 28px;
-        }
-
-        .chat-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: 0 15px 30px -5px rgba(30, 109, 255, 0.6);
-        }
-
-        .chat-window {
-            position: absolute;
-            bottom: 80px;
-            right: 0;
-            width: 380px;
-            height: 520px;
-            background: white;
-            border-radius: 32px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2);
-            border: 1px solid #eef2fc;
-        }
-
-        .chat-header {
-            background: linear-gradient(125deg, #1E6DFF, #8B5CF6);
-            color: white;
-            padding: 18px 20px;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: grab;
-        }
-
-        .chat-close {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 18px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            background: #f8fafd;
-        }
-
-        .message {
-            max-width: 85%;
-            padding: 10px 16px;
-            border-radius: 24px;
-            font-size: 13px;
-        }
-
-        .message.customer {
-            background: #1E6DFF;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 6px;
-        }
-
-        .message.bot {
-            background: #eef2f8;
-            color: #1a2c42;
-            align-self: flex-start;
-            border-bottom-left-radius: 6px;
-        }
-
-        .message strong {
-            font-size: 11px;
-            opacity: 0.8;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .message small {
-            font-size: 9px;
-            opacity: 0.6;
-            margin-top: 6px;
-            display: block;
-            text-align: right;
-        }
-
-        .chat-input-area {
-            display: flex;
-            padding: 14px;
-            background: white;
-            border-top: 1px solid #eef2fc;
-            gap: 10px;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            border: 1px solid #e2e8f0;
-            border-radius: 30px;
-            padding: 12px 18px;
-            font-size: 13px;
-            outline: none;
-        }
-
-        .chat-input-area button {
-            background: #1E6DFF;
-            border: none;
-            border-radius: 30px;
-            padding: 0 24px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .chat-status {
-            font-size: 10px;
-            padding: 8px;
-            text-align: center;
-            color: #4f657f;
-            border-top: 1px solid #eef2fc;
-        }
-
-        /* 验证模态框（不显示具体口令） */
-        .verify-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .verify-modal.active {
-            display: flex;
-        }
-        .verify-content {
-            background: white;
-            border-radius: 32px;
-            padding: 32px;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.2);
-        }
-        .verify-content h3 {
-            font-size: 24px;
-            margin-bottom: 16px;
-            color: #1E6DFF;
-        }
-        .verify-content p {
-            color: #4a627a;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        .verify-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 40px;
-            font-size: 14px;
-            margin-bottom: 20px;
-            outline: none;
-        }
-        .verify-input:focus {
-            border-color: #1E6DFF;
-        }
-        .verify-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-        .verify-btn {
-            padding: 10px 24px;
-            border-radius: 40px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
-        .verify-btn.confirm {
-            background: #1E6DFF;
-            color: white;
-        }
-        .verify-btn.cancel {
-            background: #eef2f8;
-            color: #2c405c;
-        }
+        /* 验证模态框 */
+        .verify-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; }
+        .verify-modal.active { display:flex; }
+        .verify-content { background:white; border-radius:32px; padding:32px; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 35px rgba(0,0,0,0.2); }
+        .verify-content h3 { font-size:24px; margin-bottom:16px; color:#1E6DFF; }
+        .verify-content p { color:#4a627a; margin-bottom:20px; line-height:1.5; }
+        .verify-input { width:100%; padding:12px 16px; border:1px solid #e2e8f0; border-radius:40px; font-size:14px; margin-bottom:20px; outline:none; }
+        .verify-input:focus { border-color:#1E6DFF; }
+        .verify-buttons { display:flex; gap:12px; justify-content:center; }
+        .verify-btn { padding:10px 24px; border-radius:40px; font-weight:600; cursor:pointer; border:none; }
+        .verify-btn.confirm { background:#1E6DFF; color:white; }
+        .verify-btn.cancel { background:#eef2f8; color:#2c405c; }
     </style>
 </head>
 <body>
 <div class="app-wrapper">
-    <!-- 导航栏 -->
     <div class="top-nav">
-        <div class="logo-area">
-            <span class="logo-text">乐哲软件</span>
-            <span class="domain-badge"><i class="fas fa-globe"></i> www.lezhesoft.cn</span>
-        </div>
-        <div class="nav-links">
-            <a href="index.html">首页</a>
-            <a href="service.html">服务项目</a>
-            <a href="download.html" class="active">软件下载</a>
-            <a href="copyright.html">版权声明</a>
-        </div>
+        <div class="logo-area"><span class="logo-text">乐哲软件</span><span class="domain-badge"><i class="fas fa-globe"></i> www.lezhesoft.cn</span></div>
+        <div class="nav-links"><a href="index.html">首页</a><a href="service.html">服务项目</a><a href="download.html" class="active">软件下载</a><a href="copyright.html">版权声明</a></div>
     </div>
-
-    <!-- 搜索栏 + 分类标签 -->
     <div class="search-filter-bar">
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" id="searchInput" placeholder="搜索软件名称...">
-        </div>
+        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="搜索软件名称..."></div>
         <div class="category-tabs" id="categoryTabs">
             <button class="tab-btn active" data-cat="all">全部</button>
-            <button class="tab-btn" data-cat="adobe">Adobe系列</button>
-            <button class="tab-btn" data-cat="autodesk">Autodesk系列</button>
-            <button class="tab-btn" data-cat="c4d">Cinema 4D</button>
-            <button class="tab-btn" data-cat="sketchup">草图大师</button>
-            <button class="tab-btn" data-cat="rhino">犀牛软件</button>
-            <button class="tab-btn" data-cat="plugin">插件工具</button>
         </div>
     </div>
-
-    <!-- 软件网格容器 -->
     <div id="softwareGridContainer" class="software-grid"></div>
-
-    <footer>
-        <i class="fas fa-download"></i> 乐哲软件中心 · 所有安装包均为官方原版，无捆绑后门<br>
-        www.lezhesoft.cn | 正版授权体验
-    </footer>
+    <footer><i class="fas fa-download"></i> 乐哲软件中心 · 所有安装包均为官方原版，无捆绑后门<br>www.lezhesoft.cn | 正版授权体验</footer>
 </div>
 
-<!-- 验证模态框（不显示具体口令） -->
 <div id="verifyModal" class="verify-modal">
     <div class="verify-content">
         <h3><i class="fab fa-weixin"></i> 添加微信获取口令</h3>
@@ -568,66 +106,112 @@
     </div>
 </div>
 
-<!-- 客服聊天窗口（纯前端模拟） -->
 <div class="chatbot-container" id="chatbotContainer">
     <div class="chat-toggle" id="chatToggleBtn"><i class="fas fa-comment-dots"></i></div>
-    <div class="chat-window" id="chatWindow" style="display: none;">
-        <div class="chat-header" id="chatHeaderDrag">
-            <span><i class="fas fa-robot"></i> 乐哲麦 · 智能客服</span>
-            <button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button>
-        </div>
+    <div class="chat-window" id="chatWindow" style="display:none;">
+        <div class="chat-header" id="chatHeaderDrag"><span><i class="fas fa-robot"></i> 乐哲麦 · 智能客服</span><button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button></div>
         <div class="chat-messages" id="chatMessagesList"></div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="输入您的需求或问题...">
-            <button id="chatSendBtn">发送</button>
-        </div>
+        <div class="chat-input-area"><input type="text" id="chatInput" placeholder="输入您的需求或问题..."><button id="chatSendBtn">发送</button></div>
         <div class="chat-status" id="chatStatus">✨ 在线 · 乐哲麦为您服务</div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    // ==================== 软件数据 ====================
-    const softwareData = [
-        // Adobe 系列
-        { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud" },
-        { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink" },
-        { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf" },
-        { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink" },
-        { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg" },
-        { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd" },
-        // Autodesk 系列
-        { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#" },
-        { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg" },
-        { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?" },
-        // Cinema 4D
-        { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?" },
-        // 草图大师
-        { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?" },
-        // 犀牛软件 Rhino Win
-        { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?" },
-        // 犀牛软件 Rhino Mac
-        { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?" },
-        // Adobe 插件全套（直接跳转）
-        { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888" }
+    // ========== Airtable 配置 ==========
+    const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
+    const AIRTABLE_BASE_ID = 'appM4Ty76lOlslpU9';
+    const TABLE_NAME = 'softwares';
+    const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_NAME}`;
+
+    // ========== 默认软件数据（14个，包含您所有的链接）==========
+    const DEFAULT_SOFTWARES = [
+        { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
+        { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
+        { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false },
+        { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
+        { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
+        { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
+        { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
+        { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
+        { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
+        { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false },
+        { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false },
+        { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false },
+        { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false },
+        { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
     ];
 
-    // 不需要验证的软件名称列表（直接跳转）
-    const noVerifyList = ["Creative Cloud", "Adobe 插件全套"];
-    const VALID_PASSWORD = "Win_Mac_123";   // 正确的口令
-
+    let softwares = [];
     let currentCategory = "all";
     let searchKeyword = "";
     let pendingUrl = null;
 
     const gridContainer = document.getElementById("softwareGridContainer");
     const searchInput = document.getElementById("searchInput");
-    const categoryBtns = document.querySelectorAll("#categoryTabs .tab-btn");
+    const categoryTabs = document.getElementById("categoryTabs");
 
-    // 模态框元素
-    const verifyModal = document.getElementById("verifyModal");
-    const verifyCodeInput = document.getElementById("verifyCode");
-    const confirmVerifyBtn = document.getElementById("confirmVerify");
-    const cancelVerifyBtn = document.getElementById("cancelVerify");
+    // 合并 Airtable 数据和默认数据
+    async function fetchSoftwares() {
+        let airtableData = [];
+        try {
+            const response = await axios.get(API_URL, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+            });
+            airtableData = response.data.records.map(record => ({
+                id: record.id,
+                name: record.fields.Name || '',
+                category: (record.fields.Category || '').toLowerCase(),
+                os: record.fields.OS || [],
+                version: record.fields.Version || '',
+                description: record.fields.Description || '',
+                icon: record.fields.Icon || 'fa-download',
+                url: record.fields.URL || '',
+                noVerify: record.fields.NoVerify || false
+            }));
+        } catch (error) {
+            console.error('Airtable 加载失败，仅使用默认数据', error);
+        }
+
+        const merged = [...airtableData];
+        const airtableNames = new Set(airtableData.map(s => s.name));
+        for (const def of DEFAULT_SOFTWARES) {
+            if (!airtableNames.has(def.name)) {
+                merged.push({ ...def, id: def.name });
+            }
+        }
+        softwares = merged;
+        renderCategories();
+        renderGrid();
+    }
+
+    function renderCategories() {
+        const categories = [...new Set(softwares.map(s => s.category))];
+        let html = `<button class="tab-btn active" data-cat="all">全部</button>`;
+        categories.forEach(cat => {
+            html += `<button class="tab-btn" data-cat="${cat}">${cat}</button>`;
+        });
+        categoryTabs.innerHTML = html;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentCategory = btn.getAttribute('data-cat');
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderGrid();
+            });
+        });
+    }
+
+    function getFilteredSoftware() {
+        return softwares.filter(sw => {
+            if (currentCategory !== "all" && sw.category !== currentCategory) return false;
+            if (searchKeyword.trim() !== "") {
+                const kw = searchKeyword.trim().toLowerCase();
+                return sw.name.toLowerCase().includes(kw);
+            }
+            return true;
+        });
+    }
 
     function escapeHtml(str) {
         if (!str) return '';
@@ -639,24 +223,13 @@
         });
     }
 
-    function getFilteredSoftware() {
-        return softwareData.filter(sw => {
-            if (currentCategory !== "all" && sw.category !== currentCategory) return false;
-            if (searchKeyword.trim() !== "") {
-                const kw = searchKeyword.trim().toLowerCase();
-                return sw.name.toLowerCase().includes(kw);
-            }
-            return true;
-        });
-    }
-
     function handleDownload(sw) {
-        if (noVerifyList.includes(sw.name)) {
+        if (sw.noVerify) {
             window.open(sw.url, '_blank');
         } else {
             pendingUrl = sw.url;
-            verifyModal.classList.add('active');
-            verifyCodeInput.value = '';
+            document.getElementById('verifyModal').classList.add('active');
+            document.getElementById('verifyCode').value = '';
         }
     }
 
@@ -666,7 +239,6 @@
             gridContainer.innerHTML = `<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件，试试其他关键词～</div>`;
             return;
         }
-
         const cardsHtml = filtered.map(sw => {
             const osTagsHtml = sw.os.map(os => {
                 const icon = os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>';
@@ -691,60 +263,45 @@
         document.querySelectorAll('.software-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const name = card.getAttribute('data-name');
-                const sw = softwareData.find(s => s.name === name);
+                const sw = softwares.find(s => s.name === name);
                 if (sw) handleDownload(sw);
             });
         });
     }
 
-    // 验证逻辑
     function verifyAndDownload() {
-        const code = verifyCodeInput.value.trim();
-        if (code === VALID_PASSWORD) {
+        const code = document.getElementById('verifyCode').value.trim();
+        if (code === 'Win_Mac_123') {
             if (pendingUrl) {
                 window.open(pendingUrl, '_blank');
                 pendingUrl = null;
             }
-            verifyModal.classList.remove('active');
+            document.getElementById('verifyModal').classList.remove('active');
         } else {
             alert("口令错误，请确认后重试。");
         }
     }
 
     function closeModal() {
-        verifyModal.classList.remove('active');
+        document.getElementById('verifyModal').classList.remove('active');
         pendingUrl = null;
     }
 
-    confirmVerifyBtn.addEventListener('click', verifyAndDownload);
-    cancelVerifyBtn.addEventListener('click', closeModal);
-    verifyModal.addEventListener('click', (e) => {
-        if (e.target === verifyModal) closeModal();
+    document.getElementById('confirmVerify').addEventListener('click', verifyAndDownload);
+    document.getElementById('cancelVerify').addEventListener('click', closeModal);
+    document.getElementById('verifyModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('verifyModal')) closeModal();
     });
 
-    function bindEvents() {
-        categoryBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                currentCategory = btn.getAttribute('data-cat');
-                categoryBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                renderGrid();
-            });
-        });
-        searchInput.addEventListener('input', (e) => {
-            searchKeyword = e.target.value;
-            renderGrid();
-        });
-    }
+    searchInput.addEventListener('input', (e) => {
+        searchKeyword = e.target.value;
+        renderGrid();
+    });
 
-    bindEvents();
-    renderGrid();
-
-    // ==================== 纯前端客服模拟（无后端API） ====================
+    // ========== 客服模拟 ==========
     (function() {
         let messages = [];
         const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
-
         const chatWindow = document.getElementById('chatWindow');
         const chatMessagesDiv = document.getElementById('chatMessagesList');
         const chatInput = document.getElementById('chatInput');
@@ -794,13 +351,8 @@
             }, 2000);
         }
 
-        function openChat() {
-            chatWindow.style.display = 'flex';
-            renderMessages();
-        }
-        function closeChat() {
-            chatWindow.style.display = 'none';
-        }
+        function openChat() { chatWindow.style.display = 'flex'; renderMessages(); }
+        function closeChat() { chatWindow.style.display = 'none'; }
 
         chatToggle.addEventListener('click', () => {
             if (chatWindow.style.display === 'none') openChat();
@@ -823,35 +375,29 @@
         });
         chatWindow.style.display = 'none';
 
-        // 拖拽功能
+        // 拖拽
         const dragContainer = document.getElementById('chatbotContainer');
         const dragHandle = document.getElementById('chatHeaderDrag');
         let isDragging = false, startX, startY, startRight, startBottom;
-        function getPos() {
-            const style = getComputedStyle(dragContainer);
-            return { right: parseFloat(style.right) || 32, bottom: parseFloat(style.bottom) || 110 };
-        }
+        function getPos() { const style = getComputedStyle(dragContainer); return { right: parseFloat(style.right) || 32, bottom: parseFloat(style.bottom) || 110 }; }
         dragHandle.addEventListener('mousedown', (e) => {
             if (e.target.closest('.chat-close')) return;
-            e.preventDefault();
-            isDragging = true;
-            startX = e.clientX; startY = e.clientY;
-            const pos = getPos();
-            startRight = pos.right; startBottom = pos.bottom;
+            e.preventDefault(); isDragging = true; startX = e.clientX; startY = e.clientY;
+            const pos = getPos(); startRight = pos.right; startBottom = pos.bottom;
             dragContainer.style.transition = 'none';
         });
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
-            e.preventDefault();
-            const dx = e.clientX - startX, dy = e.clientY - startY;
+            e.preventDefault(); const dx = e.clientX - startX, dy = e.clientY - startY;
             let newRight = startRight - dx, newBottom = startBottom - dy;
             newRight = Math.min(Math.max(10, newRight), window.innerWidth - 70);
             newBottom = Math.min(Math.max(10, newBottom), window.innerHeight - 90);
-            dragContainer.style.right = newRight + 'px';
-            dragContainer.style.bottom = newBottom + 'px';
+            dragContainer.style.right = newRight + 'px'; dragContainer.style.bottom = newBottom + 'px';
         });
         window.addEventListener('mouseup', () => { isDragging = false; dragContainer.style.transition = ''; });
     })();
+
+    fetchSoftwares();
 </script>
 </body>
 </html>
