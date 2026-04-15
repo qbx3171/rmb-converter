@@ -95,5 +95,20 @@ app.delete('/api/admin/softwares/:id', auth, async (req, res) => {
     res.json({ success: true });
 });
 
+// 处理根路径请求，返回 download.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'download.html'));
+});
+
+// 显式处理 admin.html 的请求
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// 如果还有其他需要单独访问的页面，也可以类似添加
+app.get('/download.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'download.html'));
+});
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'download.html')));
 app.listen(PORT, () => console.log(`✅ 运行在 http://localhost:${PORT}`));
