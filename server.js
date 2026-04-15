@@ -15,6 +15,7 @@ function initDb() {
             softwares: [
                 { id: "1", name: "Creative Cloud", category: "Adobe系列", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
                 { id: "2", name: "Photoshop", category: "Adobe系列", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false }
+                // 其他软件数据可以后续在管理后台添加，或手动补全
             ]
         };
         fs.writeFileSync(DB_PATH, JSON.stringify(defaultData, null, 2));
@@ -28,7 +29,7 @@ function writeDb(data) { fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2)
 app.use(cors());
 app.use(express.json());
 
-// 显式路由
+// 显式路由（必须在静态中间件之前）
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
@@ -39,10 +40,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'download.html'));
 });
 
-// 静态文件中间件（用于其他资源）
+// 静态文件中间件
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API 路由
+// API routes
 app.get('/api/softwares', (req, res) => {
     res.json(readDb().softwares);
 });
