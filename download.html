@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整样式（保证布局不变）========== */
+        /* 完整样式（与之前完全一致，保持不变） */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:#f0f4f9; color:#1a2c3e; line-height:1.5; scroll-behavior:smooth; }
         ::-webkit-scrollbar { width:6px; }
@@ -82,12 +82,17 @@
 <div class="app-wrapper">
     <div class="top-nav">
         <div class="logo-area"><span class="logo-text">乐哲软件</span><span class="domain-badge"><i class="fas fa-globe"></i> www.lezhesoft.cn</span></div>
-        <div class="nav-links"><a href="index.html">首页</a><a href="service.html">服务项目</a><a href="download.html" class="active">软件下载</a><a href="copyright.html">版权声明</a></div>
+        <div class="nav-links">
+            <a href="index.html">首页</a>
+            <a href="service.html">服务项目</a>
+            <a href="download.html" class="active">软件下载</a>
+            <a href="copyright.html">版权声明</a>
+        </div>
     </div>
     <div class="search-filter-bar">
         <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="搜索软件名称..."></div>
         <div class="category-tabs" id="categoryTabs">
-            <button class="tab-btn active" data-cat="all">全部</button>
+            <!-- 分类按钮由 JavaScript 动态生成 -->
         </div>
     </div>
     <div id="softwareGridContainer" class="software-grid"></div>
@@ -124,7 +129,7 @@
     const TABLE_NAME = 'softwares';
     const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_NAME}`;
 
-    // ========== 默认软件数据（14个，包含您所有的链接）==========
+    // ========== 默认软件数据（14个） ==========
     const DEFAULT_SOFTWARES = [
         { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
         { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
@@ -142,6 +147,18 @@
         { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
     ];
 
+    // 分类标准化映射：将各种可能的分类值统一映射到标准显示名称和标准键
+    function normalizeCategory(cat) {
+        const lower = (cat || '').toLowerCase();
+        if (lower === 'adobe' || lower === 'adobe系列' || lower === 'adobe系列' || lower === 'adobe系列') return { key: 'adobe', display: 'Adobe系列' };
+        if (lower === 'autodesk' || lower === 'autodesk系列') return { key: 'autodesk', display: 'Autodesk系列' };
+        if (lower === 'c4d' || lower === 'cinema 4d') return { key: 'c4d', display: 'Cinema 4D' };
+        if (lower === 'sketchup' || lower === '草图大师') return { key: 'sketchup', display: '草图大师' };
+        if (lower === 'rhino' || lower === '犀牛软件') return { key: 'rhino', display: '犀牛软件' };
+        if (lower === 'plugin' || lower === '插件工具') return { key: 'plugin', display: '插件工具' };
+        return { key: cat, display: cat };
+    }
+
     let softwares = [];
     let currentCategory = "all";
     let searchKeyword = "";
@@ -151,7 +168,6 @@
     const searchInput = document.getElementById("searchInput");
     const categoryTabs = document.getElementById("categoryTabs");
 
-    // 合并 Airtable 数据和默认数据
     async function fetchSoftwares() {
         let airtableData = [];
         try {
@@ -161,7 +177,7 @@
             airtableData = response.data.records.map(record => ({
                 id: record.id,
                 name: record.fields.Name || '',
-                category: (record.fields.Category || '').toLowerCase(),
+                originalCategory: record.fields.Category || '',
                 os: record.fields.OS || [],
                 version: record.fields.Version || '',
                 description: record.fields.Description || '',
@@ -173,11 +189,26 @@
             console.error('Airtable 加载失败，仅使用默认数据', error);
         }
 
-        const merged = [...airtableData];
-        const airtableNames = new Set(airtableData.map(s => s.name));
+        // 合并数据并标准化分类
+        const merged = [];
+        const airtableNames = new Set();
+        for (const ad of airtableData) {
+            const norm = normalizeCategory(ad.originalCategory);
+            merged.push({
+                ...ad,
+                category: norm.key,
+                categoryDisplay: norm.display
+            });
+            airtableNames.add(ad.name);
+        }
         for (const def of DEFAULT_SOFTWARES) {
             if (!airtableNames.has(def.name)) {
-                merged.push({ ...def, id: def.name });
+                const norm = normalizeCategory(def.category);
+                merged.push({
+                    ...def,
+                    category: norm.key,
+                    categoryDisplay: norm.display
+                });
             }
         }
         softwares = merged;
@@ -186,11 +217,19 @@
     }
 
     function renderCategories() {
-        const categories = [...new Set(softwares.map(s => s.category))];
+        // 收集所有唯一的分类显示名称（去重）
+        const displayNameMap = new Map(); // key: 显示名称, value: 对应的标准键
+        for (const sw of softwares) {
+            const display = sw.categoryDisplay;
+            const key = sw.category;
+            if (!displayNameMap.has(display)) {
+                displayNameMap.set(display, key);
+            }
+        }
         let html = `<button class="tab-btn active" data-cat="all">全部</button>`;
-        categories.forEach(cat => {
-            html += `<button class="tab-btn" data-cat="${cat}">${cat}</button>`;
-        });
+        for (let [display, key] of displayNameMap.entries()) {
+            html += `<button class="tab-btn" data-cat="${key}">${display}</button>`;
+        }
         categoryTabs.innerHTML = html;
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -298,7 +337,7 @@
         renderGrid();
     });
 
-    // ========== 客服模拟 ==========
+    // 客服模拟（完整保留）
     (function() {
         let messages = [];
         const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
@@ -375,7 +414,6 @@
         });
         chatWindow.style.display = 'none';
 
-        // 拖拽
         const dragContainer = document.getElementById('chatbotContainer');
         const dragHandle = document.getElementById('chatHeaderDrag');
         let isDragging = false, startX, startY, startRight, startBottom;
