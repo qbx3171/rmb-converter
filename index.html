@@ -105,10 +105,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // Supabase 配置（已按您提供的值填写）
+    // 避免重复声明，使用 const 且只声明一次
     const SUPABASE_URL = 'https://mtgvtewqkbesfmanphfl.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_secret_uR0bebXoGWuf_RjsqSfoqA_2xve7kim';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let softwares = [];
     let currentCategory = "all";
@@ -116,8 +116,11 @@
     let pendingUrl = null;
 
     async function fetchSoftwares() {
-        const { data, error } = await supabase.from('softwares').select('*');
-        if (error) { console.error(error); return; }
+        const { data, error } = await supabaseClient.from('softwares').select('*');
+        if (error) {
+            console.error('加载失败:', error);
+            return;
+        }
         softwares = data;
         renderCategories();
         renderGrid();
@@ -126,7 +129,9 @@
     function renderCategories() {
         const categories = [...new Set(softwares.map(s => s.category))];
         let html = `<button class="tab-btn active" data-cat="all">全部</button>`;
-        categories.forEach(cat => { html += `<button class="tab-btn" data-cat="${cat}">${cat}</button>`; });
+        categories.forEach(cat => {
+            html += `<button class="tab-btn" data-cat="${cat}">${cat}</button>`;
+        });
         document.getElementById('categoryTabs').innerHTML = html;
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -146,12 +151,17 @@
         });
     }
 
-    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+    }
 
     function renderGrid() {
         const filtered = getFiltered();
         const container = document.getElementById('softwareGridContainer');
-        if (filtered.length === 0) { container.innerHTML = '<div class="no-results">没有找到相关软件</div>'; return; }
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="no-results">没有找到相关软件</div>';
+            return;
+        }
         container.innerHTML = filtered.map(sw => `
             <div class="software-card" data-id="${sw.id}" data-url="${escapeHtml(sw.url)}" data-noverify="${sw.noVerify}">
                 <div class="card-header"><div class="card-icon"><i class="fas ${sw.icon || 'fa-download'}"></i></div><div class="software-name">${escapeHtml(sw.name)}</div></div>
@@ -194,7 +204,7 @@
     document.getElementById('verifyModal').addEventListener('click', (e) => { if(e.target === document.getElementById('verifyModal')) closeModal(); });
     document.getElementById('searchInput').addEventListener('input', (e) => { searchKeyword = e.target.value; renderGrid(); });
 
-    // 客服模拟
+    // 客服模拟（完整保留，但注意不要重复声明变量）
     (function() {
         let messages = [];
         const botReply = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
