@@ -96,14 +96,14 @@
             });
             softwares = response.data.records.map(record => ({
                 id: record.id,
-                name: record.fields.Name,
-                category: record.fields.Category,
-                os: record.fields.OS || [],
-                version: record.fields.Version || '',
-                description: record.fields.Description || '',
-                icon: record.fields.Icon || 'fa-download',
-                url: record.fields.URL,
-                noVerify: record.fields.NoVerify || false
+                name: record.fields.name,
+                category: record.fields.category,
+                os: record.fields.os || [],
+                version: record.fields.version || '',
+                description: record.fields.description || '',
+                icon: record.fields.icon || 'fa-download',
+                url: record.fields.url,
+                noVerify: record.fields.noVerify || false
             }));
             renderTable();
         } catch (error) {
@@ -161,18 +161,18 @@
     async function saveSoftware() {
         const id = document.getElementById('editId').value;
         const fields = {
-            Name: document.getElementById('name').value,
-            Category: document.getElementById('category').value,
-            OS: [],
-            Version: document.getElementById('version').value,
-            Description: document.getElementById('description').value,
-            Icon: document.getElementById('icon').value,
-            URL: document.getElementById('url').value,
-            NoVerify: document.getElementById('noVerify').checked
+            name: document.getElementById('name').value,
+            category: document.getElementById('category').value,
+            os: [],
+            version: document.getElementById('version').value,
+            description: document.getElementById('description').value,
+            icon: document.getElementById('icon').value,
+            url: document.getElementById('url').value,
+            noVerify: document.getElementById('noVerify').checked
         };
-        if(document.getElementById('osWin').checked) fields.OS.push('Windows');
-        if(document.getElementById('osMac').checked) fields.OS.push('Mac');
-        if(!fields.Name || !fields.Category || !fields.URL) {
+        if(document.getElementById('osWin').checked) fields.os.push('Windows');
+        if(document.getElementById('osMac').checked) fields.os.push('Mac');
+        if(!fields.name || !fields.category || !fields.url) {
             alert('请填写必要字段');
             return;
         }
