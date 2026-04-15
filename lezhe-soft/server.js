@@ -40,6 +40,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+// 显式指定 admin.html 路由
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 // 获取所有软件
 app.get('/api/softwares', async (req, res) => {
     await db.read();
