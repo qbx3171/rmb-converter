@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 完整样式（与之前完全一致，保持不变） */
+        /* 完整样式（与您原有布局完全一致） */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:#f0f4f9; color:#1a2c3e; line-height:1.5; scroll-behavior:smooth; }
         ::-webkit-scrollbar { width:6px; }
@@ -91,9 +91,7 @@
     </div>
     <div class="search-filter-bar">
         <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="搜索软件名称..."></div>
-        <div class="category-tabs" id="categoryTabs">
-            <!-- 分类按钮由 JavaScript 动态生成 -->
-        </div>
+        <div class="category-tabs" id="categoryTabs"></div>
     </div>
     <div id="softwareGridContainer" class="software-grid"></div>
     <footer><i class="fas fa-download"></i> 乐哲软件中心 · 所有安装包均为官方原版，无捆绑后门<br>www.lezhesoft.cn | 正版授权体验</footer>
@@ -129,7 +127,7 @@
     const TABLE_NAME = 'softwares';
     const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_NAME}`;
 
-    // ========== 默认软件数据（14个） ==========
+    // 默认软件数据（14个）
     const DEFAULT_SOFTWARES = [
         { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
         { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
@@ -147,16 +145,63 @@
         { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
     ];
 
-    // 分类标准化映射：将各种可能的分类值统一映射到标准显示名称和标准键
+    // 分类标准化映射
     function normalizeCategory(cat) {
         const lower = (cat || '').toLowerCase();
-        if (lower === 'adobe' || lower === 'adobe系列' || lower === 'adobe系列' || lower === 'adobe系列') return { key: 'adobe', display: 'Adobe系列' };
+        if (lower === 'adobe' || lower === 'adobe系列') return { key: 'adobe', display: 'Adobe系列' };
         if (lower === 'autodesk' || lower === 'autodesk系列') return { key: 'autodesk', display: 'Autodesk系列' };
         if (lower === 'c4d' || lower === 'cinema 4d') return { key: 'c4d', display: 'Cinema 4D' };
         if (lower === 'sketchup' || lower === '草图大师') return { key: 'sketchup', display: '草图大师' };
         if (lower === 'rhino' || lower === '犀牛软件') return { key: 'rhino', display: '犀牛软件' };
         if (lower === 'plugin' || lower === '插件工具') return { key: 'plugin', display: '插件工具' };
         return { key: cat, display: cat };
+    }
+
+    // 从 Airtable 记录中智能获取字段值（不区分大小写）
+    function getFieldValue(record, fieldNames) {
+        for (let name of fieldNames) {
+            if (record.fields[name] !== undefined) return record.fields[name];
+        }
+        return undefined;
+    }
+
+    async function fetchSoftwares() {
+        let airtableData = [];
+        try {
+            const response = await axios.get(API_URL, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+            });
+            airtableData = response.data.records.map(record => {
+                const name = getFieldValue(record, ['Name', 'name']);
+                const category = getFieldValue(record, ['Category', 'category']);
+                const os = getFieldValue(record, ['OS', 'Os', 'os']) || [];
+                const version = getFieldValue(record, ['Version', 'version']) || '';
+                const description = getFieldValue(record, ['Description', 'description']) || '';
+                const icon = getFieldValue(record, ['Icon', 'icon']) || 'fa-download';
+                const url = getFieldValue(record, ['URL', 'Url', 'url']);
+                const noVerify = getFieldValue(record, ['NoVerify', 'noVerify', 'NoVerify']) || false;
+                return { id: record.id, name, category, os, version, description, icon, url, noVerify };
+            });
+        } catch (error) {
+            console.error('Airtable 加载失败，使用默认数据', error);
+        }
+
+        // 合并默认数据
+        const merged = [];
+        const airtableNames = new Set(airtableData.map(s => s.name));
+        for (const ad of airtableData) {
+            const norm = normalizeCategory(ad.category);
+            merged.push({ ...ad, category: norm.key, categoryDisplay: norm.display });
+        }
+        for (const def of DEFAULT_SOFTWARES) {
+            if (!airtableNames.has(def.name)) {
+                const norm = normalizeCategory(def.category);
+                merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
+            }
+        }
+        softwares = merged;
+        renderCategories();
+        renderGrid();
     }
 
     let softwares = [];
@@ -168,57 +213,8 @@
     const searchInput = document.getElementById("searchInput");
     const categoryTabs = document.getElementById("categoryTabs");
 
-    async function fetchSoftwares() {
-        let airtableData = [];
-        try {
-            const response = await axios.get(API_URL, {
-                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
-            });
-            airtableData = response.data.records.map(record => ({
-                id: record.id,
-                name: record.fields.Name || '',
-                originalCategory: record.fields.Category || '',
-                os: record.fields.OS || [],
-                version: record.fields.Version || '',
-                description: record.fields.Description || '',
-                icon: record.fields.Icon || 'fa-download',
-                url: record.fields.URL || '',
-                noVerify: record.fields.NoVerify || false
-            }));
-        } catch (error) {
-            console.error('Airtable 加载失败，仅使用默认数据', error);
-        }
-
-        // 合并数据并标准化分类
-        const merged = [];
-        const airtableNames = new Set();
-        for (const ad of airtableData) {
-            const norm = normalizeCategory(ad.originalCategory);
-            merged.push({
-                ...ad,
-                category: norm.key,
-                categoryDisplay: norm.display
-            });
-            airtableNames.add(ad.name);
-        }
-        for (const def of DEFAULT_SOFTWARES) {
-            if (!airtableNames.has(def.name)) {
-                const norm = normalizeCategory(def.category);
-                merged.push({
-                    ...def,
-                    category: norm.key,
-                    categoryDisplay: norm.display
-                });
-            }
-        }
-        softwares = merged;
-        renderCategories();
-        renderGrid();
-    }
-
     function renderCategories() {
-        // 收集所有唯一的分类显示名称（去重）
-        const displayNameMap = new Map(); // key: 显示名称, value: 对应的标准键
+        const displayNameMap = new Map();
         for (const sw of softwares) {
             const display = sw.categoryDisplay;
             const key = sw.category;
@@ -254,12 +250,7 @@
 
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
 
     function handleDownload(sw) {
@@ -300,7 +291,7 @@
         gridContainer.innerHTML = cardsHtml;
 
         document.querySelectorAll('.software-card').forEach(card => {
-            card.addEventListener('click', (e) => {
+            card.addEventListener('click', () => {
                 const name = card.getAttribute('data-name');
                 const sw = softwares.find(s => s.name === name);
                 if (sw) handleDownload(sw);
