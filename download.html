@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 完整样式（与您原有布局完全一致） */
+        /* 完整样式（与之前完全一致） */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:#f0f4f9; color:#1a2c3e; line-height:1.5; scroll-behavior:smooth; }
         ::-webkit-scrollbar { width:6px; }
@@ -127,7 +127,7 @@
     const TABLE_NAME = 'softwares';
     const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_NAME}`;
 
-    // 默认软件数据（14个）
+    // ========== 默认软件数据（14个，包含您所有的链接）==========
     const DEFAULT_SOFTWARES = [
         { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
         { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
@@ -165,45 +165,6 @@
         return undefined;
     }
 
-    async function fetchSoftwares() {
-        let airtableData = [];
-        try {
-            const response = await axios.get(API_URL, {
-                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
-            });
-            airtableData = response.data.records.map(record => {
-                const name = getFieldValue(record, ['Name', 'name']);
-                const category = getFieldValue(record, ['Category', 'category']);
-                const os = getFieldValue(record, ['OS', 'Os', 'os']) || [];
-                const version = getFieldValue(record, ['Version', 'version']) || '';
-                const description = getFieldValue(record, ['Description', 'description']) || '';
-                const icon = getFieldValue(record, ['Icon', 'icon']) || 'fa-download';
-                const url = getFieldValue(record, ['URL', 'Url', 'url']);
-                const noVerify = getFieldValue(record, ['NoVerify', 'noVerify', 'NoVerify']) || false;
-                return { id: record.id, name, category, os, version, description, icon, url, noVerify };
-            });
-        } catch (error) {
-            console.error('Airtable 加载失败，使用默认数据', error);
-        }
-
-        // 合并默认数据
-        const merged = [];
-        const airtableNames = new Set(airtableData.map(s => s.name));
-        for (const ad of airtableData) {
-            const norm = normalizeCategory(ad.category);
-            merged.push({ ...ad, category: norm.key, categoryDisplay: norm.display });
-        }
-        for (const def of DEFAULT_SOFTWARES) {
-            if (!airtableNames.has(def.name)) {
-                const norm = normalizeCategory(def.category);
-                merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
-            }
-        }
-        softwares = merged;
-        renderCategories();
-        renderGrid();
-    }
-
     let softwares = [];
     let currentCategory = "all";
     let searchKeyword = "";
@@ -213,6 +174,7 @@
     const searchInput = document.getElementById("searchInput");
     const categoryTabs = document.getElementById("categoryTabs");
 
+    // 渲染分类按钮
     function renderCategories() {
         const displayNameMap = new Map();
         for (const sw of softwares) {
@@ -227,6 +189,7 @@
             html += `<button class="tab-btn" data-cat="${key}">${display}</button>`;
         }
         categoryTabs.innerHTML = html;
+        // 重新绑定分类点击事件
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentCategory = btn.getAttribute('data-cat');
@@ -299,6 +262,63 @@
         });
     }
 
+    // 初始化：先用默认数据立即渲染（打开即显示全部软件）
+    function initWithDefaults() {
+        const merged = [];
+        for (const def of DEFAULT_SOFTWARES) {
+            const norm = normalizeCategory(def.category);
+            merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
+        }
+        softwares = merged;
+        renderCategories();
+        renderGrid();
+    }
+
+    // 异步加载 Airtable 数据并合并（静默更新）
+    async function fetchAndMergeAirtable() {
+        try {
+            const response = await axios.get(API_URL, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+            });
+            const airtableData = response.data.records.map(record => {
+                const name = getFieldValue(record, ['Name', 'name']);
+                const category = getFieldValue(record, ['Category', 'category']);
+                const os = getFieldValue(record, ['OS', 'Os', 'os']) || [];
+                const version = getFieldValue(record, ['Version', 'version']) || '';
+                const description = getFieldValue(record, ['Description', 'description']) || '';
+                const icon = getFieldValue(record, ['Icon', 'icon']) || 'fa-download';
+                const url = getFieldValue(record, ['URL', 'Url', 'url']);
+                const noVerify = getFieldValue(record, ['NoVerify', 'noVerify', 'NoVerify']) || false;
+                return { id: record.id, name, category, os, version, description, icon, url, noVerify };
+            });
+
+            // 合并：Airtable 数据优先，默认数据中未在 Airtable 中的保留
+            const merged = [];
+            const airtableNames = new Set(airtableData.map(s => s.name));
+            for (const ad of airtableData) {
+                const norm = normalizeCategory(ad.category);
+                merged.push({ ...ad, category: norm.key, categoryDisplay: norm.display });
+            }
+            for (const def of DEFAULT_SOFTWARES) {
+                if (!airtableNames.has(def.name)) {
+                    const norm = normalizeCategory(def.category);
+                    merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
+                }
+            }
+            softwares = merged;
+            // 重新渲染（更新可能新增的软件或分类）
+            renderCategories();
+            renderGrid();
+        } catch (error) {
+            console.error('Airtable 合并失败，保持当前默认数据', error);
+        }
+    }
+
+    // 立即显示默认数据，同时后台拉取 Airtable 数据
+    initWithDefaults();
+    fetchAndMergeAirtable();
+
+    // 验证逻辑
     function verifyAndDownload() {
         const code = document.getElementById('verifyCode').value.trim();
         if (code === 'Win_Mac_123') {
@@ -425,8 +445,6 @@
         });
         window.addEventListener('mouseup', () => { isDragging = false; dragContainer.style.transition = ''; });
     })();
-
-    fetchSoftwares();
 </script>
 </body>
 </html>
