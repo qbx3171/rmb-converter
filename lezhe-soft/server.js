@@ -36,9 +36,9 @@ initDb();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static('public'));
+const path = require('path');
+// ... 其他代码保持不变 ...
+app.use(express.static(path.join(__dirname, 'public')));
 
 // 显式指定 admin.html 路由
 app.get('/admin.html', (req, res) => {
