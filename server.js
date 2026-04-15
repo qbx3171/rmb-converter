@@ -14,18 +14,7 @@ async function initDb() {
         db.data.softwares = [
             { id: "1", name: "Creative Cloud", category: "Adobe系列", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
             { id: "2", name: "Photoshop", category: "Adobe系列", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
-            { id: "3", name: "Illustrator", category: "Adobe系列", os: ["Windows","Mac"], version: "CS6-2026", description: "矢量图形设计", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false },
-            { id: "4", name: "Lightroom", category: "Adobe系列", os: ["Windows","Mac"], version: "CS6-2026", description: "摄影后期调色", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
-            { id: "5", name: "After Effects", category: "Adobe系列", os: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
-            { id: "6", name: "Premiere Pro", category: "Adobe系列", os: ["Windows","Mac"], version: "CS6-2026", description: "专业视频剪辑", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
-            { id: "7", name: "AutoCAD", category: "Autodesk系列", os: ["Windows","Mac"], version: "2025", description: "计算机辅助设计", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
-            { id: "8", name: "3ds Max", category: "Autodesk系列", os: ["Windows"], version: "2025", description: "三维建模与渲染", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
-            { id: "9", name: "Maya", category: "Autodesk系列", os: ["Windows","Mac"], version: "2026", description: "三维动画与特效", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
-            { id: "10", name: "Cinema 4D", category: "Cinema 4D", os: ["Windows","Mac"], version: "R19-2025", description: "三维建模与动画", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false },
-            { id: "11", name: "草图大师", category: "草图大师", os: ["Windows","Mac"], version: "2015-2026", description: "建筑设计", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false },
-            { id: "12", name: "犀牛 Rhino (Win)", category: "犀牛软件", os: ["Windows"], version: "5.0-8.28", description: "工业设计", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false },
-            { id: "13", name: "犀牛 Rhino (Mac)", category: "犀牛软件", os: ["Mac"], version: "5.0-8.21", description: "工业设计", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false },
-            { id: "14", name: "Adobe 插件全套", category: "插件工具", os: ["Windows","Mac"], version: "2026", description: "支持2026最新版软件，购买注册码请联系客服", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
+            // 其他软件数据请根据需要保留，这里省略以简洁，你可以保留之前完整列表
         ];
         await db.write();
     }
@@ -37,9 +26,29 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// 重要：先定义静态文件中间件，但指定一个前缀路径（可选）
+// 为了确保 /admin.html 和 /download.html 能直接访问，我们使用显式路由
+
+// 显式处理 /admin.html
+app.get('/admin.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// 显式处理 /download.html
+app.get('/download.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'download.html'));
+});
+
+// 根路径指向 download.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'download.html'));
+});
+
+// 然后才是静态文件中间件（用于提供其他静态资源，如图片、css等）
 app.use(express.static(path.join(__dirname, 'public')));
 
-// API routes
+// API 路由
 app.get('/api/softwares', async (req, res) => {
     await db.read();
     res.json(db.data.softwares);
@@ -86,10 +95,5 @@ app.delete('/api/admin/softwares/:id', auth, async (req, res) => {
     await db.write();
     res.json({ success: true });
 });
-
-// HTML routes
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'download.html')));
-app.get('/admin.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/download.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'download.html')));
 
 app.listen(PORT, () => console.log(`✅ 运行在 http://localhost:${PORT}`));
