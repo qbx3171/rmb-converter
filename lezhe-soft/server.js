@@ -36,13 +36,18 @@ initDb();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const path = require('path');
-// ... 其他代码保持不变 ...
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
 
-// 显式指定 admin.html 路由
+// 显式提供 admin.html
 app.get('/admin.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
+// 显式提供 download.html（可选，但推荐）
+app.get('/download.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'download.html'));
 });
 
 // 获取所有软件
@@ -93,21 +98,6 @@ app.delete('/api/admin/softwares/:id', auth, async (req, res) => {
     db.data.softwares = db.data.softwares.filter(s => s.id !== id);
     await db.write();
     res.json({ success: true });
-});
-
-// 处理根路径请求，返回 download.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'download.html'));
-});
-
-// 显式处理 admin.html 的请求
-app.get('/admin.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// 如果还有其他需要单独访问的页面，也可以类似添加
-app.get('/download.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'download.html'));
 });
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'download.html')));
