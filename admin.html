@@ -8,11 +8,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',sans-serif; background:#f0f4f9; padding:32px; }
+        body { font-family:'Inter',sans-serif; background:#f0f4f9; padding:32px; color:#1e293b; }
         .container { max-width:1400px; margin:0 auto; }
+        h1 { font-size:28px; font-weight:700; margin-bottom:8px; background:linear-gradient(135deg,#1E6DFF,#8B5CF6); -webkit-background-clip:text; background-clip:text; color:transparent; }
+        .sub { color:#5b6e8c; margin-bottom:32px; border-left:3px solid #1E6DFF; padding-left:16px; }
         .login-box { max-width:400px; margin:100px auto; background:white; padding:32px; border-radius:32px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.05); }
         .login-box input { width:100%; padding:12px; margin:12px 0; border-radius:40px; border:1px solid #ddd; outline:none; }
-        .software-list { background:white; border-radius:28px; overflow:auto; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
+        .login-box button { width:100%; }
+        .client-list { display:flex; flex-direction:column; gap:24px; }
+        .client-card { background:white; border-radius:28px; box-shadow:0 8px 20px rgba(0,0,0,0.05); overflow:hidden; border:1px solid #eef2fc; }
+        .client-header { background:#f8fafd; padding:18px 24px; border-bottom:1px solid #eef2fc; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; cursor:pointer; font-weight:600; }
+        .client-id { font-family:monospace; background:#eef2ff; padding:4px 12px; border-radius:40px; font-size:13px; color:#1E6DFF; }
+        .reply-area { background:white; padding:16px 24px 24px; border-top:1px solid #eef2fc; display:flex; gap:12px; align-items:flex-start; }
+        .reply-input { flex:1; border:1px solid #dce5f0; border-radius:28px; padding:12px 18px; font-family:inherit; font-size:14px; resize:vertical; }
+        .reply-btn { background:#1E6DFF; border:none; border-radius:40px; padding:0 24px; color:white; font-weight:600; cursor:pointer; height:48px; }
+        .reply-btn:hover { background:#0f5be6; }
+        .messages-container { padding:20px 24px; display:flex; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto; background:#ffffff; }
+        .admin-msg, .customer-msg { padding:10px 16px; border-radius:20px; font-size:13px; max-width:80%; }
+        .admin-msg { background:#f1f5f9; align-self:flex-start; border-bottom-left-radius:4px; }
+        .customer-msg { background:#1E6DFF; color:white; align-self:flex-end; border-bottom-right-radius:4px; }
+        .msg-time { font-size:10px; opacity:0.7; margin-top:4px; display:block; }
+        .badge { background:#1E6DFF10; color:#1E6DFF; border-radius:30px; padding:2px 10px; font-size:12px; }
+        footer { margin-top:48px; text-align:center; font-size:12px; color:#7e8aa2; }
+
+        .software-list { background:white; border-radius:28px; overflow:auto; margin-top:20px; }
         table { width:100%; border-collapse:collapse; }
         th, td { padding:12px; text-align:left; border-bottom:1px solid #eef2fc; }
         th { background:#f8fafd; font-weight:600; }
@@ -31,7 +50,7 @@
     <div id="loginPanel" class="login-box">
         <h2>管理后台登录</h2>
         <input type="password" id="adminPassword" placeholder="请输入密码">
-        <button onclick="login()" class="btn" style="background:#1E6DFF; color:white; width:100%;">登录</button>
+        <button onclick="login()" class="btn" style="background:#1E6DFF; color:white;">登录</button>
         <div style="margin-top:16px; font-size:12px; color:#888;">默认密码: admin123（可在代码中修改）</div>
     </div>
     <div id="adminPanel" style="display:none;">
@@ -39,7 +58,7 @@
         <button class="btn btn-add" onclick="showForm()"><i class="fas fa-plus"></i> 添加软件</button>
         <div class="software-list">
             <table>
-                <thead><tr><th>名称</th><th>分类</th><th>版本</th><th>免验证</th><th>操作</th></tr></thead>
+                <thead><th>名称</th><th>分类</th><th>版本</th><th>免验证</th><th>操作</th></thead>
                 <tbody id="softwareTableBody"></tbody>
             </table>
         </div>
@@ -68,12 +87,13 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    // Supabase 配置（已按您提供的值填写）
-    const SUPABASE_URL = 'https://mtgvtewqkbesfmanphfl.supabase.co';
-    const SUPABASE_SERVICE_KEY = 'sb_publishable_BAFsaMmWg6Uiq_ge0vRqbw_suwGdlhg';
-    const supabaseAdmin = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    // ========== Airtable 配置 ==========
+    const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
+    const AIRTABLE_BASE_ID = 'appM4Ty76lOlslpU9';
+    const TABLE_NAME = 'softwares';
+    const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_NAME}`;
     const ADMIN_PASSWORD = 'admin123';   // 管理密码，可修改
 
     let softwares = [];
@@ -90,10 +110,25 @@
     }
 
     async function loadSoftwares() {
-        const { data, error } = await supabaseAdmin.from('softwares').select('*');
-        if (error) { alert('加载失败: ' + error.message); return; }
-        softwares = data;
-        renderTable();
+        try {
+            const response = await axios.get(API_URL, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+            });
+            softwares = response.data.records.map(record => ({
+                id: record.id,
+                name: record.fields.Name,
+                category: record.fields.Category,
+                os: record.fields.OS || [],
+                version: record.fields.Version || '',
+                description: record.fields.Description || '',
+                icon: record.fields.Icon || 'fa-download',
+                url: record.fields.URL,
+                noVerify: record.fields.NoVerify || false
+            }));
+            renderTable();
+        } catch (error) {
+            alert('加载失败: ' + error.message);
+        }
     }
 
     function renderTable() {
@@ -145,36 +180,50 @@
 
     async function saveSoftware() {
         const id = document.getElementById('editId').value;
-        const data = {
-            name: document.getElementById('name').value,
-            category: document.getElementById('category').value,
-            os: [],
-            version: document.getElementById('version').value,
-            description: document.getElementById('description').value,
-            icon: document.getElementById('icon').value,
-            url: document.getElementById('url').value,
-            noVerify: document.getElementById('noVerify').checked
+        const fields = {
+            Name: document.getElementById('name').value,
+            Category: document.getElementById('category').value,
+            OS: [],
+            Version: document.getElementById('version').value,
+            Description: document.getElementById('description').value,
+            Icon: document.getElementById('icon').value,
+            URL: document.getElementById('url').value,
+            NoVerify: document.getElementById('noVerify').checked
         };
-        if(document.getElementById('osWin').checked) data.os.push('Windows');
-        if(document.getElementById('osMac').checked) data.os.push('Mac');
-        if(!data.name || !data.category || !data.url) { alert('请填写必要字段'); return; }
-
-        let result;
-        if(id) {
-            result = await supabaseAdmin.from('softwares').update(data).eq('id', id);
-        } else {
-            result = await supabaseAdmin.from('softwares').insert([data]);
+        if(document.getElementById('osWin').checked) fields.OS.push('Windows');
+        if(document.getElementById('osMac').checked) fields.OS.push('Mac');
+        if(!fields.Name || !fields.Category || !fields.URL) {
+            alert('请填写必要字段');
+            return;
         }
-        if (result.error) { alert('保存失败: ' + result.error.message); return; }
-        closeForm();
-        loadSoftwares();
+
+        try {
+            if(id) {
+                await axios.patch(`${API_URL}/${id}`, { fields }, {
+                    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' }
+                });
+            } else {
+                await axios.post(API_URL, { fields }, {
+                    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' }
+                });
+            }
+            closeForm();
+            loadSoftwares();
+        } catch (error) {
+            alert('保存失败: ' + (error.response?.data?.error?.message || error.message));
+        }
     }
 
     async function deleteSoftware(id) {
         if(!confirm('确定删除？')) return;
-        const { error } = await supabaseAdmin.from('softwares').delete().eq('id', id);
-        if(error) alert('删除失败: ' + error.message);
-        else loadSoftwares();
+        try {
+            await axios.delete(`${API_URL}/${id}`, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+            });
+            loadSoftwares();
+        } catch (error) {
+            alert('删除失败: ' + error.message);
+        }
     }
 
     function editSoftware(id) {
