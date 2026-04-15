@@ -1,7 +1,6 @@
 {
   "name": "lezhe-soft-backend",
   "version": "1.0.0",
-  "description": "乐哲软件后端",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
