@@ -111,6 +111,18 @@ app.delete('/api/admin/softwares/:id', auth, (req, res) => {
     res.json({ success: true });
 });
 
+const fs = require('fs');
+app.get('/debug-files', (req, res) => {
+    const publicPath = path.join(__dirname, 'public');
+    fs.readdir(publicPath, (err, files) => {
+        if (err) {
+            res.json({ error: err.message, publicPath });
+        } else {
+            res.json({ publicPath, files });
+        }
+    });
+});
+
 // 启动服务器
 app.listen(PORT, () => {
     console.log(`✅ 服务器运行在端口 ${PORT}`);
