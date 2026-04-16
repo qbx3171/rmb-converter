@@ -2,90 +2,103 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>乐哲软件 · 创意工具库 | 官方原版下载</title>
     <meta name="description" content="乐哲软件 - 提供Adobe、Autodesk、C4D、草图大师、犀牛等官方原版软件安装包，无捆绑无后门。">
     <meta name="keywords" content="乐哲软件,Adobe下载,Autodesk,软件下载,Mac软件,Windows软件,C4D,草图大师,犀牛,插件,Creative Cloud">
-    <!-- 预连接加速外部资源加载 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 完整样式（关键内联，无阻塞） */
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#f0f4f9; color:#1a2c3e; line-height:1.5; scroll-behavior:smooth; }
-        ::-webkit-scrollbar { width:6px; }
-        ::-webkit-scrollbar-track { background:#e2e8f0; }
-        ::-webkit-scrollbar-thumb { background:#94a3b8; border-radius:10px; }
-        .app-wrapper { max-width:1400px; margin:0 auto; padding:0 32px 56px; }
-        .top-nav { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; background:rgba(255,255,255,0.8); backdrop-filter:blur(16px); border-radius:80px; margin:24px 0 40px; padding:8px 28px; border:1px solid rgba(0,0,0,0.05); box-shadow:0 4px 12px rgba(0,0,0,0.02); }
-        .logo-area { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
-        .logo-text { font-size:26px; font-weight:800; background:linear-gradient(125deg,#0F2B4D,#1E6DFF,#A855F7); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-0.5px; }
-        .domain-badge { background:#eef3fc; border-radius:40px; padding:4px 14px; font-size:12px; font-weight:500; color:#1E6DFF; }
-        .nav-links { display:flex; gap:32px; font-weight:500; }
-        .nav-links a { text-decoration:none; color:#2c3f5c; transition:0.2s; font-size:15px; }
+        /* 完全内联样式，零外部依赖，手机端深度适配 */
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif; background:#f0f4f9; color:#1a2c3e; line-height:1.5; }
+        .app-wrapper { max-width:1400px; margin:0 auto; padding:0 20px 40px; }
+        @media (min-width: 768px) { .app-wrapper { padding:0 32px 56px; } }
+        
+        /* 顶部导航 */
+        .top-nav { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; background:rgba(255,255,255,0.9); backdrop-filter:blur(16px); border-radius:60px; margin:20px 0 32px; padding:8px 20px; border:1px solid rgba(0,0,0,0.05); box-shadow:0 4px 12px rgba(0,0,0,0.02); }
+        @media (min-width: 768px) { .top-nav { margin:24px 0 40px; padding:8px 28px; } }
+        .logo-area { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+        .logo-text { font-size:22px; font-weight:800; background:linear-gradient(125deg,#0F2B4D,#1E6DFF,#A855F7); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-0.3px; }
+        @media (min-width: 480px) { .logo-text { font-size:26px; } }
+        .domain-badge { background:#eef3fc; border-radius:40px; padding:4px 12px; font-size:11px; font-weight:500; color:#1E6DFF; }
+        .nav-links { display:flex; gap:24px; font-weight:500; flex-wrap:wrap; justify-content:center; }
+        .nav-links a { text-decoration:none; color:#2c3f5c; transition:0.2s; font-size:14px; padding:6px 0; }
         .nav-links a.active, .nav-links a:hover { color:#1E6DFF; }
-        .search-filter-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px; margin-bottom:40px; background:white; padding:12px 24px; border-radius:60px; box-shadow:0 2px 8px rgba(0,0,0,0.02); border:1px solid #eef2fc; }
-        .search-box { flex:1; min-width:200px; display:flex; align-items:center; gap:10px; background:#f8fafc; border-radius:40px; padding:8px 20px; border:1px solid #e2edf7; }
-        .search-box i { color:#8ba0bc; }
+        @media (min-width: 640px) { .nav-links a { font-size:15px; } }
+        
+        /* 搜索栏 */
+        .search-filter-bar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:32px; background:white; padding:12px 20px; border-radius:60px; box-shadow:0 2px 8px rgba(0,0,0,0.02); border:1px solid #eef2fc; }
+        @media (min-width: 768px) { .search-filter-bar { margin-bottom:40px; padding:12px 24px; } }
+        .search-box { flex:1; min-width:180px; display:flex; align-items:center; gap:8px; background:#f8fafc; border-radius:40px; padding:6px 16px; border:1px solid #e2edf7; }
+        .search-box .search-icon { font-size:16px; color:#8ba0bc; }
         .search-box input { border:none; background:transparent; width:100%; font-size:14px; outline:none; padding:8px 0; }
-        .category-tabs { display:flex; gap:12px; flex-wrap:wrap; }
-        .tab-btn { background:#f1f5f9; border:none; padding:8px 24px; border-radius:40px; font-size:14px; font-weight:600; cursor:pointer; transition:all 0.2s; color:#2c405c; }
+        .category-tabs { display:flex; gap:10px; flex-wrap:wrap; }
+        .tab-btn { background:#f1f5f9; border:none; padding:6px 18px; border-radius:40px; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.2s; color:#2c405c; white-space:nowrap; }
         .tab-btn.active { background:#1E6DFF; color:white; box-shadow:0 4px 10px rgba(30,109,255,0.2); }
         .tab-btn:hover:not(.active) { background:#e2e8f0; }
-        .software-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px; margin-top:20px; }
-        .software-card { background:white; border-radius:28px; padding:24px 22px; transition:all 0.25s ease; border:1px solid #eef3fc; box-shadow:0 8px 20px -6px rgba(0,0,0,0.05); cursor:pointer; }
+        @media (min-width: 480px) { .tab-btn { padding:8px 24px; font-size:14px; } }
+        
+        /* 软件网格 - 手机优先单列 */
+        .software-grid { display:grid; grid-template-columns:1fr; gap:20px; margin-top:16px; }
+        @media (min-width: 560px) { .software-grid { grid-template-columns:repeat(2,1fr); gap:24px; } }
+        @media (min-width: 1024px) { .software-grid { grid-template-columns:repeat(3,1fr); gap:28px; } }
+        @media (min-width: 1400px) { .software-grid { grid-template-columns:repeat(4,1fr); } }
+        
+        .software-card { background:white; border-radius:28px; padding:20px 18px; transition:all 0.25s ease; border:1px solid #eef3fc; box-shadow:0 8px 20px -6px rgba(0,0,0,0.05); cursor:pointer; }
         .software-card:hover { transform:translateY(-5px); border-color:#1E6DFF; box-shadow:0 20px 30px -12px rgba(30,109,255,0.15); }
-        .card-header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
-        .card-icon { font-size:42px; color:#1E6DFF; }
-        .software-name { font-size:22px; font-weight:700; color:#0f2b4d; }
-        .version { font-size:12px; background:#f0f4fc; padding:4px 12px; border-radius:40px; display:inline-block; margin:8px 0 12px; color:#1E6DFF; font-weight:500; }
-        .description { color:#4a627a; font-size:13px; line-height:1.5; margin:8px 0 16px; }
-        .os-tags { display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
-        .os-badge { background:#f4f8fe; border-radius:40px; padding:4px 12px; font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:6px; color:#2c405c; }
+        @media (min-width: 768px) { .software-card { padding:24px 22px; } }
+        .card-header { display:flex; align-items:center; gap:14px; margin-bottom:14px; flex-wrap:nowrap; }
+        .card-icon { font-size:44px; min-width:52px; text-align:center; line-height:1; }
+        .software-name { font-size:20px; font-weight:700; color:#0f2b4d; letter-spacing:-0.2px; word-break:break-word; }
+        @media (min-width: 480px) { .software-name { font-size:22px; } }
+        .version { font-size:11px; background:#f0f4fc; padding:4px 12px; border-radius:40px; display:inline-block; margin:6px 0 12px; color:#1E6DFF; font-weight:500; }
+        .description { color:#4a627a; font-size:13px; line-height:1.45; margin:8px 0 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .os-tags { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+        .os-badge { background:#f4f8fe; border-radius:40px; padding:4px 12px; font-size:11px; font-weight:500; display:inline-flex; align-items:center; gap:6px; color:#2c405c; }
         .download-hint { font-size:12px; color:#1E6DFF; display:flex; align-items:center; gap:6px; margin-top:12px; border-top:1px solid #eef2fc; padding-top:14px; }
-        footer { margin-top:70px; text-align:center; font-size:12px; color:#6b85a4; border-top:1px solid #e2ecf5; padding-top:28px; }
-        .legal-statement { background: #fef9e6; border-left: 4px solid #ff9800; padding: 12px 20px; border-radius: 40px; margin-top: 20px; font-size: 12px; text-align: left; display: inline-block; width: auto; max-width: 90%; color: #a16200; font-weight: 500; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
-        .legal-statement i { margin-right: 8px; color: #ff9800; }
-        .no-results { text-align:center; padding:60px; background:white; border-radius:48px; color:#6b85a4; grid-column:1/-1; }
-        @media (max-width:860px) { .app-wrapper { padding:0 20px 40px; } .top-nav { flex-direction:column; align-items:stretch; border-radius:40px; padding:16px 20px; } .nav-links { justify-content:center; } .search-filter-bar { flex-direction:column; align-items:stretch; } .category-tabs { justify-content:center; } }
-
-        .chatbot-container { position:fixed; z-index:200; right:32px; bottom:110px; cursor:default; }
-        .chat-toggle { width:60px; height:60px; background:linear-gradient(135deg,#1E6DFF,#A855F7); border-radius:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 10px 25px -5px rgba(30,109,255,0.5); transition:all 0.3s; color:white; font-size:28px; }
-        .chat-toggle:hover { transform:scale(1.05); box-shadow:0 15px 30px -5px rgba(30,109,255,0.6); }
-        .chat-window { position:absolute; bottom:80px; right:0; width:380px; height:520px; background:white; border-radius:32px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 25px 45px -12px rgba(0,0,0,0.2); border:1px solid #eef2fc; }
-        .chat-header { background:linear-gradient(125deg,#1E6DFF,#8B5CF6); color:white; padding:18px 20px; font-weight:700; display:flex; justify-content:space-between; align-items:center; cursor:grab; }
-        .chat-close { background:rgba(255,255,255,0.2); border:none; color:white; width:28px; height:28px; border-radius:20px; cursor:pointer; }
-        .chat-messages { flex:1; padding:18px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; background:#f8fafd; }
-        .message { max-width:85%; padding:10px 16px; border-radius:24px; font-size:13px; }
+        
+        /* 底部声明 */
+        footer { margin-top:50px; text-align:center; font-size:11px; color:#6b85a4; border-top:1px solid #e2ecf5; padding-top:24px; }
+        @media (min-width: 768px) { footer { margin-top:70px; font-size:12px; padding-top:28px; } }
+        .legal-statement { background: #fef9e6; border-left: 4px solid #ff9800; padding: 12px 16px; border-radius: 32px; margin-top: 16px; font-size: 11px; text-align: left; display: inline-block; width: auto; max-width: 95%; color: #a16200; font-weight: 500; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .legal-statement i { margin-right: 6px; font-style: normal; font-weight:600; }
+        
+        /* 聊天客服 + 模态框 (移动优化) */
+        .chatbot-container { position:fixed; z-index:200; right:16px; bottom:90px; cursor:default; }
+        @media (min-width: 768px) { .chatbot-container { right:32px; bottom:110px; } }
+        .chat-toggle { width:54px; height:54px; background:linear-gradient(135deg,#1E6DFF,#A855F7); border-radius:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px -5px rgba(30,109,255,0.4); transition:all 0.2s; color:white; font-size:26px; }
+        @media (min-width: 768px) { .chat-toggle { width:60px; height:60px; font-size:28px; } }
+        .chat-window { position:absolute; bottom:70px; right:0; width:340px; height:480px; background:white; border-radius:28px; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 35px -10px rgba(0,0,0,0.2); border:1px solid #eef2fc; }
+        @media (min-width: 480px) { .chat-window { width:380px; height:520px; } }
+        .chat-header { background:linear-gradient(125deg,#1E6DFF,#8B5CF6); color:white; padding:14px 18px; font-weight:700; display:flex; justify-content:space-between; align-items:center; cursor:grab; font-size:15px; }
+        .chat-close { background:rgba(255,255,255,0.2); border:none; color:white; width:28px; height:28px; border-radius:20px; cursor:pointer; font-size:16px; line-height:1; }
+        .chat-messages { flex:1; padding:14px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; background:#f8fafd; }
+        .message { max-width:85%; padding:8px 14px; border-radius:22px; font-size:12px; }
         .message.customer { background:#1E6DFF; color:white; align-self:flex-end; border-bottom-right-radius:6px; }
         .message.bot { background:#eef2f8; color:#1a2c42; align-self:flex-start; border-bottom-left-radius:6px; }
-        .message strong { font-size:11px; opacity:0.8; display:block; margin-bottom:4px; }
-        .message small { font-size:9px; opacity:0.6; margin-top:6px; display:block; text-align:right; }
-        .chat-input-area { display:flex; padding:14px; background:white; border-top:1px solid #eef2fc; gap:10px; }
-        .chat-input-area input { flex:1; border:1px solid #e2e8f0; border-radius:30px; padding:12px 18px; font-size:13px; outline:none; }
-        .chat-input-area button { background:#1E6DFF; border:none; border-radius:30px; padding:0 24px; color:white; font-weight:600; cursor:pointer; }
-        .chat-status { font-size:10px; padding:8px; text-align:center; color:#4f657f; border-top:1px solid #eef2fc; }
-
-        .verify-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; }
+        .message strong { font-size:10px; opacity:0.8; display:block; margin-bottom:4px; }
+        .message small { font-size:8px; opacity:0.6; margin-top:5px; display:block; text-align:right; }
+        .chat-input-area { display:flex; padding:12px; background:white; border-top:1px solid #eef2fc; gap:8px; }
+        .chat-input-area input { flex:1; border:1px solid #e2e8f0; border-radius:30px; padding:10px 14px; font-size:13px; outline:none; }
+        .chat-input-area button { background:#1E6DFF; border:none; border-radius:30px; padding:0 18px; color:white; font-weight:600; cursor:pointer; font-size:13px; }
+        .chat-status { font-size:10px; padding:6px; text-align:center; color:#4f657f; border-top:1px solid #eef2fc; }
+        
+        .verify-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; padding:20px; }
         .verify-modal.active { display:flex; }
-        .verify-content { background:white; border-radius:32px; padding:32px; max-width:400px; width:90%; text-align:center; box-shadow:0 20px 35px rgba(0,0,0,0.2); }
-        .verify-content h3 { font-size:24px; margin-bottom:16px; color:#1E6DFF; }
-        .verify-content p { color:#4a627a; margin-bottom:20px; line-height:1.5; }
+        .verify-content { background:white; border-radius:32px; padding:28px 20px; max-width:380px; width:100%; text-align:center; box-shadow:0 20px 35px rgba(0,0,0,0.2); }
+        .verify-content h3 { font-size:22px; margin-bottom:14px; color:#1E6DFF; }
+        .verify-content p { color:#4a627a; margin-bottom:20px; line-height:1.45; font-size:14px; }
         .verify-input { width:100%; padding:12px 16px; border:1px solid #e2e8f0; border-radius:40px; font-size:14px; margin-bottom:20px; outline:none; }
-        .verify-input:focus { border-color:#1E6DFF; }
         .verify-buttons { display:flex; gap:12px; justify-content:center; }
-        .verify-btn { padding:10px 24px; border-radius:40px; font-weight:600; cursor:pointer; border:none; }
+        .verify-btn { padding:10px 20px; border-radius:40px; font-weight:600; cursor:pointer; border:none; font-size:14px; }
         .verify-btn.confirm { background:#1E6DFF; color:white; }
         .verify-btn.cancel { background:#eef2f8; color:#2c405c; }
+        .no-results { text-align:center; padding:48px 20px; background:white; border-radius:48px; color:#6b85a4; grid-column:1/-1; font-size:14px; }
     </style>
 </head>
 <body>
 <div class="app-wrapper">
     <div class="top-nav">
-        <div class="logo-area"><span class="logo-text">乐哲软件</span><span class="domain-badge"><i class="fas fa-globe"></i> www.lezhesoft.cn</span></div>
+        <div class="logo-area"><span class="logo-text">乐哲软件</span><span class="domain-badge">🌐 www.lezhesoft.cn</span></div>
         <div class="nav-links">
             <a href="index.html">首页</a>
             <a href="service.html">服务项目</a>
@@ -94,24 +107,23 @@
         </div>
     </div>
     <div class="search-filter-bar">
-        <div class="search-box"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="搜索软件名称..."></div>
+        <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="searchInput" placeholder="搜索软件名称..."></div>
         <div class="category-tabs" id="categoryTabs"></div>
     </div>
     <div id="softwareGridContainer" class="software-grid"></div>
     
-    <!-- 底部声明：与首页完全一致，强调非商业个人学习使用 -->
     <footer>
-        <i class="fas fa-download"></i> 乐哲软件中心 · 所有安装包均为官方原版，无捆绑后门<br>
+        <span>📥 乐哲软件中心 · 所有安装包均为官方原版，无捆绑后门</span><br>
         www.lezhesoft.cn | 正版授权体验<br>
         <div class="legal-statement">
-            <i class="fas fa-gavel"></i> 郑重声明：本站所提供资源仅限个人学习、研究及非商业性使用，严禁用于任何商业用途。用户下载后请于24小时内删除，若需长期使用请购买官方正版软件。因不当使用造成的法律责任由用户自行承担。
+            <span>⚖️</span> 郑重声明：本站所提供资源仅限个人学习、研究及非商业性使用，严禁用于任何商业用途。用户下载后请于24小时内删除，若需长期使用请购买官方正版软件。因不当使用造成的法律责任由用户自行承担。
         </div>
     </footer>
 </div>
 
 <div id="verifyModal" class="verify-modal">
     <div class="verify-content">
-        <h3><i class="fab fa-weixin"></i> 添加微信获取口令</h3>
+        <h3>💬 添加微信获取口令</h3>
         <p>请添加微信 <strong>Win_Mac_123</strong><br>我们会在微信上发送给您下载口令。</p>
         <input type="text" id="verifyCode" class="verify-input" placeholder="请输入收到的口令">
         <div class="verify-buttons">
@@ -122,9 +134,9 @@
 </div>
 
 <div class="chatbot-container" id="chatbotContainer">
-    <div class="chat-toggle" id="chatToggleBtn"><i class="fas fa-comment-dots"></i></div>
+    <div class="chat-toggle" id="chatToggleBtn">💬</div>
     <div class="chat-window" id="chatWindow" style="display:none;">
-        <div class="chat-header" id="chatHeaderDrag"><span><i class="fas fa-robot"></i> 乐哲麦 · 智能客服</span><button class="chat-close" id="chatCloseBtn"><i class="fas fa-times"></i></button></div>
+        <div class="chat-header" id="chatHeaderDrag"><span>🤖 乐哲麦 · 智能客服</span><button class="chat-close" id="chatCloseBtn">✕</button></div>
         <div class="chat-messages" id="chatMessagesList"></div>
         <div class="chat-input-area"><input type="text" id="chatInput" placeholder="输入您的需求或问题..."><button id="chatSendBtn">发送</button></div>
         <div class="chat-status" id="chatStatus">✨ 在线 · 乐哲麦为您服务</div>
@@ -133,37 +145,39 @@
 
 <script>
     (function() {
-        // ========== 默认软件数据（14个，包含所有链接）==========
-        const DEFAULT_SOFTWARES = [
-            { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
-            { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
-            { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false },
-            { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
-            { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
-            { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
-            { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
-            { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
-            { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
-            { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false },
-            { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false },
-            { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false },
-            { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false },
-            { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
+        // ======================= 完整软件数据 (包含所有新增软件，图标强制使用emoji，避免fa-download) =======================
+        // 针对 Bridge, InDesign, Acrobat DC 以及原有全部软件，指定专属图标
+        const MASTER_SOFTWARE_LIST = [
+            { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "☁️", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
+            { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "🎨", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
+            { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "✒️", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false },
+            { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "📸", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
+            { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "🎬", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
+            { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "🎞️", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
+            { name: "Bridge", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "🖼️", url: "https://www.yuque.com/example/bridge", noVerify: false },      // 修正图标
+            { name: "InDesign", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业排版软件", icon: "📄", url: "https://www.yuque.com/example/indesign", noVerify: false },          // 修正图标
+            { name: "Acrobat DC", category: "adobe", os: ["Windows", "Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "📑", url: "https://www.yuque.com/example/acrobat", noVerify: false },   // 修正图标
+            { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "📐", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
+            { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "🧊", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
+            { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "🎭", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
+            { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "🔴", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false },
+            { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "🏛️", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false },
+            { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "🦏", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false },
+            { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "🦏", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false },
+            { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "🧩", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
         ];
 
-        // 分类标准化映射
-        function normalizeCategory(cat) {
-            const lower = (cat || '').toLowerCase();
-            if (lower === 'adobe' || lower === 'adobe系列') return { key: 'adobe', display: 'Adobe系列' };
-            if (lower === 'autodesk' || lower === 'autodesk系列') return { key: 'autodesk', display: 'Autodesk系列' };
-            if (lower === 'c4d' || lower === 'cinema 4d') return { key: 'c4d', display: 'Cinema 4D' };
-            if (lower === 'sketchup' || lower === '草图大师') return { key: 'sketchup', display: '草图大师' };
-            if (lower === 'rhino' || lower === '犀牛软件') return { key: 'rhino', display: '犀牛软件' };
-            if (lower === 'plugin' || lower === '插件工具') return { key: 'plugin', display: '插件工具' };
-            return { key: cat, display: cat };
-        }
+        // 分类映射
+        const CATEGORY_DISPLAY = {
+            'adobe': 'Adobe系列',
+            'autodesk': 'Autodesk系列',
+            'c4d': 'Cinema 4D',
+            'sketchup': '草图大师',
+            'rhino': '犀牛软件',
+            'plugin': '插件工具'
+        };
 
-        let softwares = [];
+        let currentSoftwares = [];
         let currentCategory = "all";
         let searchKeyword = "";
         let pendingUrl = null;
@@ -172,15 +186,21 @@
         const searchInput = document.getElementById("searchInput");
         const categoryTabs = document.getElementById("categoryTabs");
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+        }
+
+        // 生成分类按钮
         function renderCategories() {
-            const displayNameMap = new Map();
-            for (const sw of softwares) {
+            const catMap = new Map();
+            for (const sw of currentSoftwares) {
                 const display = sw.categoryDisplay;
                 const key = sw.category;
-                if (!displayNameMap.has(display)) displayNameMap.set(display, key);
+                if (!catMap.has(display)) catMap.set(display, key);
             }
             let html = `<button class="tab-btn active" data-cat="all">全部</button>`;
-            for (let [display, key] of displayNameMap.entries()) {
+            for (let [display, key] of catMap.entries()) {
                 html += `<button class="tab-btn" data-cat="${key}">${display}</button>`;
             }
             categoryTabs.innerHTML = html;
@@ -194,165 +214,179 @@
             });
         }
 
-        function getFilteredSoftware() {
-            return softwares.filter(sw => {
+        function getFiltered() {
+            return currentSoftwares.filter(sw => {
                 if (currentCategory !== "all" && sw.category !== currentCategory) return false;
                 if (searchKeyword.trim() !== "") {
-                    const kw = searchKeyword.trim().toLowerCase();
-                    return sw.name.toLowerCase().includes(kw);
+                    return sw.name.toLowerCase().includes(searchKeyword.trim().toLowerCase());
                 }
                 return true;
             });
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
-        }
-
-        function handleDownload(sw) {
-            if (sw.noVerify) {
-                window.open(sw.url, '_blank');
-            } else {
-                pendingUrl = sw.url;
-                document.getElementById('verifyModal').classList.add('active');
-                document.getElementById('verifyCode').value = '';
-            }
-        }
-
         function renderGrid() {
-            const filtered = getFilteredSoftware();
+            const filtered = getFiltered();
             if (filtered.length === 0) {
-                gridContainer.innerHTML = `<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件，试试其他关键词～</div>`;
+                gridContainer.innerHTML = `<div class="no-results">📭 没有找到相关软件，试试其他关键词～</div>`;
                 return;
             }
-            const cardsHtml = filtered.map(sw => {
-                const osTagsHtml = sw.os.map(os => {
-                    const icon = os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>';
+            let cardsHtml = '';
+            for (const sw of filtered) {
+                const osTags = sw.os.map(os => {
+                    const icon = os === "Windows" ? "🪟" : "🍎";
                     return `<span class="os-badge">${icon} ${os}</span>`;
                 }).join('');
-                const iconClass = sw.icon || "fa-download";
-                return `
-                    <div class="software-card" data-name="${escapeHtml(sw.name)}" data-url="${escapeHtml(sw.url)}">
+                cardsHtml += `
+                    <div class="software-card" data-name="${escapeHtml(sw.name)}">
                         <div class="card-header">
-                            <div class="card-icon"><i class="fas ${iconClass}"></i></div>
+                            <div class="card-icon">${sw.icon}</div>
                             <div class="software-name">${escapeHtml(sw.name)}</div>
                         </div>
                         <div class="version">版本 ${escapeHtml(sw.version)}</div>
                         <div class="description">${escapeHtml(sw.description)}</div>
-                        <div class="os-tags">${osTagsHtml}</div>
-                        <div class="download-hint"><i class="fas fa-external-link-alt"></i> 点击获取下载链接</div>
+                        <div class="os-tags">${osTags}</div>
+                        <div class="download-hint">🔗 点击获取下载链接</div>
                     </div>
                 `;
-            }).join('');
+            }
             gridContainer.innerHTML = cardsHtml;
+            // 绑定点击事件
             document.querySelectorAll('.software-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const name = card.getAttribute('data-name');
-                    const sw = softwares.find(s => s.name === name);
-                    if (sw) handleDownload(sw);
+                    const sw = currentSoftwares.find(s => s.name === name);
+                    if (sw) {
+                        if (sw.noVerify) {
+                            window.open(sw.url, '_blank');
+                        } else {
+                            pendingUrl = sw.url;
+                            const modal = document.getElementById('verifyModal');
+                            modal.classList.add('active');
+                            document.getElementById('verifyCode').value = '';
+                        }
+                    }
                 });
             });
         }
 
-        // 立即使用默认数据渲染（零延迟，首屏瞬间展示）
-        function initWithDefaultsSync() {
-            const merged = [];
-            for (const def of DEFAULT_SOFTWARES) {
-                const norm = normalizeCategory(def.category);
-                merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
-            }
-            softwares = merged;
+        // 初始化：直接使用内置数据（保证图标正确，无fa-download残留）
+        function initImmediate() {
+            currentSoftwares = MASTER_SOFTWARE_LIST.map(item => {
+                const catKey = item.category.toLowerCase();
+                return {
+                    ...item,
+                    category: catKey,
+                    categoryDisplay: CATEGORY_DISPLAY[catKey] || item.category,
+                    // 确保icon绝对不是fa-xxx文本
+                    icon: item.icon && !item.icon.includes('fa-') ? item.icon : '📦'
+                };
+            });
             renderCategories();
             renderGrid();
         }
 
-        // 异步拉取 Airtable（原生 fetch，无外部依赖，不阻塞初始渲染）
-        async function fetchAndMergeAirtableSilently() {
+        initImmediate();
+
+        // 后台静默合并Airtable（仅用于补充云端可能的新增软件，但强制覆盖图标避免fa-download）
+        (function silentAirtableMerge() {
             const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
-            const AIRTABLE_BASE_ID = 'appM4Ty76lOlslpU9';
-            const TABLE_NAME = 'softwares';
-            const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_NAME}`;
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                const response = await fetch(API_URL, {
+            const BASE_ID = 'appM4Ty76lOlslpU9';
+            const TABLE = 'softwares';
+            const API_URL = `https://api.airtable.com/v0/${BASE_ID}/${TABLE}`;
+            const startFetch = () => {
+                fetch(API_URL, {
                     headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const data = await response.json();
-                const airtableData = data.records.map(record => {
-                    const getField = (names) => {
-                        for (let n of names) if (record.fields[n] !== undefined) return record.fields[n];
-                        return undefined;
-                    };
-                    const name = getField(['Name', 'name']);
-                    const category = getField(['Category', 'category']);
-                    const os = getField(['OS', 'Os', 'os']) || [];
-                    const version = getField(['Version', 'version']) || '';
-                    const description = getField(['Description', 'description']) || '';
-                    const icon = getField(['Icon', 'icon']) || 'fa-download';
-                    const url = getField(['URL', 'Url', 'url']);
-                    const noVerify = getField(['NoVerify', 'noVerify']) || false;
-                    return { id: record.id, name, category, os, version, description, icon, url, noVerify };
-                }).filter(item => item.name);
-                
-                const merged = [];
-                const airtableNames = new Set(airtableData.map(s => s.name));
-                for (const ad of airtableData) {
-                    const norm = normalizeCategory(ad.category);
-                    merged.push({ ...ad, category: norm.key, categoryDisplay: norm.display });
-                }
-                for (const def of DEFAULT_SOFTWARES) {
-                    if (!airtableNames.has(def.name)) {
-                        const norm = normalizeCategory(def.category);
-                        merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
+                    signal: AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined
+                }).then(res => {
+                    if (!res.ok) throw new Error();
+                    return res.json();
+                }).then(data => {
+                    const airRecords = data.records.map(rec => {
+                        const f = rec.fields;
+                        const name = f.Name || f.name;
+                        if (!name) return null;
+                        // 从云端获取原始数据，但我们会忽略其icon字段，使用本地映射
+                        return {
+                            name: name,
+                            category: (f.Category || f.category || '').toLowerCase(),
+                            os: f.OS || f.Os || f.os || [],
+                            version: f.Version || f.version || '',
+                            description: f.Description || f.description || '',
+                            url: f.URL || f.Url || f.url,
+                            noVerify: f.NoVerify || f.noVerify || false
+                        };
+                    }).filter(v => v && v.name);
+                    
+                    if (airRecords.length) {
+                        // 合并策略：保留本地master中已有的软件（优先使用本地的完整信息包括图标），
+                        // 对于云端新增而本地没有的软件，则添加进来并给予默认图标
+                        const localNames = new Set(MASTER_SOFTWARE_LIST.map(s => s.name));
+                        const merged = [...currentSoftwares]; // 先复制当前的（已经包含全部master）
+                        for (const rec of airRecords) {
+                            if (!localNames.has(rec.name)) {
+                                // 云端新增软件，给一个安全图标，绝不用fa-
+                                const safeIcon = "📦";
+                                const catKey = rec.category || 'tool';
+                                merged.push({
+                                    name: rec.name,
+                                    category: catKey,
+                                    categoryDisplay: CATEGORY_DISPLAY[catKey] || catKey,
+                                    os: rec.os,
+                                    version: rec.version,
+                                    description: rec.description,
+                                    icon: safeIcon,
+                                    url: rec.url,
+                                    noVerify: rec.noVerify
+                                });
+                            }
+                        }
+                        if (merged.length !== currentSoftwares.length) {
+                            currentSoftwares = merged;
+                            renderCategories();
+                            renderGrid();
+                        }
                     }
-                }
-                if (merged.length) {
-                    softwares = merged;
-                    renderCategories();
-                    renderGrid();
-                }
-            } catch (error) {
-                // 静默失败，保留默认数据即可
-                console.debug('Airtable 更新未生效，使用默认数据');
+                }).catch(e => { /* 静默失败 */ });
+            };
+            if (window.requestIdleCallback) {
+                requestIdleCallback(startFetch, { timeout: 3000 });
+            } else {
+                setTimeout(startFetch, 2000);
             }
-        }
+        })();
 
-        // 首屏极速渲染
-        initWithDefaultsSync();
-        // 后台静默增强，不影响跳转体验
-        fetchAndMergeAirtableSilently();
-
-        // 验证模块事件
-        document.getElementById('confirmVerify').addEventListener('click', () => {
-            const code = document.getElementById('verifyCode').value.trim();
-            if (code === 'Win_Mac_123') {
-                if (pendingUrl) { window.open(pendingUrl, '_blank'); pendingUrl = null; }
-                document.getElementById('verifyModal').classList.remove('active');
-            } else { alert("口令错误，请确认后重试。"); }
-        });
-        document.getElementById('cancelVerify').addEventListener('click', () => {
-            document.getElementById('verifyModal').classList.remove('active');
-            pendingUrl = null;
-        });
-        document.getElementById('verifyModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('verifyModal')) {
-                document.getElementById('verifyModal').classList.remove('active');
-                pendingUrl = null;
-            }
-        });
-
-        // 实时搜索
+        // 搜索实时响应
         searchInput.addEventListener('input', (e) => {
             searchKeyword = e.target.value;
             renderGrid();
         });
 
-        // 聊天组件（轻量化，不影响首屏）
+        // 验证模态框逻辑
+        const modal = document.getElementById('verifyModal');
+        const verifyCodeInput = document.getElementById('verifyCode');
+        const confirmBtn = document.getElementById('confirmVerify');
+        const cancelBtn = document.getElementById('cancelVerify');
+        function closeModal() {
+            modal.classList.remove('active');
+            pendingUrl = null;
+        }
+        confirmBtn.addEventListener('click', () => {
+            if (verifyCodeInput.value.trim() === 'Win_Mac_123') {
+                if (pendingUrl) {
+                    window.open(pendingUrl, '_blank');
+                    pendingUrl = null;
+                }
+                closeModal();
+            } else {
+                alert("口令错误，请确认后重试。");
+            }
+        });
+        cancelBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // 客服模块（保留原有功能）
         (function initChat() {
             let messages = [];
             const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
@@ -427,7 +461,6 @@
             });
             chatWindow.style.display = 'none';
 
-            // 拖拽逻辑
             const dragContainer = document.getElementById('chatbotContainer');
             const dragHandle = document.getElementById('chatHeaderDrag');
             let isDragging = false, startX, startY, startRight, startBottom;
