@@ -14,7 +14,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* 完全内联样式，保持原有性能 */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#f0f4f9; color:#1a2c3e; line-height:1.5; scroll-behavior:smooth; }
         ::-webkit-scrollbar { width:6px; }
@@ -53,11 +52,12 @@
         .card-icon { font-size:44px; min-width:52px; text-align:center; line-height:1; }
         .software-name { font-size:20px; font-weight:700; color:#0f2b4d; letter-spacing:-0.2px; word-break:break-word; }
         @media (min-width: 480px) { .software-name { font-size:22px; } }
-        .version { font-size:11px; background:#f0f4fc; padding:4px 12px; border-radius:40px; display:inline-block; margin:6px 0 12px; color:#1E6DFF; font-weight:500; }
-        .description { color:#4a627a; font-size:13px; line-height:1.45; margin:8px 0 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .os-tags { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+        .version { font-size:11px; background:#f0f4fc; padding:4px 12px; border-radius:40px; display:inline-block; margin:6px 0 10px; color:#1E6DFF; font-weight:500; }
+        .description { color:#4a627a; font-size:13px; line-height:1.45; margin:8px 0 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .os-tags { display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
         .os-badge { background:#f4f8fe; border-radius:40px; padding:4px 12px; font-size:11px; font-weight:500; display:inline-flex; align-items:center; gap:6px; color:#2c405c; }
-        .download-hint { font-size:12px; color:#1E6DFF; display:flex; align-items:center; gap:6px; margin-top:12px; border-top:1px solid #eef2fc; padding-top:14px; }
+        .added-date { font-size:10px; color:#6c86a3; background:#f8fafd; display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:40px; margin-top:4px; width:fit-content; }
+        .download-hint { font-size:12px; color:#1E6DFF; display:flex; align-items:center; gap:6px; margin-top:14px; border-top:1px solid #eef2fc; padding-top:14px; }
         footer { margin-top:50px; text-align:center; font-size:11px; color:#6b85a4; border-top:1px solid #e2ecf5; padding-top:24px; }
         @media (min-width: 768px) { footer { margin-top:70px; font-size:12px; padding-top:28px; } }
         .legal-statement { background: #fef9e6; border-left: 4px solid #ff9800; padding: 12px 16px; border-radius: 32px; margin-top: 16px; font-size: 11px; text-align: left; display: inline-block; width: auto; max-width: 95%; color: #a16200; font-weight: 500; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
@@ -144,29 +144,28 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
 (function() {
-    // ========== 软件数据（完整内置，零延迟）==========
+    // ========== 1. 基础软件数据（含添加日期，顺序固定，永不跳动）==========
     const DEFAULT_SOFTWARES = [
-        { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
-        { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
-        { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false },
-        { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
-        { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
-        { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
-        { name: "Bridge", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "fa-images", url: "https://www.yuque.com/example/bridge", noVerify: false },
-        { name: "InDesign", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false },
-        { name: "Acrobat DC", category: "adobe", os: ["Windows", "Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "fa-file-pdf", url: "https://www.yuque.com/example/acrobat", noVerify: false },
-        { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe 官方清理工具，用于彻底删除残留文件和清理旧版本，解决安装冲突。", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false },
-        { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
-        { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
-        { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
-        { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false },
-        { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false },
-        { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false },
-        { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false },
-        { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
+        { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
+        { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
+        { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false, addedDate: "2024-09-10" },
+        { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false, addedDate: "2024-10-01" },
+        { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false, addedDate: "2024-10-15" },
+        { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false, addedDate: "2024-10-20" },
+        { name: "Bridge", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "fa-images", url: "https://www.yuque.com/example/bridge", noVerify: false, addedDate: "2024-11-05" },
+        { name: "InDesign", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false, addedDate: "2024-11-12" },
+        { name: "Acrobat DC", category: "adobe", os: ["Windows", "Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "fa-file-pdf", url: "https://www.yuque.com/example/acrobat", noVerify: false, addedDate: "2024-11-20" },
+        { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe 官方清理工具，用于彻底删除残留文件和清理旧版本，解决安装冲突。", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false, addedDate: "2025-01-10" },
+        { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false, addedDate: "2024-09-18" },
+        { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false, addedDate: "2024-10-05" },
+        { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false, addedDate: "2024-11-01" },
+        { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false, addedDate: "2024-11-25" },
+        { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false, addedDate: "2024-12-01" },
+        { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false, addedDate: "2024-12-10" },
+        { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false, addedDate: "2024-12-12" },
+        { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true, addedDate: "2025-02-01" }
     ];
 
     const CATEGORY_DISPLAY = {
@@ -178,7 +177,7 @@
         'plugin': '插件工具'
     };
 
-    let softwares = [];
+    let softwares = [];          // 主数据数组（保持顺序稳定）
     let currentCategory = "all";
     let searchKeyword = "";
     let pendingUrl = null;
@@ -192,12 +191,21 @@
         return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
     }
 
-    function normalizeCategory(cat) {
-        const key = (cat || '').toLowerCase();
-        const display = CATEGORY_DISPLAY[key] || cat;
-        return { key, display };
+    function formatDate(dateStr) {
+        if (!dateStr) return "2024-01-01";
+        return dateStr;
     }
 
+    function renderIcon(iconValue) {
+        if (!iconValue) return '📦';
+        if (typeof iconValue === 'string' && iconValue.startsWith('fa-')) {
+            return `<i class="fas ${iconValue}"></i>`;
+        } else {
+            return escapeHtml(iconValue);
+        }
+    }
+
+    // 渲染分类选项卡，保留当前激活的分类
     function renderCategories() {
         const catMap = new Map();
         for (const sw of softwares) {
@@ -205,9 +213,9 @@
             const key = sw.category;
             if (!catMap.has(display)) catMap.set(display, key);
         }
-        let html = `<button class="tab-btn active" data-cat="all">全部</button>`;
+        let html = `<button class="tab-btn ${currentCategory === "all" ? "active" : ""}" data-cat="all">全部</button>`;
         for (let [display, key] of catMap.entries()) {
-            html += `<button class="tab-btn" data-cat="${key}">${display}</button>`;
+            html += `<button class="tab-btn ${currentCategory === key ? "active" : ""}" data-cat="${key}">${display}</button>`;
         }
         categoryTabs.innerHTML = html;
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -230,16 +238,6 @@
         });
     }
 
-    // 智能图标渲染函数：支持 fa- 开头显示 Font Awesome 图标，否则显示文本/Emoji
-    function renderIcon(iconValue) {
-        if (!iconValue) return '📦';
-        if (typeof iconValue === 'string' && iconValue.startsWith('fa-')) {
-            return `<i class="fas ${iconValue}"></i>`;
-        } else {
-            return escapeHtml(iconValue);
-        }
-    }
-
     function renderGrid() {
         const filtered = getFiltered();
         if (filtered.length === 0) {
@@ -253,6 +251,7 @@
                 return `<span class="os-badge">${icon} ${os}</span>`;
             }).join('');
             const iconHtml = renderIcon(sw.icon);
+            const addedDateFormatted = formatDate(sw.addedDate);
             cardsHtml += `
                 <div class="software-card" data-name="${escapeHtml(sw.name)}">
                     <div class="card-header">
@@ -262,6 +261,7 @@
                     <div class="version">版本 ${escapeHtml(sw.version)}</div>
                     <div class="description">${escapeHtml(sw.description)}</div>
                     <div class="os-tags">${osTags}</div>
+                    <div class="added-date"><i class="far fa-calendar-alt"></i> 添加于 ${addedDateFormatted}</div>
                     <div class="download-hint"><i class="fas fa-external-link-alt"></i> 点击获取下载链接</div>
                 </div>
             `;
@@ -284,19 +284,21 @@
         });
     }
 
-    // 立即初始化（零延迟）
-    function initSync() {
+    // 初始化软件列表（深拷贝，保证原始顺序）
+    function initSoftwareList() {
         softwares = DEFAULT_SOFTWARES.map(def => {
-            const norm = normalizeCategory(def.category);
-            return { ...def, category: norm.key, categoryDisplay: norm.display };
+            const normCat = (CATEGORY_DISPLAY[def.category] ? def.category : def.category).toLowerCase();
+            return {
+                ...def,
+                category: normCat,
+                categoryDisplay: CATEGORY_DISPLAY[normCat] || def.category,
+                addedDate: def.addedDate || "2024-01-01"
+            };
         });
-        renderCategories();
-        renderGrid();
     }
-    initSync();
 
-    // 异步 Airtable 合并（静默，不影响首屏）
-    async function fetchAirtableSilent() {
+    // 合并Airtable数据，不改变原有顺序，新软件追加到末尾，已有软件仅更新字段（保持位置）
+    async function mergeAirtableSilently() {
         const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
         const BASE_ID = 'appM4Ty76lOlslpU9';
         const TABLE = 'softwares';
@@ -315,42 +317,82 @@
                 const f = rec.fields;
                 const name = f.Name || f.name;
                 if (!name) return null;
+                let categoryRaw = (f.Category || f.category || '').toLowerCase();
+                if (!CATEGORY_DISPLAY[categoryRaw]) categoryRaw = 'plugin';
                 return {
                     name: name,
-                    category: (f.Category || f.category || '').toLowerCase(),
+                    category: categoryRaw,
                     os: f.OS || f.Os || f.os || [],
                     version: f.Version || f.version || '',
                     description: f.Description || f.description || '',
                     icon: f.Icon || f.icon || '📦',
-                    url: f.URL || f.Url || f.url,
-                    noVerify: f.NoVerify || f.noVerify || false
+                    url: f.URL || f.Url || f.url || '#',
+                    noVerify: f.NoVerify === true || f.noVerify === true || false,
+                    addedDate: f.AddedDate || f.addedDate || new Date().toISOString().slice(0,10)
                 };
             }).filter(v => v && v.name);
-            if (airRecords.length) {
-                const merged = [];
-                const airNames = new Set(airRecords.map(s => s.name));
-                for (const rec of airRecords) {
-                    const norm = normalizeCategory(rec.category);
-                    merged.push({ ...rec, category: norm.key, categoryDisplay: norm.display });
-                }
-                for (const def of DEFAULT_SOFTWARES) {
-                    if (!airNames.has(def.name)) {
-                        const norm = normalizeCategory(def.category);
-                        merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
-                    }
-                }
-                if (merged.length) {
-                    softwares = merged;
-                    renderCategories();
-                    renderGrid();
+            if (!airRecords.length) return;
+
+            // 构建现有软件名称映射 (小写不区分大小写，但保留原始展示)
+            const existingMap = new Map();
+            for (let i = 0; i < softwares.length; i++) {
+                existingMap.set(softwares[i].name.toLowerCase(), { index: i, software: softwares[i] });
+            }
+
+            // 先更新已有软件字段（不改变顺序）
+            for (const air of airRecords) {
+                const lowerName = air.name.toLowerCase();
+                if (existingMap.has(lowerName)) {
+                    const target = existingMap.get(lowerName).software;
+                    // 保留原有名称显示，但更新其他属性
+                    target.version = air.version || target.version;
+                    target.description = air.description || target.description;
+                    target.icon = air.icon || target.icon;
+                    target.url = air.url || target.url;
+                    target.noVerify = air.noVerify;
+                    target.os = air.os.length ? air.os : target.os;
+                    target.category = air.category;
+                    target.categoryDisplay = CATEGORY_DISPLAY[air.category] || air.category;
+                    if (air.addedDate) target.addedDate = air.addedDate;
+                    // 标记已处理
+                    existingMap.set(lowerName, { ...existingMap.get(lowerName), updated: true });
                 }
             }
-        } catch (e) { /* 静默失败 */ }
+
+            // 添加全新软件（按顺序追加至末尾，避免跳动）
+            const newSoftwares = [];
+            for (const air of airRecords) {
+                const lowerName = air.name.toLowerCase();
+                if (!existingMap.has(lowerName)) {
+                    newSoftwares.push({
+                        ...air,
+                        categoryDisplay: CATEGORY_DISPLAY[air.category] || air.category,
+                        addedDate: air.addedDate || new Date().toISOString().slice(0,10)
+                    });
+                }
+            }
+            if (newSoftwares.length) {
+                softwares.push(...newSoftwares);
+            }
+
+            // 重新渲染界面（保持当前分类和搜索词）
+            renderCategories();
+            renderGrid();
+        } catch (e) {
+            // 静默失败，不影响用户
+        }
     }
+
+    // 初始渲染 + 静默同步（不刷新顺序）
+    initSoftwareList();
+    renderCategories();
+    renderGrid();
+
+    // 异步获取airtable数据，但不改变原有卡片顺序，仅增量追加或更新内容
     if (window.requestIdleCallback) {
-        requestIdleCallback(() => fetchAirtableSilent(), { timeout: 3000 });
+        requestIdleCallback(() => mergeAirtableSilently(), { timeout: 3000 });
     } else {
-        setTimeout(fetchAirtableSilent, 2000);
+        setTimeout(mergeAirtableSilently, 2000);
     }
 
     // 搜索事件
@@ -359,7 +401,7 @@
         renderGrid();
     });
 
-    // 验证模态框
+    // 验证模态框逻辑
     const modal = document.getElementById('verifyModal');
     const verifyCodeInput = document.getElementById('verifyCode');
     const confirmBtn = document.getElementById('confirmVerify');
@@ -382,7 +424,7 @@
     cancelBtn.addEventListener('click', closeModal);
     modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-    // 客服聊天（原有逻辑）
+    // ========== 客服聊天（保留原样）==========
     (function initChat() {
         let messages = [];
         const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
