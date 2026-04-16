@@ -49,7 +49,11 @@
         .software-card:hover { transform:translateY(-5px); border-color:#1E6DFF; box-shadow:0 20px 30px -12px rgba(30,109,255,0.15); }
         @media (min-width: 768px) { .software-card { padding:24px 22px; } }
         .card-header { display:flex; align-items:center; gap:14px; margin-bottom:14px; flex-wrap:nowrap; }
-        .card-icon { font-size:44px; min-width:52px; text-align:center; line-height:1; }
+        /* 图标容器：支持 FontAwesome 和文字徽标 */
+        .card-icon { width:56px; height:56px; display:flex; align-items:center; justify-content:center; border-radius:20px; background:linear-gradient(145deg, #f0f4fe, #e9eff9); color:#1E6DFF; font-size:26px; transition:all 0.2s; flex-shrink:0; }
+        .software-card:hover .card-icon { background:#1E6DFF; color:white; transform:scale(0.96); }
+        /* 文字徽标专用样式 */
+        .text-badge { font-weight:800; font-size:22px; text-transform:uppercase; }
         .software-name { font-size:20px; font-weight:700; color:#0f2b4d; letter-spacing:-0.2px; word-break:break-word; }
         @media (min-width: 480px) { .software-name { font-size:22px; } }
         .version { font-size:11px; background:#f0f4fc; padding:4px 12px; border-radius:40px; display:inline-block; margin:6px 0 10px; color:#1E6DFF; font-weight:500; }
@@ -146,7 +150,7 @@
 
 <script>
 (function() {
-    // ========== 1. 基础软件数据（含添加日期，顺序固定，永不跳动）==========
+    // ========== 基础软件数据（含添加日期，顺序固定，永不跳动）==========
     const DEFAULT_SOFTWARES = [
         { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
         { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
@@ -196,12 +200,15 @@
         return dateStr;
     }
 
+    // 智能图标渲染：若 icon 以 fa- 开头则渲染 Font Awesome，否则渲染为彩色文字徽标
     function renderIcon(iconValue) {
-        if (!iconValue) return '📦';
+        if (!iconValue) return '<span class="text-badge">📦</span>';
         if (typeof iconValue === 'string' && iconValue.startsWith('fa-')) {
             return `<i class="fas ${iconValue}"></i>`;
         } else {
-            return escapeHtml(iconValue);
+            // 文字徽标：最多显示 3 个字符，全大写
+            let text = iconValue.slice(0, 3).toUpperCase();
+            return `<span class="text-badge">${escapeHtml(text)}</span>`;
         }
     }
 
