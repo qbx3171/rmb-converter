@@ -143,10 +143,38 @@
         if(pwd === ADMIN_PASSWORD) {
             document.getElementById('loginPanel').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            loadFromCacheAndRefresh();
+            // 优先从缓存加载，立即显示
+            const hasCache = loadFromCache();
+            if (!hasCache) {
+                // 如果没有缓存，显示一个短暂提示（非阻塞）
+                updateCacheStatus('加载中...');
+                showLoading(true);
+            }
+            // 无论如何都会静默刷新网络数据（不显示全局转圈，除非首次无缓存）
+            refreshFromNetwork(hasCache);
         } else {
             alert('密码错误');
         }
+    }
+
+    // 返回是否有有效缓存
+    function loadFromCache() {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if(cached) {
+            try {
+                const { data, timestamp } = JSON.parse(cached);
+                const age = Date.now() - timestamp;
+                if(age < CACHE_EXPIRY) {
+                    softwares = data;
+                    applyFilterAndRender();
+                    updateCacheStatus(`已加载缓存 (${Math.floor(age/1000)}秒前)`);
+                    return true;
+                } else {
+                    updateCacheStatus('缓存已过期，正在更新...');
+                }
+            } catch(e) {}
+        }
+        return false;
     }
 
     function showLoading(show) {
@@ -162,35 +190,21 @@
                 statusDiv.style.display = 'flex';
                 statusSpan.innerText = text;
                 statusDiv.style.color = isError ? '#e74c3c' : '#6b85a4';
+                if (!isError && !text.includes('错误')) {
+                    setTimeout(() => {
+                        if (statusSpan.innerText === text) statusDiv.style.display = 'none';
+                    }, 3000);
+                }
             } else {
                 statusDiv.style.display = 'none';
             }
         }
     }
 
-    function loadFromCacheAndRefresh() {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if(cached) {
-            try {
-                const { data, timestamp } = JSON.parse(cached);
-                const age = Date.now() - timestamp;
-                if(age < CACHE_EXPIRY) {
-                    softwares = data;
-                    applyFilterAndRender();
-                    updateCacheStatus(`已加载缓存 (${Math.floor(age/1000)}秒前)`);
-                } else {
-                    updateCacheStatus('缓存已过期，正在更新...');
-                }
-            } catch(e) {}
-        }
-        refreshFromNetwork();
-    }
-
-    async function refreshFromNetwork() {
+    async function refreshFromNetwork(skipLoading = false) {
         if(pendingNetwork) return;
         pendingNetwork = true;
-        showLoading(true);
-        updateCacheStatus('正在从云端获取最新数据...');
+        if (!skipLoading) showLoading(true);
         try {
             const response = await fetch(API_URL, {
                 headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
@@ -215,11 +229,9 @@
                 timestamp: Date.now()
             }));
             updateCacheStatus('已同步最新数据');
-            setTimeout(() => updateCacheStatus(''), 3000);
         } catch (error) {
             console.error(error);
             updateCacheStatus('网络错误，使用缓存数据', true);
-            if(!softwares.length) applyFilterAndRender();
         } finally {
             showLoading(false);
             pendingNetwork = false;
@@ -234,7 +246,6 @@
             if(searchText && !sw.name.toLowerCase().includes(searchText)) return false;
             return true;
         });
-        // 按分类排序
         filteredSoftwares.sort((a,b) => (a.category || '').localeCompare(b.category || ''));
         renderTable();
     }
@@ -363,7 +374,7 @@
             }
             if(!response.ok) throw new Error(await response.text());
             closeForm();
-            await refreshFromNetwork();
+            await refreshFromNetwork(true);
         } catch (error) {
             alert('保存失败: ' + error.message);
         } finally {
@@ -380,7 +391,7 @@
                 headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
             });
             if(!response.ok) throw new Error();
-            await refreshFromNetwork();
+            await refreshFromNetwork(true);
         } catch (error) {
             alert('删除失败: ' + error.message);
         } finally {
