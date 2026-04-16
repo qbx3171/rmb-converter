@@ -54,6 +54,7 @@
         .description { color:#4a627a; font-size:13px; line-height:1.45; margin:8px 0 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .os-tags { display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
         .os-badge { background:#f4f8fe; border-radius:40px; padding:4px 12px; font-size:11px; font-weight:500; display:inline-flex; align-items:center; gap:6px; color:#2c405c; }
+        .os-badge svg { width:14px; height:14px; vertical-align: middle; fill: currentColor; }
         .download-hint { font-size:12px; color:#1E6DFF; display:flex; align-items:center; gap:6px; margin-top:12px; border-top:1px solid #eef2fc; padding-top:14px; }
         
         /* 底部声明 */
@@ -145,8 +146,11 @@
 
 <script>
     (function() {
-        // ======================= 完整软件数据 (包含所有新增软件，图标强制使用emoji，避免fa-download) =======================
-        // 针对 Bridge, InDesign, Acrobat DC 以及原有全部软件，指定专属图标
+        // 内联 SVG 图标函数
+        const windowsIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M3 12V6.75L10.5 5.25V12H3Zm0 1.5h7.5v6.75L3 18.75V13.5Zm9-8.25L21 3v9h-9V5.25ZM21 12v9l-9-1.5V12h9Z"/></svg>`;
+        const macIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17.36 3 13.75 3 10.5c0-3.55 2.3-5.47 4.56-5.53 1.34-.03 2.6.91 3.42.91.81 0 2.3-1.12 3.86-.95.66.03 2.51.27 3.7 2.02-.09.06-2.2 1.28-2.18 3.83.02 2.99 2.62 3.98 2.65 4 .02.01-2.17 6.42-2.3 6.42zm-6.71-14c.72-.88 1.71-1.5 2.86-1.5.2 1.26-.32 2.42-1.1 3.24-.78.82-1.8 1.28-2.86 1.28-.18-1.22.36-2.38 1.1-3.02z"/></svg>`;
+
+        // 完整软件数据（与之前相同）
         const MASTER_SOFTWARE_LIST = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "☁️", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
             { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "🎨", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
@@ -154,9 +158,9 @@
             { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "📸", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
             { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "🎬", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
             { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "🎞️", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
-            { name: "Bridge", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "🖼️", url: "https://www.yuque.com/example/bridge", noVerify: false },      // 修正图标
-            { name: "InDesign", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业排版软件", icon: "📄", url: "https://www.yuque.com/example/indesign", noVerify: false },          // 修正图标
-            { name: "Acrobat DC", category: "adobe", os: ["Windows", "Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "📑", url: "https://www.yuque.com/example/acrobat", noVerify: false },   // 修正图标
+            { name: "Bridge", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "🖼️", url: "https://www.yuque.com/example/bridge", noVerify: false },
+            { name: "InDesign", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业排版软件", icon: "📄", url: "https://www.yuque.com/example/indesign", noVerify: false },
+            { name: "Acrobat DC", category: "adobe", os: ["Windows", "Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "📑", url: "https://www.yuque.com/example/acrobat", noVerify: false },
             { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "📐", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
             { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "🧊", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
             { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "🎭", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
@@ -232,9 +236,10 @@
             }
             let cardsHtml = '';
             for (const sw of filtered) {
+                // 使用内联 SVG 替换 emoji
                 const osTags = sw.os.map(os => {
-                    const icon = os === "Windows" ? "🪟" : "🍎";
-                    return `<span class="os-badge">${icon} ${os}</span>`;
+                    const iconSvg = os === "Windows" ? windowsIcon : macIcon;
+                    return `<span class="os-badge">${iconSvg} ${os}</span>`;
                 }).join('');
                 cardsHtml += `
                     <div class="software-card" data-name="${escapeHtml(sw.name)}">
@@ -269,7 +274,7 @@
             });
         }
 
-        // 初始化：直接使用内置数据（保证图标正确，无fa-download残留）
+        // 初始化：直接使用内置数据
         function initImmediate() {
             currentSoftwares = MASTER_SOFTWARE_LIST.map(item => {
                 const catKey = item.category.toLowerCase();
@@ -277,7 +282,6 @@
                     ...item,
                     category: catKey,
                     categoryDisplay: CATEGORY_DISPLAY[catKey] || item.category,
-                    // 确保icon绝对不是fa-xxx文本
                     icon: item.icon && !item.icon.includes('fa-') ? item.icon : '📦'
                 };
             });
@@ -287,7 +291,7 @@
 
         initImmediate();
 
-        // 后台静默合并Airtable（仅用于补充云端可能的新增软件，但强制覆盖图标避免fa-download）
+        // 后台静默合并Airtable（保留原有逻辑，略）
         (function silentAirtableMerge() {
             const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
             const BASE_ID = 'appM4Ty76lOlslpU9';
@@ -305,7 +309,6 @@
                         const f = rec.fields;
                         const name = f.Name || f.name;
                         if (!name) return null;
-                        // 从云端获取原始数据，但我们会忽略其icon字段，使用本地映射
                         return {
                             name: name,
                             category: (f.Category || f.category || '').toLowerCase(),
@@ -318,13 +321,10 @@
                     }).filter(v => v && v.name);
                     
                     if (airRecords.length) {
-                        // 合并策略：保留本地master中已有的软件（优先使用本地的完整信息包括图标），
-                        // 对于云端新增而本地没有的软件，则添加进来并给予默认图标
                         const localNames = new Set(MASTER_SOFTWARE_LIST.map(s => s.name));
-                        const merged = [...currentSoftwares]; // 先复制当前的（已经包含全部master）
+                        const merged = [...currentSoftwares];
                         for (const rec of airRecords) {
                             if (!localNames.has(rec.name)) {
-                                // 云端新增软件，给一个安全图标，绝不用fa-
                                 const safeIcon = "📦";
                                 const catKey = rec.category || 'tool';
                                 merged.push({
