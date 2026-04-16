@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <!-- SEO 基础优化 -->
     <title>乐哲软件 | 原版软件下载推荐 · 创意工具库</title>
     <meta name="description" content="乐哲软件博客提供 Adobe、Autodesk、C4D、草图大师、犀牛等主流软件的原版安装包推荐与下载指引，资源安全无捆绑，仅供个人学习使用。">
-    <meta name="keywords" content="乐哲软件,软件下载,Adobe下载,Autodesk,正版软件推荐,Mac软件,Windows软件,C4D,草图大师,犀牛,插件,Adobe Cleaner Tools">
+    <meta name="keywords" content="乐哲软件,软件下载,Adobe下载,Autodesk,正版软件推荐,Mac软件,Windows软件,C4D,草图大师,犀牛,插件">
     <meta name="author" content="乐哲软件博客">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.lezhesoft.cn/download.html">
@@ -111,7 +110,6 @@
     </div>
     <div id="softwareGridContainer" class="software-grid"></div>
     
-    <!-- 底部声明：个人博客 + 合规说明 -->
     <footer>
         <i class="fas fa-download"></i> 乐哲软件博客 · 原版安装包推荐，安全无捆绑<br>
         www.lezhesoft.cn | 个人技术分享<br>
@@ -148,329 +146,338 @@
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-    (function() {
-        // ========== 软件数据（完整内置，零延迟）==========
-        // 新增 Adobe Cleaner Tools 条目
-        const DEFAULT_SOFTWARES = [
-            { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
-            { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
-            { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false },
-            { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
-            { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
-            { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
-            { name: "Bridge", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "fa-images", url: "https://www.yuque.com/example/bridge", noVerify: false },
-            { name: "InDesign", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false },
-            { name: "Acrobat DC", category: "adobe", os: ["Windows", "Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "fa-file-pdf", url: "https://www.yuque.com/example/acrobat", noVerify: false },
-            { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe 官方清理工具，用于彻底删除残留文件和清理旧版本，解决安装冲突。", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false },
-            { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
-            { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
-            { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
-            { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false },
-            { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false },
-            { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false },
-            { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false },
-            { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
-        ];
+(function() {
+    // ========== 软件数据（完整内置，零延迟）==========
+    const DEFAULT_SOFTWARES = [
+        { name: "Creative Cloud", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true },
+        { name: "Photoshop", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false },
+        { name: "Illustrator", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false },
+        { name: "Lightroom", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false },
+        { name: "After Effects", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false },
+        { name: "Premiere Pro", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false },
+        { name: "Bridge", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "fa-images", url: "https://www.yuque.com/example/bridge", noVerify: false },
+        { name: "InDesign", category: "adobe", os: ["Windows", "Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false },
+        { name: "Acrobat DC", category: "adobe", os: ["Windows", "Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "fa-file-pdf", url: "https://www.yuque.com/example/acrobat", noVerify: false },
+        { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows", "Mac"], version: "最新版", description: "Adobe 官方清理工具，用于彻底删除残留文件和清理旧版本，解决安装冲突。", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false },
+        { name: "AutoCAD", category: "autodesk", os: ["Windows", "Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false },
+        { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false },
+        { name: "Maya", category: "autodesk", os: ["Windows", "Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false },
+        { name: "Cinema 4D", category: "c4d", os: ["Windows", "Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false },
+        { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows", "Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false },
+        { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false },
+        { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false },
+        { name: "Adobe 插件全套", category: "plugin", os: ["Windows", "Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true }
+    ];
 
-        const CATEGORY_DISPLAY = {
-            'adobe': 'Adobe系列',
-            'autodesk': 'Autodesk系列',
-            'c4d': 'Cinema 4D',
-            'sketchup': '草图大师',
-            'rhino': '犀牛软件',
-            'plugin': '插件工具'
-        };
+    const CATEGORY_DISPLAY = {
+        'adobe': 'Adobe系列',
+        'autodesk': 'Autodesk系列',
+        'c4d': 'Cinema 4D',
+        'sketchup': '草图大师',
+        'rhino': '犀牛软件',
+        'plugin': '插件工具'
+    };
 
-        let softwares = [];
-        let currentCategory = "all";
-        let searchKeyword = "";
-        let pendingUrl = null;
+    let softwares = [];
+    let currentCategory = "all";
+    let searchKeyword = "";
+    let pendingUrl = null;
 
-        const gridContainer = document.getElementById("softwareGridContainer");
-        const searchInput = document.getElementById("searchInput");
-        const categoryTabs = document.getElementById("categoryTabs");
+    const gridContainer = document.getElementById("softwareGridContainer");
+    const searchInput = document.getElementById("searchInput");
+    const categoryTabs = document.getElementById("categoryTabs");
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+    }
+
+    function normalizeCategory(cat) {
+        const key = (cat || '').toLowerCase();
+        const display = CATEGORY_DISPLAY[key] || cat;
+        return { key, display };
+    }
+
+    function renderCategories() {
+        const catMap = new Map();
+        for (const sw of softwares) {
+            const display = sw.categoryDisplay;
+            const key = sw.category;
+            if (!catMap.has(display)) catMap.set(display, key);
         }
-
-        function normalizeCategory(cat) {
-            const key = (cat || '').toLowerCase();
-            const display = CATEGORY_DISPLAY[key] || cat;
-            return { key, display };
+        let html = `<button class="tab-btn active" data-cat="all">全部</button>`;
+        for (let [display, key] of catMap.entries()) {
+            html += `<button class="tab-btn" data-cat="${key}">${display}</button>`;
         }
-
-        function renderCategories() {
-            const catMap = new Map();
-            for (const sw of softwares) {
-                const display = sw.categoryDisplay;
-                const key = sw.category;
-                if (!catMap.has(display)) catMap.set(display, key);
-            }
-            let html = `<button class="tab-btn active" data-cat="all">全部</button>`;
-            for (let [display, key] of catMap.entries()) {
-                html += `<button class="tab-btn" data-cat="${key}">${display}</button>`;
-            }
-            categoryTabs.innerHTML = html;
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    currentCategory = btn.getAttribute('data-cat');
-                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    renderGrid();
-                });
+        categoryTabs.innerHTML = html;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentCategory = btn.getAttribute('data-cat');
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderGrid();
             });
-        }
+        });
+    }
 
-        function getFiltered() {
-            return softwares.filter(sw => {
-                if (currentCategory !== "all" && sw.category !== currentCategory) return false;
-                if (searchKeyword.trim() !== "") {
-                    return sw.name.toLowerCase().includes(searchKeyword.trim().toLowerCase());
-                }
-                return true;
-            });
-        }
-
-        function renderGrid() {
-            const filtered = getFiltered();
-            if (filtered.length === 0) {
-                gridContainer.innerHTML = `<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件，试试其他关键词～</div>`;
-                return;
+    function getFiltered() {
+        return softwares.filter(sw => {
+            if (currentCategory !== "all" && sw.category !== currentCategory) return false;
+            if (searchKeyword.trim() !== "") {
+                return sw.name.toLowerCase().includes(searchKeyword.trim().toLowerCase());
             }
-            let cardsHtml = '';
-            for (const sw of filtered) {
-                const osTags = sw.os.map(os => {
-                    const icon = os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>';
-                    return `<span class="os-badge">${icon} ${os}</span>`;
-                }).join('');
-                const iconClass = sw.icon || "fa-download";
-                cardsHtml += `
-                    <div class="software-card" data-name="${escapeHtml(sw.name)}">
-                        <div class="card-header">
-                            <div class="card-icon"><i class="fas ${iconClass}"></i></div>
-                            <div class="software-name">${escapeHtml(sw.name)}</div>
-                        </div>
-                        <div class="version">版本 ${escapeHtml(sw.version)}</div>
-                        <div class="description">${escapeHtml(sw.description)}</div>
-                        <div class="os-tags">${osTags}</div>
-                        <div class="download-hint"><i class="fas fa-external-link-alt"></i> 点击获取下载链接</div>
-                    </div>
-                `;
-            }
-            gridContainer.innerHTML = cardsHtml;
-            document.querySelectorAll('.software-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const name = card.getAttribute('data-name');
-                    const sw = softwares.find(s => s.name === name);
-                    if (sw) {
-                        if (sw.noVerify) {
-                            window.open(sw.url, '_blank');
-                        } else {
-                            pendingUrl = sw.url;
-                            document.getElementById('verifyModal').classList.add('active');
-                            document.getElementById('verifyCode').value = '';
-                        }
-                    }
-                });
-            });
-        }
+            return true;
+        });
+    }
 
-        // 立即初始化（零延迟）
-        function initSync() {
-            softwares = DEFAULT_SOFTWARES.map(def => {
-                const norm = normalizeCategory(def.category);
-                return { ...def, category: norm.key, categoryDisplay: norm.display };
-            });
-            renderCategories();
-            renderGrid();
-        }
-        initSync();
-
-        // 异步 Airtable 合并（静默，不影响首屏）
-        async function fetchAirtableSilent() {
-            const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
-            const BASE_ID = 'appM4Ty76lOlslpU9';
-            const TABLE = 'softwares';
-            const API_URL = `https://api.airtable.com/v0/${BASE_ID}/${TABLE}`;
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
-                const resp = await fetch(API_URL, {
-                    headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                if (!resp.ok) throw new Error();
-                const data = await resp.json();
-                const airRecords = data.records.map(rec => {
-                    const f = rec.fields;
-                    const name = f.Name || f.name;
-                    if (!name) return null;
-                    return {
-                        name: name,
-                        category: (f.Category || f.category || '').toLowerCase(),
-                        os: f.OS || f.Os || f.os || [],
-                        version: f.Version || f.version || '',
-                        description: f.Description || f.description || '',
-                        icon: f.Icon || f.icon || 'fa-download',
-                        url: f.URL || f.Url || f.url,
-                        noVerify: f.NoVerify || f.noVerify || false
-                    };
-                }).filter(v => v && v.name);
-                if (airRecords.length) {
-                    const merged = [];
-                    const airNames = new Set(airRecords.map(s => s.name));
-                    for (const rec of airRecords) {
-                        const norm = normalizeCategory(rec.category);
-                        merged.push({ ...rec, category: norm.key, categoryDisplay: norm.display });
-                    }
-                    for (const def of DEFAULT_SOFTWARES) {
-                        if (!airNames.has(def.name)) {
-                            const norm = normalizeCategory(def.category);
-                            merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
-                        }
-                    }
-                    if (merged.length) {
-                        softwares = merged;
-                        renderCategories();
-                        renderGrid();
-                    }
-                }
-            } catch (e) { /* 静默失败 */ }
-        }
-        if (window.requestIdleCallback) {
-            requestIdleCallback(() => fetchAirtableSilent(), { timeout: 3000 });
+    // 智能图标渲染函数：支持 fa- 开头显示 Font Awesome 图标，否则显示文本/Emoji
+    function renderIcon(iconValue) {
+        if (!iconValue) return '📦';
+        if (typeof iconValue === 'string' && iconValue.startsWith('fa-')) {
+            return `<i class="fas ${iconValue}"></i>`;
         } else {
-            setTimeout(fetchAirtableSilent, 2000);
+            return escapeHtml(iconValue);
         }
+    }
 
-        // 搜索事件
-        searchInput.addEventListener('input', (e) => {
-            searchKeyword = e.target.value;
-            renderGrid();
-        });
-
-        // 验证模态框
-        const modal = document.getElementById('verifyModal');
-        const verifyCodeInput = document.getElementById('verifyCode');
-        const confirmBtn = document.getElementById('confirmVerify');
-        const cancelBtn = document.getElementById('cancelVerify');
-        function closeModal() {
-            modal.classList.remove('active');
-            pendingUrl = null;
+    function renderGrid() {
+        const filtered = getFiltered();
+        if (filtered.length === 0) {
+            gridContainer.innerHTML = `<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件，试试其他关键词～</div>`;
+            return;
         }
-        confirmBtn.addEventListener('click', () => {
-            if (verifyCodeInput.value.trim() === 'Win_Mac_123') {
-                if (pendingUrl) {
-                    window.open(pendingUrl, '_blank');
-                    pendingUrl = null;
+        let cardsHtml = '';
+        for (const sw of filtered) {
+            const osTags = sw.os.map(os => {
+                const icon = os === "Windows" ? '<i class="fab fa-windows"></i>' : '<i class="fab fa-apple"></i>';
+                return `<span class="os-badge">${icon} ${os}</span>`;
+            }).join('');
+            const iconHtml = renderIcon(sw.icon);
+            cardsHtml += `
+                <div class="software-card" data-name="${escapeHtml(sw.name)}">
+                    <div class="card-header">
+                        <div class="card-icon">${iconHtml}</div>
+                        <div class="software-name">${escapeHtml(sw.name)}</div>
+                    </div>
+                    <div class="version">版本 ${escapeHtml(sw.version)}</div>
+                    <div class="description">${escapeHtml(sw.description)}</div>
+                    <div class="os-tags">${osTags}</div>
+                    <div class="download-hint"><i class="fas fa-external-link-alt"></i> 点击获取下载链接</div>
+                </div>
+            `;
+        }
+        gridContainer.innerHTML = cardsHtml;
+        document.querySelectorAll('.software-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const name = card.getAttribute('data-name');
+                const sw = softwares.find(s => s.name === name);
+                if (sw) {
+                    if (sw.noVerify) {
+                        window.open(sw.url, '_blank');
+                    } else {
+                        pendingUrl = sw.url;
+                        document.getElementById('verifyModal').classList.add('active');
+                        document.getElementById('verifyCode').value = '';
+                    }
                 }
-                closeModal();
-            } else {
-                alert("口令错误，请确认后重试。");
-            }
-        });
-        cancelBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-
-        // 客服聊天（原有逻辑）
-        (function initChat() {
-            let messages = [];
-            const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
-            const chatWindow = document.getElementById('chatWindow');
-            const chatMessagesDiv = document.getElementById('chatMessagesList');
-            const chatInput = document.getElementById('chatInput');
-            const chatSendBtn = document.getElementById('chatSendBtn');
-            const chatToggle = document.getElementById('chatToggleBtn');
-            const chatClose = document.getElementById('chatCloseBtn');
-            const chatStatus = document.getElementById('chatStatus');
-
-            function renderMessages() {
-                chatMessagesDiv.innerHTML = '';
-                if (messages.length === 0) {
-                    const welcomeDiv = document.createElement('div');
-                    welcomeDiv.className = 'message bot';
-                    welcomeDiv.innerHTML = `<strong>乐哲麦</strong>${botReplyText}`;
-                    chatMessagesDiv.appendChild(welcomeDiv);
-                } else {
-                    messages.forEach(msg => {
-                        const msgDiv = document.createElement('div');
-                        msgDiv.className = `message ${msg.sender === 'customer' ? 'customer' : 'bot'}`;
-                        const displayName = msg.sender === 'customer' ? '我' : '乐哲麦';
-                        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        msgDiv.innerHTML = `<strong>${displayName}</strong>${escapeHtml(msg.text)}<small>${timeStr}</small>`;
-                        chatMessagesDiv.appendChild(msgDiv);
-                    });
-                }
-                chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-            }
-
-            function addMessage(text, sender) {
-                messages.push({ text, sender, timestamp: new Date() });
-                renderMessages();
-            }
-
-            function botReply() {
-                const lastMsg = messages[messages.length - 1];
-                if (lastMsg && lastMsg.sender === 'bot' && lastMsg.text === botReplyText) return;
-                addMessage(botReplyText, 'bot');
-            }
-
-            function sendCustomerMessage(text) {
-                if (!text.trim()) return;
-                addMessage(text.trim(), 'customer');
-                setTimeout(botReply, 500);
-                if (chatStatus) chatStatus.innerText = '📤 消息已发送，乐哲麦思考中...';
-                setTimeout(() => { if (chatStatus) chatStatus.innerText = '✨ 在线 · 乐哲麦为您服务'; }, 2000);
-            }
-
-            function openChat() { chatWindow.style.display = 'flex'; renderMessages(); }
-            function closeChat() { chatWindow.style.display = 'none'; }
-
-            chatToggle.addEventListener('click', () => {
-                if (chatWindow.style.display === 'none') openChat();
-                else closeChat();
             });
-            chatClose.addEventListener('click', closeChat);
-            chatSendBtn.addEventListener('click', () => {
+        });
+    }
+
+    // 立即初始化（零延迟）
+    function initSync() {
+        softwares = DEFAULT_SOFTWARES.map(def => {
+            const norm = normalizeCategory(def.category);
+            return { ...def, category: norm.key, categoryDisplay: norm.display };
+        });
+        renderCategories();
+        renderGrid();
+    }
+    initSync();
+
+    // 异步 Airtable 合并（静默，不影响首屏）
+    async function fetchAirtableSilent() {
+        const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
+        const BASE_ID = 'appM4Ty76lOlslpU9';
+        const TABLE = 'softwares';
+        const API_URL = `https://api.airtable.com/v0/${BASE_ID}/${TABLE}`;
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+            const resp = await fetch(API_URL, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` },
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (!resp.ok) throw new Error();
+            const data = await resp.json();
+            const airRecords = data.records.map(rec => {
+                const f = rec.fields;
+                const name = f.Name || f.name;
+                if (!name) return null;
+                return {
+                    name: name,
+                    category: (f.Category || f.category || '').toLowerCase(),
+                    os: f.OS || f.Os || f.os || [],
+                    version: f.Version || f.version || '',
+                    description: f.Description || f.description || '',
+                    icon: f.Icon || f.icon || '📦',
+                    url: f.URL || f.Url || f.url,
+                    noVerify: f.NoVerify || f.noVerify || false
+                };
+            }).filter(v => v && v.name);
+            if (airRecords.length) {
+                const merged = [];
+                const airNames = new Set(airRecords.map(s => s.name));
+                for (const rec of airRecords) {
+                    const norm = normalizeCategory(rec.category);
+                    merged.push({ ...rec, category: norm.key, categoryDisplay: norm.display });
+                }
+                for (const def of DEFAULT_SOFTWARES) {
+                    if (!airNames.has(def.name)) {
+                        const norm = normalizeCategory(def.category);
+                        merged.push({ ...def, category: norm.key, categoryDisplay: norm.display });
+                    }
+                }
+                if (merged.length) {
+                    softwares = merged;
+                    renderCategories();
+                    renderGrid();
+                }
+            }
+        } catch (e) { /* 静默失败 */ }
+    }
+    if (window.requestIdleCallback) {
+        requestIdleCallback(() => fetchAirtableSilent(), { timeout: 3000 });
+    } else {
+        setTimeout(fetchAirtableSilent, 2000);
+    }
+
+    // 搜索事件
+    searchInput.addEventListener('input', (e) => {
+        searchKeyword = e.target.value;
+        renderGrid();
+    });
+
+    // 验证模态框
+    const modal = document.getElementById('verifyModal');
+    const verifyCodeInput = document.getElementById('verifyCode');
+    const confirmBtn = document.getElementById('confirmVerify');
+    const cancelBtn = document.getElementById('cancelVerify');
+    function closeModal() {
+        modal.classList.remove('active');
+        pendingUrl = null;
+    }
+    confirmBtn.addEventListener('click', () => {
+        if (verifyCodeInput.value.trim() === 'Win_Mac_123') {
+            if (pendingUrl) {
+                window.open(pendingUrl, '_blank');
+                pendingUrl = null;
+            }
+            closeModal();
+        } else {
+            alert("口令错误，请确认后重试。");
+        }
+    });
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    // 客服聊天（原有逻辑）
+    (function initChat() {
+        let messages = [];
+        const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
+        const chatWindow = document.getElementById('chatWindow');
+        const chatMessagesDiv = document.getElementById('chatMessagesList');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatToggle = document.getElementById('chatToggleBtn');
+        const chatClose = document.getElementById('chatCloseBtn');
+        const chatStatus = document.getElementById('chatStatus');
+
+        function renderMessages() {
+            chatMessagesDiv.innerHTML = '';
+            if (messages.length === 0) {
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.className = 'message bot';
+                welcomeDiv.innerHTML = `<strong>乐哲麦</strong>${botReplyText}`;
+                chatMessagesDiv.appendChild(welcomeDiv);
+            } else {
+                messages.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `message ${msg.sender === 'customer' ? 'customer' : 'bot'}`;
+                    const displayName = msg.sender === 'customer' ? '我' : '乐哲麦';
+                    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    msgDiv.innerHTML = `<strong>${displayName}</strong>${escapeHtml(msg.text)}<small>${timeStr}</small>`;
+                    chatMessagesDiv.appendChild(msgDiv);
+                });
+            }
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+
+        function addMessage(text, sender) {
+            messages.push({ text, sender, timestamp: new Date() });
+            renderMessages();
+        }
+
+        function botReply() {
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg && lastMsg.sender === 'bot' && lastMsg.text === botReplyText) return;
+            addMessage(botReplyText, 'bot');
+        }
+
+        function sendCustomerMessage(text) {
+            if (!text.trim()) return;
+            addMessage(text.trim(), 'customer');
+            setTimeout(botReply, 500);
+            if (chatStatus) chatStatus.innerText = '📤 消息已发送，乐哲麦思考中...';
+            setTimeout(() => { if (chatStatus) chatStatus.innerText = '✨ 在线 · 乐哲麦为您服务'; }, 2000);
+        }
+
+        function openChat() { chatWindow.style.display = 'flex'; renderMessages(); }
+        function closeChat() { chatWindow.style.display = 'none'; }
+
+        chatToggle.addEventListener('click', () => {
+            if (chatWindow.style.display === 'none') openChat();
+            else closeChat();
+        });
+        chatClose.addEventListener('click', closeChat);
+        chatSendBtn.addEventListener('click', () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            sendCustomerMessage(text);
+            chatInput.value = '';
+        });
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
                 const text = chatInput.value.trim();
                 if (!text) return;
                 sendCustomerMessage(text);
                 chatInput.value = '';
-            });
-            chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const text = chatInput.value.trim();
-                    if (!text) return;
-                    sendCustomerMessage(text);
-                    chatInput.value = '';
-                }
-            });
-            chatWindow.style.display = 'none';
+            }
+        });
+        chatWindow.style.display = 'none';
 
-            const dragContainer = document.getElementById('chatbotContainer');
-            const dragHandle = document.getElementById('chatHeaderDrag');
-            let isDragging = false, startX, startY, startRight, startBottom;
-            function getPos() { const style = getComputedStyle(dragContainer); return { right: parseFloat(style.right) || 32, bottom: parseFloat(style.bottom) || 110 }; }
-            dragHandle.addEventListener('mousedown', (e) => {
-                if (e.target.closest('.chat-close')) return;
-                e.preventDefault(); isDragging = true; startX = e.clientX; startY = e.clientY;
-                const pos = getPos(); startRight = pos.right; startBottom = pos.bottom;
-                dragContainer.style.transition = 'none';
-            });
-            window.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                e.preventDefault(); const dx = e.clientX - startX, dy = e.clientY - startY;
-                let newRight = startRight - dx, newBottom = startBottom - dy;
-                newRight = Math.min(Math.max(10, newRight), window.innerWidth - 70);
-                newBottom = Math.min(Math.max(10, newBottom), window.innerHeight - 90);
-                dragContainer.style.right = newRight + 'px'; dragContainer.style.bottom = newBottom + 'px';
-            });
-            window.addEventListener('mouseup', () => { isDragging = false; dragContainer.style.transition = ''; });
-        })();
+        const dragContainer = document.getElementById('chatbotContainer');
+        const dragHandle = document.getElementById('chatHeaderDrag');
+        let isDragging = false, startX, startY, startRight, startBottom;
+        function getPos() { const style = getComputedStyle(dragContainer); return { right: parseFloat(style.right) || 32, bottom: parseFloat(style.bottom) || 110 }; }
+        dragHandle.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.chat-close')) return;
+            e.preventDefault(); isDragging = true; startX = e.clientX; startY = e.clientY;
+            const pos = getPos(); startRight = pos.right; startBottom = pos.bottom;
+            dragContainer.style.transition = 'none';
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault(); const dx = e.clientX - startX, dy = e.clientY - startY;
+            let newRight = startRight - dx, newBottom = startBottom - dy;
+            newRight = Math.min(Math.max(10, newRight), window.innerWidth - 70);
+            newBottom = Math.min(Math.max(10, newBottom), window.innerHeight - 90);
+            dragContainer.style.right = newRight + 'px'; dragContainer.style.bottom = newBottom + 'px';
+        });
+        window.addEventListener('mouseup', () => { isDragging = false; dragContainer.style.transition = ''; });
     })();
+})();
 </script>
 </body>
 </html>
