@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <!-- 适配百度PC/移动抓取 -->
+    <meta name="applicable-device" content="pc,mobile">
     <title>Adobe 订阅状态查询 | Creative Cloud 助手</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
@@ -11,6 +13,9 @@
         .header { background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%); padding: 1.8rem; color: white; text-align: center; }
         .header h1 { font-size: 1.8rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .team-badge { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); display: inline-block; padding: 5px 16px; border-radius: 60px; font-size: 0.75rem; margin-top: 12px; }
+        .back-home { margin-top: 12px; }
+        .back-home a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 30px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        .back-home a:hover { background: rgba(255,255,255,0.3); }
         .query-area { padding: 2rem 1.8rem; background: white; }
         .input-group { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
         .input-group input { flex: 1; padding: 14px 18px; border-radius: 60px; border: 1px solid #cbdde9; font-size: 1rem; }
@@ -41,6 +46,9 @@
         <h1>🔍 Adobe 订阅状态查询</h1>
         <p>输入您的邮箱，验证团队授权、订阅起止时间</p>
         <div class="team-badge" id="dynamicTeamBadge">🎯 当前团队: 加载中...</div>
+        <div class="back-home">
+            <a href="index.html">← 返回首页</a>
+        </div>
     </div>
     <div class="query-area">
         <div class="input-group">
@@ -140,7 +148,6 @@
         } catch(e) {
             console.error("加载云端数据失败", e);
             accountsData = [];
-            // 显示网络错误到结果区域
             const resultDiv = document.getElementById("resultArea");
             resultDiv.innerHTML = `<div class="result-card" style="border-left-color: #c2412c;">
                 <div class="status"><span class="status-badge status-error">❌ 网络错误</span></div>
@@ -206,7 +213,6 @@
     async function handleQuery() {
         const emailInput = document.getElementById('emailInput');
         const email = emailInput.value.trim();
-        // 清空之前的结果
         const resultDiv = document.getElementById("resultArea");
         
         if (!email) {
@@ -224,12 +230,8 @@
         btn.innerHTML = '<span class="loading-spinner"></span> 查询中...';
         btn.disabled = true;
         try {
-            // 每次查询前重新拉取最新数据，保证实时性
             const success = await fetchAccountsAndTeam();
-            if (!success) {
-                // 错误信息已在 fetchAccountsAndTeam 中显示
-                return;
-            }
+            if (!success) return;
             const account = findAccountByEmail(email);
             renderResult(account, email);
         } catch (err) {
