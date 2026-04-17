@@ -106,7 +106,10 @@
     const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
     const BASE_ID = "appKUCGZCrZIH51dG";
     const TABLE_NAME = "accounts";
-    const ADMIN_PASSWORD = "admin123";
+    
+    // 密码使用 Base64 编码隐藏 (qbx12164811)
+    const ENCODED_PASSWORD = "cWJ4MTIxNjQ4MTE=";
+    const ADMIN_PASSWORD = atob(ENCODED_PASSWORD);
     
     if (prompt("请输入管理密码") !== ADMIN_PASSWORD) {
         document.body.innerHTML = "<div style='text-align:center; padding:50px;'>⛔ 无权限访问</div>";
@@ -116,7 +119,7 @@
     let accounts = [];
     let currentTeam = "Art Grid Dynamics Garcia Miami";
     const TEAM_KEY = "AdobeCurrentTeamCloud";
-    let syncTimeout = null;
+    let dateSyncTimeout = null;
 
     // ================== 日期工具 ==================
     function parseToStandardDate(input) {
@@ -224,12 +227,21 @@
         }
     }
 
-    async function updateRecord(recordId, fields) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${recordId}`;
+    // 更新单条记录（增量同步）
+    async function updateSingleRecord(account) {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${account.id}`;
         const resp = await fetch(url, {
             method: 'PATCH',
             headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fields })
+            body: JSON.stringify({
+                fields: {
+                    Email: account.email,
+                    joinedTeam: account.joinedTeam,
+                    isGenuine: account.isGenuine,
+                    subscriptionStart: account.subscriptionStart,
+                    subscriptionEnd: account.subscriptionEnd
+                }
+            })
         });
         if (!resp.ok) throw new Error(`更新失败 ${resp.status}`);
         return await resp.json();
@@ -252,27 +264,13 @@
         if (!resp.ok) throw new Error(`删除失败 ${resp.status}`);
     }
 
-    async function syncLocalChangesToCloud() {
-        document.getElementById('loadingOverlay').style.display = 'flex';
-        let errorCount = 0;
-        for (let acc of accounts) {
-            try {
-                await updateRecord(acc.id, {
-                    Email: acc.email,
-                    joinedTeam: acc.joinedTeam,
-                    isGenuine: acc.isGenuine,
-                    subscriptionStart: acc.subscriptionStart,
-                    subscriptionEnd: acc.subscriptionEnd
-                });
-            } catch(e) {
-                errorCount++;
-                console.error(`更新 ${acc.email} 失败`, e);
-            }
+    // 批量并发更新（每批5个，避免同时过多请求）
+    async function batchUpdateRecords(accountsToUpdate) {
+        const batchSize = 5;
+        for (let i = 0; i < accountsToUpdate.length; i += batchSize) {
+            const batch = accountsToUpdate.slice(i, i + batchSize);
+            await Promise.all(batch.map(acc => updateSingleRecord(acc)));
         }
-        document.getElementById('loadingOverlay').style.display = 'none';
-        if (errorCount === 0) showToast("✅ 所有变更已同步至云端");
-        else showToast(`⚠️ 同步完成，${errorCount} 个账号更新失败`);
-        renderTable();
     }
 
     // ================== 团队名称管理 ==================
@@ -380,6 +378,7 @@
         }
     }
 
+    // 日期修改处理（增量同步）
     function handleDateChange(e) {
         if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
             const idx = parseInt(e.target.dataset.index);
@@ -393,44 +392,86 @@
                 e.target.value = accounts[idx][field];
                 return;
             }
+            const acc = accounts[idx];
             if (field === 'subscriptionStart') {
-                accounts[idx].subscriptionStart = stdDate;
-                accounts[idx].subscriptionEnd = addOneYearToDateStr(stdDate);
-                showToast(`订阅起始已更新为 ${stdDate}，到期自动顺延至 ${accounts[idx].subscriptionEnd}`);
+                acc.subscriptionStart = stdDate;
+                acc.subscriptionEnd = addOneYearToDateStr(stdDate);
+                showToast(`订阅起始已更新为 ${stdDate}，到期自动顺延至 ${acc.subscriptionEnd}`);
             } else if (field === 'subscriptionEnd') {
-                accounts[idx].subscriptionEnd = stdDate;
+                acc.subscriptionEnd = stdDate;
                 showToast(`到期日期已更新为 ${stdDate}`);
             }
             renderTable();
-            if (syncTimeout) clearTimeout(syncTimeout);
-            syncTimeout = setTimeout(() => syncLocalChangesToCloud(), 800);
+            // 防抖同步单条记录
+            if (dateSyncTimeout) clearTimeout(dateSyncTimeout);
+            dateSyncTimeout = setTimeout(async () => {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                try {
+                    await updateSingleRecord(acc);
+                    showToast("日期已同步至云端");
+                } catch (err) {
+                    showToast("同步失败，请重试");
+                    console.error(err);
+                } finally {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }
+            }, 500);
         }
     }
 
     function getSelectedIndices() {
         return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb => parseInt(cb.dataset.index)).filter(i => !isNaN(i));
     }
+
+    // 批量更新团队/正版状态（只更新被修改的记录）
     async function batchUpdate(property, newValue) {
         const indices = getSelectedIndices();
         if (indices.length === 0) { showToast('请至少勾选一个账号'); return; }
+        const toUpdate = [];
         for (let idx of indices) {
-            if (accounts[idx]) accounts[idx][property] = newValue;
+            if (accounts[idx]) {
+                accounts[idx][property] = newValue;
+                toUpdate.push(accounts[idx]);
+            }
         }
         renderTable();
-        await syncLocalChangesToCloud();
-        showToast(`已更新 ${indices.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
+        if (toUpdate.length === 0) return;
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        try {
+            await batchUpdateRecords(toUpdate);
+            showToast(`已更新 ${toUpdate.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
+        } catch (err) {
+            showToast("同步失败，请重试");
+            console.error(err);
+        } finally {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
     }
+
     async function deleteSelected() {
         const indices = getSelectedIndices();
         if (indices.length === 0) { showToast('没有选中任何账号'); return; }
-        if (confirm(`永久删除 ${indices.length} 个账号？`)) {
-            const toDelete = indices.map(i => accounts[i].id);
-            for (let id of toDelete) await deleteRecord(id);
+        if (!confirm(`永久删除 ${indices.length} 个账号？`)) return;
+        const toDelete = indices.map(i => accounts[i]);
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        try {
+            // 并发删除
+            const batchSize = 5;
+            for (let i = 0; i < toDelete.length; i += batchSize) {
+                const batch = toDelete.slice(i, i + batchSize);
+                await Promise.all(batch.map(acc => deleteRecord(acc.id)));
+            }
             accounts = accounts.filter((_, idx) => !indices.includes(idx));
             renderTable();
-            showToast(`已删除 ${indices.length} 个账号`);
+            showToast(`已删除 ${toDelete.length} 个账号`);
+        } catch (err) {
+            showToast("删除失败，请重试");
+            console.error(err);
+        } finally {
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
     }
+
     async function addAccount(emailRaw) {
         const email = emailRaw.trim();
         if (!email) { showToast('邮箱不能为空'); return false; }
@@ -444,6 +485,7 @@
             subscriptionStart: sub.subscriptionStart,
             subscriptionEnd: sub.subscriptionEnd
         };
+        document.getElementById('loadingOverlay').style.display = 'flex';
         try {
             const created = await createRecord(newFields);
             accounts.push({
@@ -460,55 +502,79 @@
         } catch(e) {
             showToast("添加失败，请重试");
             return false;
+        } finally {
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
     }
+
     async function deleteAccountByIndex(index) {
         if (index >= 0 && index < accounts.length && confirm(`删除 ${accounts[index].email} ？`)) {
-            await deleteRecord(accounts[index].id);
-            accounts.splice(index, 1);
-            renderTable();
-            showToast('已删除');
+            const acc = accounts[index];
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            try {
+                await deleteRecord(acc.id);
+                accounts.splice(index, 1);
+                renderTable();
+                showToast('已删除');
+            } catch (err) {
+                showToast("删除失败");
+                console.error(err);
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         }
     }
+
     async function resetToDefault() {
         if (!confirm('重置将删除所有现有账号，并恢复初始邮箱列表')) return;
-        for (let acc of accounts) await deleteRecord(acc.id);
-        const defaultEmails = [
-            "chenshe2007@outlook.com", "ChenGorGor@outlook.com", "AdobeCloud999@outlook.com",
-            "AdobeCloud1888@outlook.com", "qzkm68e4@outlook.com", "jantek1000@gmail.com",
-            "hello@tanlineproject.biz", "wuyiping315@outlook.com", "dibox.diego@gmail.com",
-            "2571138584@qq.com", "Adoblife8888@outlook.com", "panjingru0210@outlook.com",
-            "3168551@qq.com", "molanjunfeng@outlook.com", "liubabya@outlook.com",
-            "wudie881031@gmail.com", "llllynn076@gmail.com", "sharkmoment2018@outlook.com",
-            "Gscf7890@outlook.com", "wangjian@liangzao.wang", "imwangyeah@gmail.com",
-            "ezaiezaixse@gmail.com", "xiaoxuelian121@outlook.com", "libaozeng038@gmail.com",
-            "t15651116661@gmail.com", "threefinger520@outlook.com", "qiangqiangx2@gmail.com",
-            "zhshy0506@gmail.com", "DAFAWW124@outlook.com", "1468890279@qq.com",
-            "jun6hao0719@gmail.com"
-        ];
-        let newAccounts = [];
-        for (let email of defaultEmails) {
-            let sub = getDefaultSubscription();
-            const created = await createRecord({
-                Email: email,
-                joinedTeam: false,
-                isGenuine: false,
-                subscriptionStart: sub.subscriptionStart,
-                subscriptionEnd: sub.subscriptionEnd
-            });
-            newAccounts.push({
-                id: created.id,
-                email: created.fields.Email,
-                joinedTeam: created.fields.joinedTeam,
-                isGenuine: created.fields.isGenuine,
-                subscriptionStart: created.fields.subscriptionStart,
-                subscriptionEnd: created.fields.subscriptionEnd
-            });
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        try {
+            for (let acc of accounts) {
+                await deleteRecord(acc.id);
+            }
+            const defaultEmails = [
+                "chenshe2007@outlook.com", "ChenGorGor@outlook.com", "AdobeCloud999@outlook.com",
+                "AdobeCloud1888@outlook.com", "qzkm68e4@outlook.com", "jantek1000@gmail.com",
+                "hello@tanlineproject.biz", "wuyiping315@outlook.com", "dibox.diego@gmail.com",
+                "2571138584@qq.com", "Adoblife8888@outlook.com", "panjingru0210@outlook.com",
+                "3168551@qq.com", "molanjunfeng@outlook.com", "liubabya@outlook.com",
+                "wudie881031@gmail.com", "llllynn076@gmail.com", "sharkmoment2018@outlook.com",
+                "Gscf7890@outlook.com", "wangjian@liangzao.wang", "imwangyeah@gmail.com",
+                "ezaiezaixse@gmail.com", "xiaoxuelian121@outlook.com", "libaozeng038@gmail.com",
+                "t15651116661@gmail.com", "threefinger520@outlook.com", "qiangqiangx2@gmail.com",
+                "zhshy0506@gmail.com", "DAFAWW124@outlook.com", "1468890279@qq.com",
+                "jun6hao0719@gmail.com"
+            ];
+            let newAccounts = [];
+            for (let email of defaultEmails) {
+                let sub = getDefaultSubscription();
+                const created = await createRecord({
+                    Email: email,
+                    joinedTeam: false,
+                    isGenuine: false,
+                    subscriptionStart: sub.subscriptionStart,
+                    subscriptionEnd: sub.subscriptionEnd
+                });
+                newAccounts.push({
+                    id: created.id,
+                    email: created.fields.Email,
+                    joinedTeam: created.fields.joinedTeam,
+                    isGenuine: created.fields.isGenuine,
+                    subscriptionStart: created.fields.subscriptionStart,
+                    subscriptionEnd: created.fields.subscriptionEnd
+                });
+            }
+            accounts = newAccounts;
+            renderTable();
+            showToast('已重置为默认账号列表');
+        } catch (err) {
+            showToast("重置失败，请重试");
+            console.error(err);
+        } finally {
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
-        accounts = newAccounts;
-        renderTable();
-        showToast('已重置为默认账号列表');
     }
+
     function exportToJson() {
         const exportData = accounts.map(({ id, ...rest }) => rest);
         const dataStr = JSON.stringify(exportData, null, 2);
@@ -517,71 +583,98 @@
         const a = document.createElement('a'); a.href = url; a.download = `adobe_team_${todayStandard()}.json`; a.click(); URL.revokeObjectURL(url);
         showToast('导出JSON成功');
     }
+
     async function importFromJson(file) {
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
                 const imported = JSON.parse(e.target.result);
                 if (!Array.isArray(imported)) throw new Error();
-                for (let acc of accounts) await deleteRecord(acc.id);
+                document.getElementById('loadingOverlay').style.display = 'flex';
+                // 清空现有
+                for (let acc of accounts) {
+                    await deleteRecord(acc.id);
+                }
                 accounts = [];
-                for (let item of imported) {
-                    if (!item.email) continue;
-                    const fields = {
-                        Email: item.email,
-                        joinedTeam: item.joinedTeam === true,
-                        isGenuine: item.isGenuine === true,
-                        subscriptionStart: item.subscriptionStart || getDefaultSubscription().subscriptionStart,
-                        subscriptionEnd: item.subscriptionEnd || addOneYearToDateStr(item.subscriptionStart || todayStandard())
-                    };
-                    const created = await createRecord(fields);
-                    accounts.push({
-                        id: created.id,
-                        email: created.fields.Email,
-                        joinedTeam: created.fields.joinedTeam,
-                        isGenuine: created.fields.isGenuine,
-                        subscriptionStart: created.fields.subscriptionStart,
-                        subscriptionEnd: created.fields.subscriptionEnd
-                    });
+                // 批量创建
+                const batchSize = 5;
+                for (let i = 0; i < imported.length; i += batchSize) {
+                    const batch = imported.slice(i, i + batchSize);
+                    await Promise.all(batch.map(async (item) => {
+                        if (!item.email) return;
+                        const fields = {
+                            Email: item.email,
+                            joinedTeam: item.joinedTeam === true,
+                            isGenuine: item.isGenuine === true,
+                            subscriptionStart: item.subscriptionStart || getDefaultSubscription().subscriptionStart,
+                            subscriptionEnd: item.subscriptionEnd || addOneYearToDateStr(item.subscriptionStart || todayStandard())
+                        };
+                        const created = await createRecord(fields);
+                        accounts.push({
+                            id: created.id,
+                            email: created.fields.Email,
+                            joinedTeam: created.fields.joinedTeam,
+                            isGenuine: created.fields.isGenuine,
+                            subscriptionStart: created.fields.subscriptionStart,
+                            subscriptionEnd: created.fields.subscriptionEnd
+                        });
+                    }));
                 }
                 renderTable();
                 showToast(`导入 ${accounts.length} 个账号`);
             } catch(err) { showToast('JSON文件无效'); }
+            finally { document.getElementById('loadingOverlay').style.display = 'none'; }
         };
         reader.readAsText(file);
     }
+
     async function importFromTxt(file, autoJoinTeam = true) {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const content = e.target.result;
             const lines = content.split(/\r?\n/);
-            let addedCount = 0;
+            const emailsToAdd = [];
             for (let line of lines) {
                 let email = line.trim();
                 if (email === "") continue;
                 if (!/^\S+@\S+\.\S+$/.test(email)) continue;
                 if (accounts.some(acc => acc.email.toLowerCase() === email.toLowerCase())) continue;
-                let sub = getDefaultSubscription();
-                const fields = {
-                    Email: email,
-                    joinedTeam: autoJoinTeam,
-                    isGenuine: false,
-                    subscriptionStart: sub.subscriptionStart,
-                    subscriptionEnd: sub.subscriptionEnd
-                };
-                const created = await createRecord(fields);
-                accounts.push({
-                    id: created.id,
-                    email: created.fields.Email,
-                    joinedTeam: created.fields.joinedTeam,
-                    isGenuine: created.fields.isGenuine,
-                    subscriptionStart: created.fields.subscriptionStart,
-                    subscriptionEnd: created.fields.subscriptionEnd
-                });
-                addedCount++;
+                emailsToAdd.push(email);
             }
-            if (addedCount > 0) { renderTable(); showToast(`TXT导入完成: 新增 ${addedCount} 个账号`); }
-            else { showToast(`没有新增账号`); }
+            if (emailsToAdd.length === 0) { showToast(`没有新增账号`); return; }
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            try {
+                const batchSize = 5;
+                for (let i = 0; i < emailsToAdd.length; i += batchSize) {
+                    const batch = emailsToAdd.slice(i, i + batchSize);
+                    await Promise.all(batch.map(async (email) => {
+                        let sub = getDefaultSubscription();
+                        const fields = {
+                            Email: email,
+                            joinedTeam: autoJoinTeam,
+                            isGenuine: false,
+                            subscriptionStart: sub.subscriptionStart,
+                            subscriptionEnd: sub.subscriptionEnd
+                        };
+                        const created = await createRecord(fields);
+                        accounts.push({
+                            id: created.id,
+                            email: created.fields.Email,
+                            joinedTeam: created.fields.joinedTeam,
+                            isGenuine: created.fields.isGenuine,
+                            subscriptionStart: created.fields.subscriptionStart,
+                            subscriptionEnd: created.fields.subscriptionEnd
+                        });
+                    }));
+                }
+                renderTable();
+                showToast(`TXT导入完成: 新增 ${emailsToAdd.length} 个账号`);
+            } catch(err) {
+                showToast("导入失败，请重试");
+                console.error(err);
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
         };
         reader.readAsText(file, 'UTF-8');
     }
@@ -598,9 +691,33 @@
 
     function bindEvents() {
         const tbody = document.getElementById('tableBody');
-        tbody?.addEventListener('change', (e) => {
-            if (e.target.classList.contains('team-checkbox')) { const idx = parseInt(e.target.dataset.index); if (!isNaN(idx)) accounts[idx].joinedTeam = e.target.checked; renderTable(); syncLocalChangesToCloud(); }
-            if (e.target.classList.contains('genuine-checkbox')) { const idx = parseInt(e.target.dataset.index); if (!isNaN(idx)) accounts[idx].isGenuine = e.target.checked; renderTable(); syncLocalChangesToCloud(); }
+        tbody?.addEventListener('change', async (e) => {
+            if (e.target.classList.contains('team-checkbox')) {
+                const idx = parseInt(e.target.dataset.index);
+                if (!isNaN(idx) && accounts[idx]) {
+                    accounts[idx].joinedTeam = e.target.checked;
+                    renderTable();
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    try {
+                        await updateSingleRecord(accounts[idx]);
+                        showToast("团队状态已同步");
+                    } catch(err) { showToast("同步失败"); }
+                    finally { document.getElementById('loadingOverlay').style.display = 'none'; }
+                }
+            }
+            if (e.target.classList.contains('genuine-checkbox')) {
+                const idx = parseInt(e.target.dataset.index);
+                if (!isNaN(idx) && accounts[idx]) {
+                    accounts[idx].isGenuine = e.target.checked;
+                    renderTable();
+                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    try {
+                        await updateSingleRecord(accounts[idx]);
+                        showToast("正版状态已同步");
+                    } catch(err) { showToast("同步失败"); }
+                    finally { document.getElementById('loadingOverlay').style.display = 'none'; }
+                }
+            }
         });
         tbody?.addEventListener('blur', handleDateChange, true);
         tbody?.addEventListener('click', (e) => { if (e.target.classList.contains('delete-icon')) deleteAccountByIndex(parseInt(e.target.dataset.index)); });
