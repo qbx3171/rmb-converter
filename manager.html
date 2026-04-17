@@ -41,11 +41,52 @@
         .delete-icon { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #9aaebf; padding: 4px 8px; border-radius: 30px; }
         .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.75rem; z-index: 1000; pointer-events: none; white-space: nowrap; }
         .footer-note { padding: 0.8rem 1.2rem; background: #fafdff; border-top: 1px solid #eef2f8; font-size: 0.65rem; color: #6a7c8f; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        /* 全屏遮罩仅用于批量操作（耗时较长） */
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; display: none; }
+        /* 美化登录卡片 */
+        .login-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(12px);
+            z-index: 3000; display: flex; align-items: center; justify-content: center;
+        }
+        .login-card {
+            background: rgba(255,255,255,0.95); border-radius: 2rem; padding: 2rem 1.8rem;
+            width: 340px; text-align: center; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.5);
+        }
+        .login-card h2 {
+            font-size: 1.5rem; margin-bottom: 0.5rem; color: #1e3a5f;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .login-card p { font-size: 0.75rem; color: #6c86a3; margin-bottom: 1.2rem; }
+        .login-card input {
+            width: 100%; padding: 12px 16px; margin: 0.8rem 0; border: 1px solid #cbdde9;
+            border-radius: 60px; font-size: 0.9rem; background: white; outline: none;
+            transition: 0.2s; text-align: center;
+        }
+        .login-card input:focus { border-color: #1b6b5e; box-shadow: 0 0 0 2px rgba(27,107,94,0.2); }
+        .login-card button {
+            background: linear-gradient(135deg, #1b6b5e, #0f5348); color: white; border: none;
+            padding: 10px 20px; border-radius: 60px; width: 100%; font-weight: 600;
+            cursor: pointer; transition: 0.2s; margin-top: 0.5rem;
+        }
+        .login-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .login-card .error { color: #c2412c; font-size: 0.7rem; margin-top: 0.5rem; }
         @media (max-width: 900px) { .modern-table th, .modern-table td { padding: 0.5rem 0.3rem; } .date-input { width: 105px; } }
     </style>
 </head>
 <body>
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <h2>🔐 管理员登录</h2>
+        <p>请输入管理密码以继续</p>
+        <input type="password" id="adminPasswordInput" placeholder="密码" autocomplete="off">
+        <button id="loginBtn">登录</button>
+        <div id="loginError" class="error"></div>
+    </div>
+</div>
+
+<div id="mainContent" style="display: none;">
 <div class="glass-panel">
     <div class="hero">
         <div class="hero-left">
@@ -100,21 +141,44 @@
         <span id="currentTeamDisplay">🏷️ 团队: 加载中...</span>
     </div>
 </div>
-<div id="loadingOverlay" class="loading-overlay"><div>⏳ 同步中...</div></div>
+<div id="loadingOverlay" class="loading-overlay"><div>⏳ 处理中...</div></div>
+</div>
+
 <script>
+    // ================== 密码验证 ==================
+    const ENCODED_PASSWORD = "cWJ4MTIxNjQ4MTE="; // qbx12164811
+    const ADMIN_PASSWORD = atob(ENCODED_PASSWORD);
+    const loginOverlay = document.getElementById('loginOverlay');
+    const mainContent = document.getElementById('mainContent');
+    const loginBtn = document.getElementById('loginBtn');
+    const passwordInput = document.getElementById('adminPasswordInput');
+    const loginError = document.getElementById('loginError');
+
+    function showLogin() {
+        loginOverlay.style.display = 'flex';
+        mainContent.style.display = 'none';
+    }
+    function hideLogin() {
+        loginOverlay.style.display = 'none';
+        mainContent.style.display = 'block';
+    }
+    loginBtn.addEventListener('click', () => {
+        const pwd = passwordInput.value;
+        if (pwd === ADMIN_PASSWORD) {
+            hideLogin();
+            initApp(); // 初始化应用
+        } else {
+            loginError.textContent = '密码错误，请重试';
+        }
+    });
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginBtn.click();
+    });
+
     // ================== Airtable 配置 ==================
     const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
     const BASE_ID = "appKUCGZCrZIH51dG";
     const TABLE_NAME = "accounts";
-    
-    // 密码使用 Base64 编码隐藏 (qbx12164811)
-    const ENCODED_PASSWORD = "cWJ4MTIxNjQ4MTE=";
-    const ADMIN_PASSWORD = atob(ENCODED_PASSWORD);
-    
-    if (prompt("请输入管理密码") !== ADMIN_PASSWORD) {
-        document.body.innerHTML = "<div style='text-align:center; padding:50px;'>⛔ 无权限访问</div>";
-        throw new Error("密码错误");
-    }
 
     let accounts = [];
     let currentTeam = "Art Grid Dynamics Garcia Miami";
@@ -201,8 +265,8 @@
         return allRecords;
     }
 
-    async function loadFromCloud(showLoading = true) {
-        if (showLoading) document.getElementById('loadingOverlay').style.display = 'flex';
+    // 加载数据时不显示任何遮罩或toast，仅更新表格
+    async function loadFromCloud() {
         try {
             const records = await fetchAllRecords();
             accounts = records.map(rec => ({
@@ -218,17 +282,14 @@
                 if (!isValidDateString(acc.subscriptionEnd)) acc.subscriptionEnd = addOneYearToDateStr(acc.subscriptionStart);
             }
             renderTable();
-            showToast(`已从云端同步 ${accounts.length} 个账号`);
         } catch(e) {
             console.error(e);
-            showToast("加载云端数据失败，请检查网络或 Token 配置");
-        } finally {
-            if (showLoading) document.getElementById('loadingOverlay').style.display = 'none';
+            showToast("加载云端数据失败，请检查网络");
         }
     }
 
-    // 更新单条记录（增量同步）
-    async function updateSingleRecord(account) {
+    // 更新单条记录（增量同步，无遮罩，仅toast）
+    async function updateSingleRecord(account, showSuccessToast = true) {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${account.id}`;
         const resp = await fetch(url, {
             method: 'PATCH',
@@ -244,6 +305,7 @@
             })
         });
         if (!resp.ok) throw new Error(`更新失败 ${resp.status}`);
+        if (showSuccessToast) showToast("已保存");
         return await resp.json();
     }
 
@@ -264,12 +326,12 @@
         if (!resp.ok) throw new Error(`删除失败 ${resp.status}`);
     }
 
-    // 批量并发更新（每批5个，避免同时过多请求）
+    // 批量并发更新（每批5个），用于批量操作，显示遮罩
     async function batchUpdateRecords(accountsToUpdate) {
         const batchSize = 5;
         for (let i = 0; i < accountsToUpdate.length; i += batchSize) {
             const batch = accountsToUpdate.slice(i, i + batchSize);
-            await Promise.all(batch.map(acc => updateSingleRecord(acc)));
+            await Promise.all(batch.map(acc => updateSingleRecord(acc, false)));
         }
     }
 
@@ -378,7 +440,7 @@
         }
     }
 
-    // 日期修改处理（增量同步）
+    // 日期修改处理（增量同步，无遮罩，防抖）
     function handleDateChange(e) {
         if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
             const idx = parseInt(e.target.dataset.index);
@@ -402,18 +464,15 @@
                 showToast(`到期日期已更新为 ${stdDate}`);
             }
             renderTable();
-            // 防抖同步单条记录
+            // 防抖同步单条记录，不显示遮罩
             if (dateSyncTimeout) clearTimeout(dateSyncTimeout);
             dateSyncTimeout = setTimeout(async () => {
-                document.getElementById('loadingOverlay').style.display = 'flex';
                 try {
-                    await updateSingleRecord(acc);
-                    showToast("日期已同步至云端");
+                    await updateSingleRecord(acc, false);
+                    showToast("日期已同步");
                 } catch (err) {
                     showToast("同步失败，请重试");
                     console.error(err);
-                } finally {
-                    document.getElementById('loadingOverlay').style.display = 'none';
                 }
             }, 500);
         }
@@ -423,7 +482,7 @@
         return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb => parseInt(cb.dataset.index)).filter(i => !isNaN(i));
     }
 
-    // 批量更新团队/正版状态（只更新被修改的记录）
+    // 批量更新团队/正版状态（显示遮罩，因为涉及多条记录）
     async function batchUpdate(property, newValue) {
         const indices = getSelectedIndices();
         if (indices.length === 0) { showToast('请至少勾选一个账号'); return; }
@@ -436,7 +495,8 @@
         }
         renderTable();
         if (toUpdate.length === 0) return;
-        document.getElementById('loadingOverlay').style.display = 'flex';
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
         try {
             await batchUpdateRecords(toUpdate);
             showToast(`已更新 ${toUpdate.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
@@ -444,7 +504,7 @@
             showToast("同步失败，请重试");
             console.error(err);
         } finally {
-            document.getElementById('loadingOverlay').style.display = 'none';
+            overlay.style.display = 'none';
         }
     }
 
@@ -453,9 +513,9 @@
         if (indices.length === 0) { showToast('没有选中任何账号'); return; }
         if (!confirm(`永久删除 ${indices.length} 个账号？`)) return;
         const toDelete = indices.map(i => accounts[i]);
-        document.getElementById('loadingOverlay').style.display = 'flex';
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
         try {
-            // 并发删除
             const batchSize = 5;
             for (let i = 0; i < toDelete.length; i += batchSize) {
                 const batch = toDelete.slice(i, i + batchSize);
@@ -468,7 +528,7 @@
             showToast("删除失败，请重试");
             console.error(err);
         } finally {
-            document.getElementById('loadingOverlay').style.display = 'none';
+            overlay.style.display = 'none';
         }
     }
 
@@ -485,7 +545,8 @@
             subscriptionStart: sub.subscriptionStart,
             subscriptionEnd: sub.subscriptionEnd
         };
-        document.getElementById('loadingOverlay').style.display = 'flex';
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
         try {
             const created = await createRecord(newFields);
             accounts.push({
@@ -503,14 +564,15 @@
             showToast("添加失败，请重试");
             return false;
         } finally {
-            document.getElementById('loadingOverlay').style.display = 'none';
+            overlay.style.display = 'none';
         }
     }
 
     async function deleteAccountByIndex(index) {
         if (index >= 0 && index < accounts.length && confirm(`删除 ${accounts[index].email} ？`)) {
             const acc = accounts[index];
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
             try {
                 await deleteRecord(acc.id);
                 accounts.splice(index, 1);
@@ -520,14 +582,15 @@
                 showToast("删除失败");
                 console.error(err);
             } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                overlay.style.display = 'none';
             }
         }
     }
 
     async function resetToDefault() {
         if (!confirm('重置将删除所有现有账号，并恢复初始邮箱列表')) return;
-        document.getElementById('loadingOverlay').style.display = 'flex';
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
         try {
             for (let acc of accounts) {
                 await deleteRecord(acc.id);
@@ -571,7 +634,7 @@
             showToast("重置失败，请重试");
             console.error(err);
         } finally {
-            document.getElementById('loadingOverlay').style.display = 'none';
+            overlay.style.display = 'none';
         }
     }
 
@@ -590,13 +653,12 @@
             try {
                 const imported = JSON.parse(e.target.result);
                 if (!Array.isArray(imported)) throw new Error();
-                document.getElementById('loadingOverlay').style.display = 'flex';
-                // 清空现有
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.style.display = 'flex';
                 for (let acc of accounts) {
                     await deleteRecord(acc.id);
                 }
                 accounts = [];
-                // 批量创建
                 const batchSize = 5;
                 for (let i = 0; i < imported.length; i += batchSize) {
                     const batch = imported.slice(i, i + batchSize);
@@ -642,7 +704,8 @@
                 emailsToAdd.push(email);
             }
             if (emailsToAdd.length === 0) { showToast(`没有新增账号`); return; }
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
             try {
                 const batchSize = 5;
                 for (let i = 0; i < emailsToAdd.length; i += batchSize) {
@@ -673,20 +736,23 @@
                 showToast("导入失败，请重试");
                 console.error(err);
             } finally {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                overlay.style.display = 'none';
             }
         };
         reader.readAsText(file, 'UTF-8');
     }
 
     let toastTimer = null;
-    function showToast(msg) {
+    function showToast(msg, duration = 2500) {
         if (toastTimer) clearTimeout(toastTimer);
         const existing = document.querySelector('.toast-message');
         if (existing) existing.remove();
         const toast = document.createElement('div'); toast.className = 'toast-message'; toast.textContent = msg;
         document.body.appendChild(toast);
-        toastTimer = setTimeout(() => toast.remove(), 2500);
+        if (duration > 0) {
+            toastTimer = setTimeout(() => toast.remove(), duration);
+        }
+        return toast;
     }
 
     function bindEvents() {
@@ -697,12 +763,11 @@
                 if (!isNaN(idx) && accounts[idx]) {
                     accounts[idx].joinedTeam = e.target.checked;
                     renderTable();
-                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    showToast("保存中...");
                     try {
-                        await updateSingleRecord(accounts[idx]);
+                        await updateSingleRecord(accounts[idx], false);
                         showToast("团队状态已同步");
                     } catch(err) { showToast("同步失败"); }
-                    finally { document.getElementById('loadingOverlay').style.display = 'none'; }
                 }
             }
             if (e.target.classList.contains('genuine-checkbox')) {
@@ -710,12 +775,11 @@
                 if (!isNaN(idx) && accounts[idx]) {
                     accounts[idx].isGenuine = e.target.checked;
                     renderTable();
-                    document.getElementById('loadingOverlay').style.display = 'flex';
+                    showToast("保存中...");
                     try {
-                        await updateSingleRecord(accounts[idx]);
+                        await updateSingleRecord(accounts[idx], false);
                         showToast("正版状态已同步");
                     } catch(err) { showToast("同步失败"); }
-                    finally { document.getElementById('loadingOverlay').style.display = 'none'; }
                 }
             }
         });
@@ -730,7 +794,11 @@
         document.getElementById('addAccountBtn')?.addEventListener('click', () => { const inp = document.getElementById('newEmailInput'); if (inp.value && addAccount(inp.value)) inp.value = ''; });
         document.getElementById('resetDefaultBtn')?.addEventListener('click', resetToDefault);
         document.getElementById('exportJsonBtn')?.addEventListener('click', exportToJson);
-        document.getElementById('refreshFromCloud')?.addEventListener('click', () => loadFromCloud(true));
+        document.getElementById('refreshFromCloud')?.addEventListener('click', async () => {
+            showToast("刷新中...");
+            await loadFromCloud();
+            showToast("刷新完成");
+        });
         document.getElementById('updateTeamBtn')?.addEventListener('click', () => { const newTeam = document.getElementById('teamNameInput').value; setNewTeam(newTeam); renderTable(); });
         const importJson = document.getElementById('importJsonInput'); importJson?.addEventListener('change', (e) => { if (e.target.files[0]) importFromJson(e.target.files[0]); importJson.value = ''; });
         const txtImport = document.getElementById('txtImportInput');
@@ -744,12 +812,13 @@
         document.getElementById('newEmailInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { const inp = e.target; if (inp.value && addAccount(inp.value)) inp.value = ''; } });
     }
 
-    async function init() {
+    async function initApp() {
         loadTeamFromLocal();
-        await loadFromCloud(true);
+        await loadFromCloud(); // 静默加载，无遮罩无toast
         bindEvents();
     }
-    init();
+
+    showLogin();
 </script>
 </body>
 </html>
