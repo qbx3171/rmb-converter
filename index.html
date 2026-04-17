@@ -222,11 +222,121 @@ body.night-mode details.bg-slate-800\/30 {
 body.night-mode details.bg-slate-800\/30 summary {
   color: #cbd5e1 !important;
 }
+
+/* ========= 移动端专用适配（新增） ========= */
+@media (max-width: 768px) {
+  /* 基础字体调整 */
+  body {
+    font-size: 15px;
+  }
+  h1 {
+    font-size: 1.875rem !important;
+    line-height: 1.3 !important;
+  }
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  /* 卡片内边距减小，但保持舒适 */
+  .glass-card, .bg-white\/70, .bg-white, .bg-slate-50 {
+    border-radius: 1.25rem;
+  }
+  .p-6 {
+    padding: 1.25rem !important;
+  }
+  .p-5 {
+    padding: 1rem !important;
+  }
+  /* 按钮触摸区域增大 */
+  .btn-touch, a, button, .card-touch {
+    touch-action: manipulation;
+  }
+  /* 品牌轮播容器高度适当 */
+  .brand-scroll-container .flex {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  /* 友情链接标签间距 */
+  .gap-4 {
+    gap: 0.75rem;
+  }
+  .rounded-full {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+  /* 导航菜单触摸优化 */
+  #mobile-menu a {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+  /* 悬浮微信按钮位置微调 */
+  #openFloatContact {
+    right: 1rem;
+    bottom: 5rem;
+    width: 3rem;
+    height: 3rem;
+  }
+  /* 弹窗内按钮 */
+  #copyBtn {
+    padding: 0.5rem 1rem;
+  }
+  /* 折叠声明内边距 */
+  details.disclaimer {
+    padding: 0.5rem;
+  }
+  details.disclaimer summary {
+    padding: 0.5rem;
+  }
+  /* 降低移动端毛玻璃模糊强度（提升性能） */
+  .glass-card, .bg-white\/70, .bg-white\/90, .backdrop-blur-md, .backdrop-blur-sm {
+    backdrop-filter: blur(8px);
+  }
+  /* 主营业务卡片图标缩放 */
+  .group .w-11, .group .w-12 {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .group i {
+    font-size: 1.25rem;
+  }
+  /* 信任背书卡片内边距 */
+  .grid .p-6 {
+    padding: 1rem;
+  }
+  /* 友情链接区块内边距 */
+  .py-12 {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+/* 更小屏幕（<480px）进一步优化 */
+@media (max-width: 480px) {
+  .container, .max-w-7xl, .max-w-6xl, .max-w-5xl {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  .grid-cols-1.sm\:grid-cols-2 {
+    gap: 0.75rem;
+  }
+  .brand-scroll-container .min-w-[80px] {
+    min-width: 70px;
+  }
+  .brand-scroll-container .h-14 {
+    height: 3rem;
+    width: 3rem;
+  }
+  .brand-scroll-container .text-xl {
+    font-size: 1.125rem;
+  }
+}
 </style>
 </head>
 <body class="bg-slate-50 text-dark font-sans antialiased scroll-smooth mobile-tap-highlight" id="app-body">
 
-<!-- 导航栏 -->
+<!-- 导航栏（保持原样） -->
 <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex justify-between items-center h-16">
@@ -252,7 +362,7 @@ body.night-mode details.bg-slate-800\/30 summary {
 </div>
 </nav>
 
-<!-- Banner -->
+<!-- Banner（原样） -->
 <header class="relative overflow-hidden bg-gradient-to-br from-primary via-indigo-700 to-blue-800 text-white py-16 md:py-28">
 <div class="absolute inset-0 opacity-20 mix-blend-overlay">
 <div class="absolute -top-24 -left-24 w-72 h-72 bg-white rounded-full filter blur-[80px] animate-blob"></div>
@@ -270,17 +380,17 @@ body.night-mode details.bg-slate-800\/30 summary {
 Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠道
 </p>
 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-<a href="javascript:void(0)" id="openContact" class="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-6 py-3.5 rounded-xl shadow-xl hover:shadow-2xl transition-all active:scale-95 text-base md:text-lg min-w-[160px]">
+<a href="javascript:void(0)" id="openContact" class="inline-flex items-center justify-center gap-2 bg-white text-primary font-bold px-6 py-3.5 rounded-xl shadow-xl hover:shadow-2xl transition-all active:scale-95 text-base md:text-lg min-w-[160px] btn-touch">
 立即咨询 <i class="fa fa-arrow-right"></i>
 </a>
-<a href="#plugins" class="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white/70 text-white font-semibold px-6 py-3.5 rounded-xl hover:bg-white/10 transition-all active:scale-95 text-base md:text-lg min-w-[140px]">
+<a href="#plugins" class="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white/70 text-white font-semibold px-6 py-3.5 rounded-xl hover:bg-white/10 transition-all active:scale-95 text-base md:text-lg min-w-[140px] btn-touch">
 插件方案 <i class="fa fa-plug"></i>
 </a>
 </div>
 </div>
 </header>
 
-<!-- 品牌轮播 -->
+<!-- 品牌轮播（原样） -->
 <section class="py-10 md:py-12 px-4 bg-white relative z-10">
 <div class="max-w-6xl mx-auto mb-6 md:mb-8 text-center">
 <h2 class="text-2xl md:text-3xl font-bold text-dark">深度合作 · 全生态软件矩阵</h2>
@@ -291,7 +401,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 <div class="absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-slate-50 to-transparent pointer-events-none"></div>
 <div class="flex whitespace-nowrap py-8 md:py-12 overflow-hidden">
 <div class="flex animate-slide items-center gap-12 md:gap-20 px-6">
-<!-- 软件图标组 -->
+<!-- 软件图标组（原样） -->
 <div class="flex flex-col items-center group cursor-default min-w-[80px]">
 <div class="h-14 w-14 md:h-16 md:w-16 flex items-center justify-center bg-gradient-to-br from-[#31A8FF]/10 to-[#31A8FF]/5 rounded-2xl mb-2 md:mb-3 group-hover:scale-105 transition-transform shadow-sm">
 <span class="text-[#31A8FF] text-xl md:text-2xl font-bold">Ps</span>
@@ -370,7 +480,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
-<!-- 插件推荐板块 -->
+<!-- 插件推荐板块（原样） -->
 <section id="plugins" class="py-16 md:py-20 px-4 bg-gradient-to-br from-slate-50 via-white to-slate-100">
 <div class="max-w-6xl mx-auto">
 <div class="text-center mb-10 md:mb-12">
@@ -409,7 +519,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
-<!-- 主营业务预览 -->
+<!-- 主营业务预览（原样） -->
 <section class="py-14 md:py-16 px-4 bg-white">
 <div class="max-w-6xl mx-auto text-center">
 <h2 class="text-2xl md:text-4xl font-bold text-dark mb-3">我们的主营业务</h2>
@@ -464,7 +574,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
-<!-- 信任背书 -->
+<!-- 信任背书（原样） -->
 <section class="py-14 md:py-16 px-4 bg-gradient-to-r from-slate-100 to-slate-50">
 <div class="max-w-5xl mx-auto">
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-7">
@@ -493,7 +603,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
-<!-- 联系我们区块 -->
+<!-- 联系我们区块（原样） -->
 <section id="contact" class="py-16 md:py-20 px-4 bg-white">
 <div class="max-w-3xl mx-auto text-center">
 <h2 class="text-2xl md:text-4xl font-bold text-dark mb-3">立即咨询获取服务</h2>
@@ -517,7 +627,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
-<!-- ========= 友情链接区块 ========= -->
+<!-- 友情链接区块（原样） -->
 <section class="py-12 md:py-16 px-4 bg-slate-50/80 border-t border-slate-200">
 <div class="max-w-6xl mx-auto">
 <div class="text-center mb-6">
@@ -527,31 +637,31 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 <p class="text-slate-500 text-sm mt-1">值得信赖的软件资源合作伙伴</p>
 </div>
 <div class="flex flex-wrap justify-center gap-4 md:gap-6">
-<a href="https://www.downcc.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<a href="https://www.downcc.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2 btn-touch">
 <i class="fa fa-download text-primary/70"></i> 绿色资源网
 </a>
-<a href="https://www.xiazaizhijia.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<a href="https://www.xiazaizhijia.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2 btn-touch">
 <i class="fa fa-cloud-download text-primary/70"></i> 下载之家
 </a>
-<a href="https://www.zhuzhu.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<a href="https://www.zhuzhu.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2 btn-touch">
 <i class="fa fa-puzzle-piece text-primary/70"></i> 猪猪软件库
 </a>
-<a href="https://www.lingdu.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<a href="https://www.lingdu.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2 btn-touch">
 <i class="fa fa-cube text-primary/70"></i> 零度软件园
 </a>
-<a href="https://www.macdown.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<a href="https://www.macdown.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2 btn-touch">
 <i class="fa fa-apple text-primary/70"></i> Macdown技术社区
 </a>
 </div>
 </div>
 </section>
 
-<!-- 右侧悬浮微信按钮 -->
-<button id="openFloatContact" class="fixed right-4 bottom-24 md:right-5 md:top-1/2 md:-translate-y-1/2 z-40 bg-wechat text-white rounded-full shadow-2xl hover:scale-105 transition-all flex items-center justify-center w-12 h-12 md:w-14 md:h-14" style="cursor: pointer; box-shadow: 0 8px 20px rgba(7,193,96,0.3);">
+<!-- 右侧悬浮微信按钮（原样） -->
+<button id="openFloatContact" class="fixed right-4 bottom-24 md:right-5 md:top-1/2 md:-translate-y-1/2 z-40 bg-wechat text-white rounded-full shadow-2xl hover:scale-105 transition-all flex items-center justify-center w-12 h-12 md:w-14 md:h-14 btn-touch" style="cursor: pointer; box-shadow: 0 8px 20px rgba(7,193,96,0.3);">
 <i class="fa fa-weixin text-xl md:text-2xl"></i>
 </button>
 
-<!-- 弹窗遮罩 -->
+<!-- 弹窗遮罩（原样） -->
 <div id="contactModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
 <div class="bg-white rounded-3xl max-w-md w-full fade-in overflow-hidden shadow-2xl mx-auto">
 <div class="p-5 flex justify-between items-center border-b border-slate-100">
@@ -559,20 +669,20 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 <i class="fa fa-weixin text-wechat text-2xl md:text-3xl"></i>
 <h3 class="text-xl md:text-2xl font-bold text-slate-700">添加专属顾问</h3>
 </div>
-<button id="closeModal" class="text-slate-400 hover:text-slate-600 text-2xl w-10 h-10 flex items-center justify-center rounded-full active:bg-slate-100">&times;</button>
+<button id="closeModal" class="text-slate-400 hover:text-slate-600 text-2xl w-10 h-10 flex items-center justify-center rounded-full active:bg-slate-100 btn-touch">&times;</button>
 </div>
 <div class="p-6 md:p-8">
 <div class="text-center mb-4"><p class="text-slate-500 text-sm md:text-base">复制微信号，添加好友获取报价</p></div>
 <div class="bg-slate-100 rounded-full px-4 py-3 flex items-center gap-3 justify-between flex-wrap">
 <span class="text-base md:text-xl font-semibold text-slate-800 break-all">Win_Mac_123</span>
-<button id="copyBtn" class="bg-primary text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-primary/90 active:scale-95 min-w-[72px]">复制</button>
+<button id="copyBtn" class="bg-primary text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-primary/90 active:scale-95 min-w-[72px] btn-touch">复制</button>
 </div>
 <p class="text-xs text-slate-400 text-center mt-5">添加请备注“软件咨询”或“插件授权”</p>
 </div>
 </div>
 </div>
 
-<!-- 页脚 + 精简折叠式合规声明 -->
+<!-- 页脚 + 精简折叠式合规声明（原样） -->
 <footer class="bg-dark text-slate-300 pt-12 pb-8">
 <div class="max-w-7xl mx-auto px-4">
 <div class="grid md:grid-cols-2 gap-8 text-center md:text-left border-b border-slate-700/50 pb-8 mb-6">
@@ -620,7 +730,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </footer>
 
 <script>
-// 弹窗和复制逻辑
+// 弹窗和复制逻辑（原样）
 const modal = document.getElementById('contactModal');
 const closeModalBtn = document.getElementById('closeModal');
 const openModal = () => {
