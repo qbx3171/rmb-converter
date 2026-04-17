@@ -136,9 +136,17 @@
                 subscriptionStart: rec.fields.subscriptionStart || '',
                 subscriptionEnd: rec.fields.subscriptionEnd || ''
             }));
+            return true;
         } catch(e) {
             console.error("加载云端数据失败", e);
             accountsData = [];
+            // 显示网络错误到结果区域
+            const resultDiv = document.getElementById("resultArea");
+            resultDiv.innerHTML = `<div class="result-card" style="border-left-color: #c2412c;">
+                <div class="status"><span class="status-badge status-error">❌ 网络错误</span></div>
+                <div class="info-line">无法连接云端数据，请稍后重试或联系管理员。</div>
+            </div>`;
+            return false;
         }
     }
 
@@ -155,6 +163,7 @@
                 <div class="status"><span class="status-badge status-error">❌ 账号不存在</span></div>
                 <div class="info-line"><span class="info-label">邮箱：</span><span>${escapeHtml(inputEmail)}</span></div>
                 <div class="info-line"><span class="info-label">状态：</span><span>未找到订阅记录，请联系管理员添加。</span></div>
+                <div class="info-line"><span class="info-label">📞 联系方式：</span><span>添加微信 <strong>Win_Mac_123</strong> 获取支持</span></div>
             </div>`;
             return;
         }
@@ -197,12 +206,15 @@
     async function handleQuery() {
         const emailInput = document.getElementById('emailInput');
         const email = emailInput.value.trim();
+        // 清空之前的结果
+        const resultDiv = document.getElementById("resultArea");
+        
         if (!email) {
-            document.getElementById("resultArea").innerHTML = `<div class="result-card" style="border-left-color:#e67e22;"><div class="status"><span class="status-badge status-warning">⚠️ 请输入邮箱地址</span></div></div>`;
+            resultDiv.innerHTML = `<div class="result-card" style="border-left-color:#e67e22;"><div class="status"><span class="status-badge status-warning">⚠️ 请输入邮箱地址</span></div></div>`;
             return;
         }
         if (!/^\S+@\S+\.\S+$/.test(email)) {
-            document.getElementById("resultArea").innerHTML = `<div class="result-card" style="border-left-color:#c2412c;"><div class="status"><span class="status-badge status-error">❌ 邮箱格式无效</span></div></div>`;
+            resultDiv.innerHTML = `<div class="result-card" style="border-left-color:#c2412c;"><div class="status"><span class="status-badge status-error">❌ 邮箱格式无效</span></div></div>`;
             return;
         }
         if (loading) return;
@@ -212,9 +224,17 @@
         btn.innerHTML = '<span class="loading-spinner"></span> 查询中...';
         btn.disabled = true;
         try {
-            await fetchAccountsAndTeam();
+            // 每次查询前重新拉取最新数据，保证实时性
+            const success = await fetchAccountsAndTeam();
+            if (!success) {
+                // 错误信息已在 fetchAccountsAndTeam 中显示
+                return;
+            }
             const account = findAccountByEmail(email);
             renderResult(account, email);
+        } catch (err) {
+            console.error(err);
+            resultDiv.innerHTML = `<div class="result-card" style="border-left-color:#c2412c;"><div class="status"><span class="status-badge status-error">⚠️ 查询出错</span></div><div class="info-line">请稍后重试或联系管理员。</div></div>`;
         } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
