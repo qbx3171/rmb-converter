@@ -66,48 +66,98 @@
             .service-icon {
                 transition: transform 0.2s ease;
             }
-            /* 深色模式自定义 */
-            .dark-mode {
-                background-color: #0f172a !important;
-                color: #e2e8f0 !important;
-            }
-            .dark-mode .bg-white,
-            .dark-mode .bg-slate-50,
-            .dark-mode .bg-slate-100,
-            .dark-mode .bg-gradient-to-r.from-slate-100,
-            .dark-mode .bg-gradient-to-br.from-slate-50 {
-                background-color: #1e293b !important;
-                background-image: none !important;
-            }
-            .dark-mode .bg-white\/70,
-            .dark-mode .bg-white\/80,
-            .dark-mode .bg-white\/90 {
-                background-color: rgba(30,41,59,0.9) !important;
-            }
-            .dark-mode .text-slate-600,
-            .dark-mode .text-slate-500,
-            .dark-mode .text-slate-700,
-            .dark-mode .text-gray-700 {
-                color: #cbd5e1 !important;
-            }
-            .dark-mode .border-slate-100,
-            .dark-mode .border-slate-200 {
-                border-color: #334155 !important;
-            }
-            .dark-mode .shadow-sm,
-            .dark-mode .shadow-md {
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3) !important;
-            }
-            .dark-mode .service-card {
-                background: #334155 !important;
-                border-color: #475569 !important;
-            }
-            .dark-mode .bg-slate-50\/80 {
-                background-color: rgba(30,41,59,0.8) !important;
-            }
-            .dark-mode .bg-gradient-to-br.from-primary.to-primary\/80 {
-                background: linear-gradient(135deg, #1e40af, #0f172a) !important;
-            }
+        }
+        /* 深色模式全局样式 */
+        .dark-mode {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+        }
+        .dark-mode .bg-white,
+        .dark-mode .bg-slate-50,
+        .dark-mode .bg-slate-100,
+        .dark-mode .bg-gradient-to-r.from-slate-100,
+        .dark-mode .bg-gradient-to-br.from-slate-50 {
+            background-color: #1e293b !important;
+            background-image: none !important;
+        }
+        .dark-mode .bg-white\/70,
+        .dark-mode .bg-white\/80,
+        .dark-mode .bg-white\/90 {
+            background-color: rgba(30,41,59,0.9) !important;
+        }
+        /* 深色模式下所有文字颜色增强 */
+        .dark-mode .text-slate-600,
+        .dark-mode .text-slate-500,
+        .dark-mode .text-slate-700,
+        .dark-mode .text-gray-700,
+        .dark-mode .text-slate-800,
+        .dark-mode .text-dark,
+        .dark-mode .text-gray-800 {
+            color: #cbd5e1 !important;
+        }
+        .dark-mode .text-slate-400 {
+            color: #94a3b8 !important;
+        }
+        .dark-mode .text-primary {
+            color: #60a5fa !important;
+        }
+        .dark-mode .border-slate-100,
+        .dark-mode .border-slate-200 {
+            border-color: #334155 !important;
+        }
+        .dark-mode .shadow-sm,
+        .dark-mode .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3) !important;
+        }
+        .dark-mode .service-card {
+            background: #334155 !important;
+            border-color: #475569 !important;
+        }
+        .dark-mode .service-card .text-gray-800 {
+            color: #f1f5f9 !important;
+        }
+        .dark-mode .bg-slate-50\/80 {
+            background-color: rgba(30,41,59,0.8) !important;
+        }
+        .dark-mode .bg-gradient-to-br.from-primary.to-primary\/80 {
+            background: linear-gradient(135deg, #1e40af, #0f172a) !important;
+        }
+        /* 深色模式下联系区块特殊修复 */
+        .dark-mode .bg-gradient-to-br.from-slate-50.to-white {
+            background: #1e293b !important;
+        }
+        .dark-mode .bg-green-50 {
+            background-color: rgba(22, 163, 74, 0.2) !important;
+        }
+        .dark-mode .text-green-600 {
+            color: #4ade80 !important;
+        }
+        .dark-mode .bg-white\/30 {
+            background-color: rgba(30,41,59,0.5) !important;
+        }
+        .dark-mode .bg-white\/50 {
+            background-color: rgba(30,41,59,0.7) !important;
+        }
+        .dark-mode .font-semibold.text-dark {
+            color: #e2e8f0 !important;
+        }
+        .dark-mode .text-slate-700.font-medium {
+            color: #e2e8f0 !important;
+        }
+        /* 弹窗深色模式适配 */
+        .dark-mode #contactModal .bg-white {
+            background-color: #1e293b !important;
+        }
+        .dark-mode #contactModal .text-slate-700,
+        .dark-mode #contactModal .text-slate-600,
+        .dark-mode #contactModal .text-slate-800 {
+            color: #e2e8f0 !important;
+        }
+        .dark-mode #contactModal .bg-slate-100 {
+            background-color: #334155 !important;
+        }
+        .dark-mode #contactModal .border-slate-100 {
+            border-color: #475569 !important;
         }
     </style>
 </head>
@@ -463,7 +513,7 @@
     </footer>
 
     <script>
-        // 更新时间（保留原有函数）
+        // 更新时间
         function updateTime() {
             const now = new Date();
             const year = now.getFullYear();
@@ -475,9 +525,7 @@
             const weekArr = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
             const week = weekArr[now.getDay()];
             const timeElement = document.getElementById('current-time');
-            if (timeElement) {
-                timeElement.innerText = `${year}年${month}月${day}日 ${hour}:${minute}:${second} ${week}`;
-            }
+            if (timeElement) timeElement.innerText = `${year}年${month}月${day}日 ${hour}:${minute}:${second} ${week}`;
         }
         updateTime();
         setInterval(updateTime, 1000);
@@ -486,8 +534,6 @@
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const body = document.getElementById('app-body');
-        
-        // 检查本地存储的深色模式偏好
         const isDarkMode = localStorage.getItem('darkMode') === 'true';
         if (isDarkMode) {
             body.classList.add('dark-mode');
@@ -496,7 +542,6 @@
             body.classList.remove('dark-mode');
             themeIcon.className = 'fa fa-moon-o';
         }
-        
         themeToggle.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
             const isDark = body.classList.contains('dark-mode');
@@ -507,7 +552,6 @@
         // 弹窗控制
         const modal = document.getElementById('contactModal');
         const closeModalBtn = document.getElementById('closeModal');
-
         function openModalHandler(e) {
             if (e && e.preventDefault) e.preventDefault();
             if (modal) {
@@ -516,7 +560,6 @@
                 document.body.style.overflow = 'hidden';
             }
         }
-
         function closeModalFunction() {
             if (modal) {
                 modal.classList.add('hidden');
@@ -524,12 +567,10 @@
                 document.body.style.overflow = '';
             }
         }
-
         const openContactBtn1 = document.getElementById('openContact');
         const openContactBtn2 = document.getElementById('openContactBtn');
         const openFloatContactBtn = document.getElementById('openFloatContact');
         const openPluginsContactBtn = document.getElementById('openPluginsContact');
-
         if (openContactBtn1) openContactBtn1.addEventListener('click', openModalHandler);
         if (openContactBtn2) openContactBtn2.addEventListener('click', openModalHandler);
         if (openFloatContactBtn) {
@@ -537,7 +578,6 @@
             openFloatContactBtn.style.cursor = 'pointer';
         }
         if (openPluginsContactBtn) openPluginsContactBtn.addEventListener('click', openModalHandler);
-
         if (closeModalBtn) closeModalBtn.addEventListener('click', closeModalFunction);
         if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModalFunction(); });
 
@@ -546,7 +586,6 @@
         if (copyBtn) {
             copyBtn.addEventListener('click', handleCopy);
         }
-
         async function handleCopy(e) {
             e.preventDefault();
             const wechatId = 'Win_Mac_123';
@@ -564,7 +603,6 @@
                 else alert('复制失败，请手动复制微信号：Win_Mac_123');
             }
         }
-
         function showCopySuccessFeedback() {
             if (!copyBtn) return;
             const originalHTML = copyBtn.innerHTML;
@@ -582,9 +620,7 @@
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
+            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
         }
 
         // 百度自动推送
