@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <!-- 告知百度站点同时适配PC和移动端 -->
+    <meta name="applicable-device" content="pc,mobile">
     <title>乐哲软件 | 原版软件下载推荐 · 创意工具库</title>
     <meta name="description" content="乐哲软件博客提供 Adobe、Autodesk、C4D、草图大师、犀牛等主流软件的原版安装包推荐与下载指引，资源安全无捆绑，仅供个人学习使用。">
     <meta name="keywords" content="乐哲软件,软件下载,Adobe下载,Autodesk,正版软件推荐,Mac软件,Windows软件,C4D,草图大师,犀牛,插件">
@@ -11,7 +13,8 @@
     <link rel="canonical" href="https://www.lezhesoft.cn/download.html">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- 添加 display=swap 避免字体阻塞渲染 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
@@ -40,7 +43,8 @@
         body.bg-night .glass-card,
         body.bg-night .search-bar,
         body.bg-night .cat-chip,
-        body.bg-night .legal-card {
+        body.bg-night .legal-card,
+        body.bg-night .friend-link {
             background: rgba(30, 41, 59, 0.6);
             backdrop-filter: blur(12px);
             border-color: rgba(255, 255, 255, 0.06);
@@ -421,8 +425,58 @@
             grid-column: 1/-1;
         }
 
+        /* 友情链接样式（紧凑小巧） */
+        .friend-links-section {
+            max-width: 900px;
+            margin: 48px auto 20px;
+            text-align: center;
+        }
+        .friend-links-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #6c86a3;
+            margin-bottom: 12px;
+        }
+        .friend-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 12px;
+        }
+        .friend-link {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            padding: 4px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            color: #1e6bdf;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            transition: 0.2s;
+        }
+        .friend-link i {
+            font-size: 11px;
+            margin-right: 4px;
+        }
+        .friend-link:hover {
+            background: white;
+            transform: translateY(-1px);
+            color: #0a4b9e;
+        }
+        body.bg-night .friend-link {
+            background: rgba(30, 41, 59, 0.5);
+            color: #c084fc;
+        }
+        body.bg-night .friend-link:hover {
+            background: rgba(168, 85, 247, 0.2);
+            color: #d8b4fe;
+        }
+
         footer {
-            margin-top: 80px;
+            margin-top: 40px;
             text-align: center;
             font-size: 11px;
             color: #6c86a3;
@@ -456,6 +510,10 @@
             .cat-chip {
                 padding: 5px 16px;
                 font-size: 12px;
+            }
+            .friend-link {
+                padding: 3px 12px;
+                font-size: 11px;
             }
         }
 
@@ -648,6 +706,18 @@
             <button class="load-more-btn" id="loadMoreBtn"><i class="fas fa-chevron-down"></i> 加载更多</button>
         </div>
 
+        <!-- 友情链接区块（紧凑小巧） -->
+        <div class="friend-links-section">
+            <div class="friend-links-title"><i class="fas fa-link"></i> 友情链接</div>
+            <div class="friend-links">
+                <a href="https://foxirj.com/" target="_blank" rel="noopener noreferrer" class="friend-link"><i class="fas fa-download"></i> 佛系软件</a>
+                <a href="https://www.ruancang.net/" target="_blank" rel="noopener noreferrer" class="friend-link"><i class="fas fa-cloud-download-alt"></i> 软仓</a>
+                <a href="https://www.macwk.com/" target="_blank" rel="noopener noreferrer" class="friend-link"><i class="fab fa-apple"></i> MacWK</a>
+                <a href="https://www.ifmac.cn/" target="_blank" rel="noopener noreferrer" class="friend-link"><i class="fab fa-apple"></i> ifMac</a>
+                <a href="https://www.macku.pro/" target="_blank" rel="noopener noreferrer" class="friend-link"><i class="fas fa-cube"></i> 迈克库软件</a>
+            </div>
+        </div>
+
         <footer>
             <i class="fas fa-download"></i> 乐哲软件博客 · 原版安装包推荐，安全无捆绑<br>
             www.lezhesoft.cn | 个人技术分享<br>
@@ -746,8 +816,8 @@
         let currentCategory = "all";
         let searchKeyword = "";
         let pendingUrl = null;
-        let showAll = false;          // 是否显示全部软件（默认 false，只显示前 LIMIT 条）
-        const DEFAULT_LIMIT = 12;     // 默认显示数量
+        let showAll = false;
+        const DEFAULT_LIMIT = 12;
 
         const gridContainer = document.getElementById("softwareGridContainer");
         const searchInput = document.getElementById("searchInput");
@@ -790,7 +860,7 @@
             document.querySelectorAll('.cat-chip').forEach(btn => {
                 btn.addEventListener('click', () => {
                     currentCategory = btn.getAttribute('data-cat');
-                    showAll = false;  // 切换分类时重置为限制显示
+                    showAll = false;
                     renderCategories();
                     renderGrid();
                 });
@@ -844,14 +914,12 @@
             }
             gridContainer.innerHTML = cardsHtml;
             
-            // 控制“加载更多”按钮显示：当未显示全部且过滤后总数大于当前显示数量时显示
             if (!showAll && totalCount > DEFAULT_LIMIT) {
                 loadMoreContainer.style.display = 'block';
             } else {
                 loadMoreContainer.style.display = 'none';
             }
             
-            // 绑定卡片点击事件
             document.querySelectorAll('.software-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const name = card.getAttribute('data-name');
@@ -966,17 +1034,15 @@
 
         searchInput.addEventListener('input', (e) => {
             searchKeyword = e.target.value;
-            showAll = false;   // 搜索时重置为限制模式
+            showAll = false;
             renderGrid();
         });
 
-        // 加载更多按钮点击
         loadMoreBtn.addEventListener('click', () => {
             showAll = true;
             renderGrid();
         });
 
-        // 隐藏导航栏滚动监听
         let lastScrollY = window.scrollY;
         const topNav = document.getElementById('topNav');
         function handleScroll() {
@@ -990,7 +1056,6 @@
         window.addEventListener('scroll', handleScroll);
         handleScroll();
 
-        // 验证弹窗逻辑
         const modal = document.getElementById('verifyModal');
         const verifyCodeInput = document.getElementById('verifyCode');
         const confirmBtn = document.getElementById('confirmVerify');
@@ -1005,7 +1070,6 @@
         cancelBtn.addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-        // 聊天组件
         (function initChat() {
             let messages = [];
             const botReplyText = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～";
@@ -1058,7 +1122,6 @@
             window.addEventListener('mouseup', () => { isDragging = false; dragContainer.style.transition = ''; });
         })();
 
-        // ===== 百度自动推送（无配额限制）=====
         (function(){
             var bp = document.createElement('script');
             var curProtocol = window.location.protocol.split(':')[0];
