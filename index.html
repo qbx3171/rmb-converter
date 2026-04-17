@@ -224,6 +224,13 @@ body.night-mode details.bg-slate-800\/30 {
 body.night-mode details.bg-slate-800\/30 summary {
   color: #cbd5e1 !important;
 }
+/* 修复深色模式下 Logo 显示 */
+body.night-mode #logoLink {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  color: white !important;
+}
 
 /* ========= 移动端专用适配 ========= */
 @media (max-width: 768px) {
@@ -328,7 +335,7 @@ body.night-mode details.bg-slate-800\/30 summary {
 <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100 shadow-sm">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="flex justify-between items-center h-16">
-<a href="https://www.lezhesoft.cn/index.html" class="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent tracking-tight whitespace-nowrap">乐哲软件</a>
+<a href="https://www.lezhesoft.cn/index.html" id="logoLink" class="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent tracking-tight whitespace-nowrap">乐哲软件</a>
 <div class="hidden md:flex gap-8">
 <a href="https://www.lezhesoft.cn/service.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">服务项目</a>
 <a href="https://www.lezhesoft.cn/download.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">软件下载</a>
