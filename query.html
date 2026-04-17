@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Adobe 订阅状态查询 | Creative Cloud 助手</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
+        body { background: linear-gradient(145deg, #eef2f9 0%, #d9e2ef 100%); min-height: 100vh; padding: 2rem 1.5rem; display: flex; justify-content: center; align-items: center; }
+        .query-card { max-width: 680px; width: 100%; background: rgba(255,255,255,0.98); border-radius: 2rem; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.25); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%); padding: 1.8rem; color: white; text-align: center; }
+        .header h1 { font-size: 1.8rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .team-badge { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); display: inline-block; padding: 5px 16px; border-radius: 60px; font-size: 0.75rem; margin-top: 12px; }
+        .query-area { padding: 2rem 1.8rem; background: white; }
+        .input-group { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+        .input-group input { flex: 1; padding: 14px 18px; border-radius: 60px; border: 1px solid #cbdde9; font-size: 1rem; }
+        .input-group button { background: #1b6b5e; color: white; border: none; padding: 0 28px; border-radius: 60px; font-weight: 600; cursor: pointer; }
+        .result-card { background: #f8fafd; border-radius: 1.5rem; padding: 1.5rem; margin-top: 1.2rem; border-left: 5px solid #1b6b5e; }
+        .status { font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .status-badge { display: inline-block; padding: 4px 14px; border-radius: 40px; font-size: 0.75rem; font-weight: 600; }
+        .status-success { background: #e0f2e9; color: #146b3a; }
+        .status-warning { background: #fff1e0; color: #b45a2e; }
+        .status-error { background: #ffe8e8; color: #c2412c; }
+        .info-line { margin: 12px 0; font-size: 0.9rem; color: #2c4c6c; border-bottom: 1px dashed #dce5ef; padding-bottom: 8px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .info-label { font-weight: 600; color: #1e4663; }
+        .expiring-soon { background: #fff1e0; border-left-color: #e67e22; }
+        .guide-section { background: #fef7e0; border-radius: 1.2rem; padding: 1.2rem 1.5rem; margin-top: 1.5rem; border: 1px solid #ffe6b3; }
+        .guide-section h3 { font-size: 1rem; color: #a16207; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .guide-steps { padding-left: 1.2rem; font-size: 0.85rem; color: #2d3e50; line-height: 1.5; }
+        .guide-steps li { margin: 8px 0; }
+        .team-name-highlight { font-weight: 800; background: #1b6b5e20; padding: 2px 8px; border-radius: 30px; display: inline-block; color: #1b6b5e; }
+        .footer-note { background: #fafcff; border-top: 1px solid #eef2f8; padding: 1rem 1.5rem; font-size: 0.7rem; color: #6a7c8f; text-align: center; }
+        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ccc; border-top-color: #1b6b5e; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 550px) { body { padding: 1rem; } .header h1 { font-size: 1.4rem; } .input-group button { padding: 0 20px; } }
+    </style>
+</head>
+<body>
+<div class="query-card">
+    <div class="header">
+        <h1>🔍 Adobe 订阅状态查询</h1>
+        <p>输入您的邮箱，验证团队授权、订阅起止时间</p>
+        <div class="team-badge" id="dynamicTeamBadge">🎯 当前团队: 加载中...</div>
+    </div>
+    <div class="query-area">
+        <div class="input-group">
+            <input type="email" id="emailInput" placeholder="请输入您的 Adobe 邮箱地址" autocomplete="off">
+            <button id="queryBtn">查询订阅</button>
+        </div>
+        <div id="resultArea" style="min-height: 100px;"><div style="text-align: center; color: #7e8c9e; padding: 20px;">✨ 输入邮箱后点击查询，即可看到团队授权及订阅详情</div></div>
+        <div class="guide-section">
+            <h3>📘 Creative Cloud 加入团队指引</h3>
+            <ul class="guide-steps">
+                <li>1️⃣ 打开 <strong>Creative Cloud 桌面应用</strong>，点击右上角<strong>头像</strong> → <strong>注销</strong>。</li>
+                <li>2️⃣ 重新使用您的 Adobe 账号和密码<strong>登录</strong>。</li>
+                <li>3️⃣ 登录过程中，当出现<strong>“加入团队”</strong>提示时，点击加入。</li>
+                <li>4️⃣ 移动文件选择：<strong>移入个人云存储中</strong>（保留个人云储存）。</li>
+                <li>5️⃣ 随后<strong>配置文件</strong>选择 <strong id="guideTeamName" class="team-name-highlight">英文团队名称</strong> 即可正常使用。</li>
+            </ul>
+            <p style="margin-top: 12px; font-size: 0.7rem; color:#b45a2e;">⚠️ 若未出现“加入团队”，请确认您的账号已被管理员添加到团队中，且订阅未过期。</p>
+        </div>
+    </div>
+    <div class="footer-note">⚡ 数据与后台实时同步，团队名称由管理员动态配置。<br>订阅到期前30天会显示提醒，请联系管理员续期。</div>
+</div>
+<script>
+    // Airtable 配置（只读 Token）
+    const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
+    const BASE_ID = "appKUCGZCrZIH51dG";
+    const TABLE_NAME = "accounts";
+    const TEAM_KEY = "AdobeCurrentTeamCloud";
+
+    let accountsData = [];
+    let currentTeamName = "Art Grid Dynamics Garcia Miami";
+    let loading = false;
+
+    function parseToStandardDate(input) {
+        if (!input || typeof input !== 'string') return null;
+        let str = input.trim();
+        let parts = str.split(/[-/\.]/);
+        if (parts.length === 3) {
+            let year = parseInt(parts[0], 10);
+            let month = parseInt(parts[1], 10) - 1;
+            let day = parseInt(parts[2], 10);
+            if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                let date = new Date(year, month, day);
+                if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                    return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                }
+            }
+        }
+        let d = new Date(str);
+        if (!isNaN(d.getTime())) {
+            let y = d.getFullYear();
+            let m = String(d.getMonth()+1).padStart(2,'0');
+            let day = String(d.getDate()).padStart(2,'0');
+            return `${y}-${m}-${day}`;
+        }
+        return null;
+    }
+    function daysRemaining(endDateStr) {
+        let stdEnd = parseToStandardDate(endDateStr);
+        if (!stdEnd) return Infinity;
+        let today = new Date(); today.setHours(0,0,0,0);
+        let end = new Date(stdEnd);
+        if (isNaN(end.getTime())) return Infinity;
+        return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    }
+    function formatDateForDisplay(dateStr) {
+        if (!dateStr) return '未设置';
+        let std = parseToStandardDate(dateStr);
+        if (!std) return dateStr;
+        let parts = std.split('-');
+        return `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+    }
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+    }
+
+    async function fetchAccountsAndTeam() {
+        const storedTeam = localStorage.getItem(TEAM_KEY);
+        if (storedTeam && storedTeam.trim()) currentTeamName = storedTeam;
+        else currentTeamName = "Art Grid Dynamics Garcia Miami";
+        document.getElementById("dynamicTeamBadge").innerHTML = `🎯 当前团队: ${currentTeamName}`;
+        document.getElementById("guideTeamName").innerText = currentTeamName;
+
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+        try {
+            const resp = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            accountsData = data.records.map(rec => ({
+                email: rec.fields.Email,
+                joinedTeam: rec.fields.joinedTeam === true,
+                isGenuine: rec.fields.isGenuine === true,
+                subscriptionStart: rec.fields.subscriptionStart || '',
+                subscriptionEnd: rec.fields.subscriptionEnd || ''
+            }));
+        } catch(e) {
+            console.error("加载云端数据失败", e);
+            accountsData = [];
+        }
+    }
+
+    function findAccountByEmail(email) {
+        if (!email) return null;
+        const normalized = email.trim().toLowerCase();
+        return accountsData.find(acc => acc.email.toLowerCase() === normalized);
+    }
+
+    function renderResult(account, inputEmail) {
+        const resultDiv = document.getElementById("resultArea");
+        if (!account) {
+            resultDiv.innerHTML = `<div class="result-card" style="border-left-color: #c2412c;">
+                <div class="status"><span class="status-badge status-error">❌ 账号不存在</span></div>
+                <div class="info-line"><span class="info-label">邮箱：</span><span>${escapeHtml(inputEmail)}</span></div>
+                <div class="info-line"><span class="info-label">状态：</span><span>未找到订阅记录，请联系管理员添加。</span></div>
+            </div>`;
+            return;
+        }
+        let remainingDays = daysRemaining(account.subscriptionEnd);
+        let isExpiring = (remainingDays <= 30);
+        let isExpired = (remainingDays < 0);
+        let statusText = "", statusClass = "status-success";
+        if (account.joinedTeam) {
+            if (isExpired) { statusText = "⚠️ 订阅已过期"; statusClass = "status-error"; }
+            else if (isExpiring) { statusText = "⏰ 即将过期"; statusClass = "status-warning"; }
+            else { statusText = "✅ 已加入团队 · 订阅有效"; statusClass = "status-success"; }
+        } else {
+            if (isExpired) { statusText = "⚠️ 订阅已过期，未加入团队"; statusClass = "status-error"; }
+            else if (isExpiring) { statusText = "⏰ 即将过期，未加入团队"; statusClass = "status-warning"; }
+            else { statusText = "📌 未加入团队 · 订阅有效"; statusClass = "status-warning"; }
+        }
+        let daysText = "";
+        if (isExpired) daysText = `已过期 ${Math.abs(remainingDays)} 天`;
+        else if (remainingDays === 0) daysText = "今天到期";
+        else daysText = `剩余 ${remainingDays} 天`;
+
+        let startDisplay = formatDateForDisplay(account.subscriptionStart);
+        let endDisplay = formatDateForDisplay(account.subscriptionEnd);
+
+        resultDiv.innerHTML = `
+            <div class="result-card ${isExpiring || isExpired ? 'expiring-soon' : ''}" style="border-left-color: ${isExpired ? '#c2412c' : (isExpiring ? '#e67e22' : '#1b6b5e')};">
+                <div class="status"><span class="status-badge ${statusClass}">${statusText}</span></div>
+                <div class="info-line"><span class="info-label">📧 邮箱：</span><span>${escapeHtml(account.email)}</span></div>
+                <div class="info-line"><span class="info-label">🏷️ 所属团队：</span><span><strong>${escapeHtml(currentTeamName)}</strong> ${account.joinedTeam ? '✓ 已加入' : '✗ 未加入'}</span></div>
+                <div class="info-line"><span class="info-label">⭐ Adobe正版：</span><span>${account.isGenuine ? '✅ 认证正版客户' : '⭕ 未认证'}</span></div>
+                <div class="info-line"><span class="info-label">📅 订阅起始：</span><span>${startDisplay}</span></div>
+                <div class="info-line"><span class="info-label">⏳ 到期时间：</span><span>${endDisplay} &nbsp; (${daysText})</span></div>
+                ${(isExpiring && !isExpired) ? `<div class="info-line" style="background:#fff1e0; margin-top:8px; padding:6px 10px; border-radius:12px;"><span style="color:#b45a2e;">⚠️ 您的订阅将在 ${Math.abs(remainingDays)} 天后到期，请及时联系管理员续期。</span></div>` : ''}
+                ${isExpired ? `<div class="info-line" style="background:#ffe8e8; margin-top:8px; padding:6px 10px; border-radius:12px;"><span style="color:#c2412c;">❌ 订阅已过期，无法继续使用团队服务，请联系管理员续费。</span></div>` : ''}
+                ${!account.joinedTeam && !isExpired ? `<div class="info-line" style="background:#eef2ff; margin-top:8px; padding:6px 10px; border-radius:12px;"><span style="color:#2c5f8a;">📢 您尚未加入团队，请按照下方指引加入 “${escapeHtml(currentTeamName)}” 团队。</span></div>` : ''}
+            </div>
+        `;
+    }
+
+    async function handleQuery() {
+        const emailInput = document.getElementById('emailInput');
+        const email = emailInput.value.trim();
+        if (!email) {
+            document.getElementById("resultArea").innerHTML = `<div class="result-card" style="border-left-color:#e67e22;"><div class="status"><span class="status-badge status-warning">⚠️ 请输入邮箱地址</span></div></div>`;
+            return;
+        }
+        if (!/^\S+@\S+\.\S+$/.test(email)) {
+            document.getElementById("resultArea").innerHTML = `<div class="result-card" style="border-left-color:#c2412c;"><div class="status"><span class="status-badge status-error">❌ 邮箱格式无效</span></div></div>`;
+            return;
+        }
+        if (loading) return;
+        loading = true;
+        const btn = document.getElementById('queryBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="loading-spinner"></span> 查询中...';
+        btn.disabled = true;
+        try {
+            await fetchAccountsAndTeam();
+            const account = findAccountByEmail(email);
+            renderResult(account, email);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            loading = false;
+        }
+    }
+
+    async function init() {
+        await fetchAccountsAndTeam();
+        const queryBtn = document.getElementById('queryBtn');
+        const emailInput = document.getElementById('emailInput');
+        queryBtn.addEventListener('click', handleQuery);
+        emailInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleQuery(); });
+    }
+    init();
+</script>
+</body>
+</html>

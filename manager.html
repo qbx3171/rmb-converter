@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Adobe 团队管家 · 订阅管理 (云同步)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
+        body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
+        .glass-panel { max-width: 1600px; margin: 0 auto; background: rgba(255,255,255,0.97); backdrop-filter: blur(2px); border-radius: 1.8rem; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.5); overflow: hidden; }
+        .hero { background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%); padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.8rem; color: white; }
+        .hero-left h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .hero-left p { font-size: 0.7rem; opacity: 0.8; margin-top: 4px; }
+        .team-edit-area { background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border-radius: 60px; padding: 6px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .team-edit-area label { font-size: 0.75rem; font-weight: 500; }
+        .team-input { background: rgba(255,255,240,0.9); border: none; border-radius: 40px; padding: 6px 14px; font-size: 0.8rem; color: #1e3a5f; min-width: 180px; }
+        .update-team-btn { background: #ffd966; color: #2c3e2f; border: none; border-radius: 40px; padding: 4px 12px; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
+        .stats-grid { display: flex; gap: 12px; padding: 1rem 1.5rem; background: #f9fbfd; border-bottom: 1px solid #e9eef3; flex-wrap: wrap; }
+        .stat-item { background: white; border-radius: 40px; padding: 0.3rem 1rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 0 0 1px #eef2f8; font-weight: 500; display: flex; align-items: baseline; gap: 8px; font-size: 0.8rem; }
+        .stat-number { font-size: 1.4rem; font-weight: 800; color: #1f6e5c; line-height: 1; }
+        .action-bar { padding: 0.8rem 1.2rem; background: white; border-bottom: 1px solid #eef2f8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+        .btn-group, .sync-group { display: flex; flex-wrap: wrap; gap: 6px; }
+        button, .btn-outline { background: #f1f5f9; border: none; padding: 6px 14px; border-radius: 40px; font-weight: 500; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; color: #1e3a5f; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        button.primary { background: #1b6b5e; color: white; }
+        button.accent { background: #2c5f8a; color: white; }
+        button.warning { background: #fff1e5; color: #b45a2e; }
+        button.danger { background: #ffe8e8; color: #c2412c; }
+        button.success { background: #e0f2e9; color: #146b3a; }
+        .add-section { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; }
+        .add-section input { padding: 6px 14px; border-radius: 40px; border: 1px solid #cbdde9; background: white; min-width: 180px; font-size: 0.8rem; flex: 1; }
+        .file-import { background: #eef2ff; }
+        .table-container { overflow-x: auto; padding: 0 0 0.5rem 0; }
+        .modern-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .modern-table th { text-align: left; padding: 0.8rem 0.6rem; background: #fefefe; font-weight: 600; color: #2c4c6c; border-bottom: 1px solid #e4e9f0; }
+        .modern-table td { padding: 0.7rem 0.6rem; border-bottom: 1px solid #f0f3f9; vertical-align: middle; }
+        .email-cell { font-family: monospace; font-weight: 500; word-break: break-all; max-width: 200px; }
+        .date-input { padding: 6px 8px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.75rem; width: 120px; background: white; font-family: monospace; }
+        .checkbox-smart { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+        .checkbox-smart input { width: 18px; height: 18px; accent-color: #1b6b5e; }
+        .badge-team { background: #ddf3e8; color: #146b3a; border-radius: 30px; padding: 2px 10px; font-size: 0.65rem; font-weight: 600; margin-left: 6px; white-space: nowrap; }
+        .delete-icon { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #9aaebf; padding: 4px 8px; border-radius: 30px; }
+        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.75rem; z-index: 1000; pointer-events: none; white-space: nowrap; }
+        .footer-note { padding: 0.8rem 1.2rem; background: #fafdff; border-top: 1px solid #eef2f8; font-size: 0.65rem; color: #6a7c8f; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; display: none; }
+        @media (max-width: 900px) { .modern-table th, .modern-table td { padding: 0.5rem 0.3rem; } .date-input { width: 105px; } }
+    </style>
+</head>
+<body>
+<div class="glass-panel">
+    <div class="hero">
+        <div class="hero-left">
+            <h1>📋 Adobe 团队管家 · 订阅管理 (云同步)</h1>
+            <p>数据实时保存在 Airtable，所有管理员操作即时生效</p>
+        </div>
+        <div class="team-edit-area">
+            <label>🎯 当前团队：</label>
+            <input type="text" id="teamNameInput" class="team-input" placeholder="团队名称">
+            <button id="updateTeamBtn" class="update-team-btn">更改团队</button>
+        </div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-item">📬 总账号 <span class="stat-number" id="totalAccounts">0</span></div>
+        <div class="stat-item">✅ 已加入团队 <span class="stat-number" id="joinedTeamCount">0</span></div>
+        <div class="stat-item">⭐ 正版客户 <span class="stat-number" id="genuineCount">0</span></div>
+        <div class="stat-item">⏳ 即将过期(≤30天含已过期) <span class="stat-number" id="expiringCount">0</span></div>
+    </div>
+    <div class="action-bar">
+        <div class="btn-group">
+            <button id="batchJoinTeam" class="primary">➕ 批量加入团队</button>
+            <button id="batchLeaveTeam" class="warning">➖ 批量移出</button>
+            <button id="batchSetGenuine" class="primary">⭐ 批量正版</button>
+            <button id="batchRemoveGenuine" class="warning">🔄 取消正版</button>
+            <button id="deleteSelectedBtn" class="danger">🗑️ 删除选中</button>
+        </div>
+        <div class="sync-group">
+            <button id="refreshFromCloud" class="accent">🔄 刷新云数据</button>
+            <button id="exportJsonBtn" class="">💾 导出JSON</button>
+            <label for="importJsonInput" class="btn-outline" style="cursor:pointer;">📂 导入JSON</label>
+            <input type="file" id="importJsonInput" accept=".json" style="display:none">
+            <button id="resetDefaultBtn" class="">⟳ 重置默认数据</button>
+        </div>
+    </div>
+    <div class="action-bar" style="border-top: none; padding-top: 0; flex-wrap: wrap;">
+        <div class="add-section">
+            <input type="email" id="newEmailInput" placeholder="单个邮箱添加 ...">
+            <button id="addAccountBtn" class="primary">➕ 添加</button>
+            <label for="txtImportInput" class="btn-outline file-import" style="cursor:pointer;">📄 从TXT批量导入</label>
+            <input type="file" id="txtImportInput" accept=".txt" style="display:none">
+            <span style="font-size:0.65rem; color:#6c86a3;">✔️ TXT每行一个邮箱，新账号自动订阅1年</span>
+        </div>
+    </div>
+    <div class="table-container">
+        <table class="modern-table" id="accountTable">
+            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th style="width:40px;"></th></tr></thead>
+            <tbody id="tableBody"><tr><td colspan="7" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
+        </table>
+    </div>
+    <div class="footer-note">
+        <span>⚡ 所有数据实时同步至云端，管理员任何修改都会立即生效，用户查询页面会自动更新。</span>
+        <span id="currentTeamDisplay">🏷️ 团队: 加载中...</span>
+    </div>
+</div>
+<div id="loadingOverlay" class="loading-overlay"><div>⏳ 同步中...</div></div>
+<script>
+    // ================== Airtable 配置 ==================
+    const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
+    const BASE_ID = "appKUCGZCrZIH51dG";
+    const TABLE_NAME = "accounts";
+    const ADMIN_PASSWORD = "admin123";
+    
+    if (prompt("请输入管理密码") !== ADMIN_PASSWORD) {
+        document.body.innerHTML = "<div style='text-align:center; padding:50px;'>⛔ 无权限访问</div>";
+        throw new Error("密码错误");
+    }
+
+    let accounts = [];
+    let currentTeam = "Art Grid Dynamics Garcia Miami";
+    const TEAM_KEY = "AdobeCurrentTeamCloud";
+    let syncTimeout = null;
+
+    // ================== 日期工具 ==================
+    function parseToStandardDate(input) {
+        if (!input || typeof input !== 'string') return null;
+        let str = input.trim();
+        let parts = str.split(/[-/\.]/);
+        if (parts.length === 3) {
+            let year = parseInt(parts[0], 10);
+            let month = parseInt(parts[1], 10) - 1;
+            let day = parseInt(parts[2], 10);
+            if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
+                let date = new Date(year, month, day);
+                if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
+                    return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                }
+            }
+        }
+        let d = new Date(str);
+        if (!isNaN(d.getTime())) {
+            let y = d.getFullYear();
+            let m = String(d.getMonth()+1).padStart(2,'0');
+            let day = String(d.getDate()).padStart(2,'0');
+            return `${y}-${m}-${day}`;
+        }
+        return null;
+    }
+    function isValidDateString(dateStr) { return parseToStandardDate(dateStr) !== null; }
+    function addOneYearToDateStr(dateStr) {
+        let std = parseToStandardDate(dateStr);
+        if (!std) return "";
+        let parts = std.split('-');
+        let year = parseInt(parts[0],10);
+        let month = parseInt(parts[1],10);
+        let day = parseInt(parts[2],10);
+        let newDate = new Date(year, month-1, day);
+        newDate.setFullYear(newDate.getFullYear() + 1);
+        let y = newDate.getFullYear();
+        let m = String(newDate.getMonth()+1).padStart(2,'0');
+        let d = String(newDate.getDate()).padStart(2,'0');
+        return `${y}-${m}-${d}`;
+    }
+    function todayStandard() {
+        let d = new Date();
+        let y = d.getFullYear();
+        let m = String(d.getMonth()+1).padStart(2,'0');
+        let day = String(d.getDate()).padStart(2,'0');
+        return `${y}-${m}-${day}`;
+    }
+    function getDefaultSubscription() {
+        let start = todayStandard();
+        let end = addOneYearToDateStr(start);
+        return { subscriptionStart: start, subscriptionEnd: end };
+    }
+    function daysRemaining(endDateStr) {
+        let stdEnd = parseToStandardDate(endDateStr);
+        if (!stdEnd) return Infinity;
+        let today = new Date(); today.setHours(0,0,0,0);
+        let end = new Date(stdEnd);
+        if (isNaN(end.getTime())) return Infinity;
+        return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    }
+
+    // ================== Airtable 操作 ==================
+    async function fetchAllRecords() {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+        let allRecords = [];
+        let offset = null;
+        do {
+            let fetchUrl = url;
+            if (offset) fetchUrl += `?offset=${offset}`;
+            const resp = await fetch(fetchUrl, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+            });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.json();
+            allRecords = allRecords.concat(data.records);
+            offset = data.offset;
+        } while (offset);
+        return allRecords;
+    }
+
+    async function loadFromCloud(showLoading = true) {
+        if (showLoading) document.getElementById('loadingOverlay').style.display = 'flex';
+        try {
+            const records = await fetchAllRecords();
+            accounts = records.map(rec => ({
+                id: rec.id,
+                email: rec.fields.Email,
+                joinedTeam: rec.fields.joinedTeam === true,
+                isGenuine: rec.fields.isGenuine === true,
+                subscriptionStart: rec.fields.subscriptionStart || getDefaultSubscription().subscriptionStart,
+                subscriptionEnd: rec.fields.subscriptionEnd || getDefaultSubscription().subscriptionEnd
+            }));
+            for (let acc of accounts) {
+                if (!isValidDateString(acc.subscriptionStart)) acc.subscriptionStart = getDefaultSubscription().subscriptionStart;
+                if (!isValidDateString(acc.subscriptionEnd)) acc.subscriptionEnd = addOneYearToDateStr(acc.subscriptionStart);
+            }
+            renderTable();
+            showToast(`已从云端同步 ${accounts.length} 个账号`);
+        } catch(e) {
+            console.error(e);
+            showToast("加载云端数据失败，请检查网络或 Token 配置");
+        } finally {
+            if (showLoading) document.getElementById('loadingOverlay').style.display = 'none';
+        }
+    }
+
+    async function updateRecord(recordId, fields) {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${recordId}`;
+        const resp = await fetch(url, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields })
+        });
+        if (!resp.ok) throw new Error(`更新失败 ${resp.status}`);
+        return await resp.json();
+    }
+
+    async function createRecord(fields) {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+        const resp = await fetch(url, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields })
+        });
+        if (!resp.ok) throw new Error(`创建失败 ${resp.status}`);
+        return await resp.json();
+    }
+
+    async function deleteRecord(recordId) {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${recordId}`;
+        const resp = await fetch(url, { method: 'DELETE', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
+        if (!resp.ok) throw new Error(`删除失败 ${resp.status}`);
+    }
+
+    async function syncLocalChangesToCloud() {
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        let errorCount = 0;
+        for (let acc of accounts) {
+            try {
+                await updateRecord(acc.id, {
+                    Email: acc.email,
+                    joinedTeam: acc.joinedTeam,
+                    isGenuine: acc.isGenuine,
+                    subscriptionStart: acc.subscriptionStart,
+                    subscriptionEnd: acc.subscriptionEnd
+                });
+            } catch(e) {
+                errorCount++;
+                console.error(`更新 ${acc.email} 失败`, e);
+            }
+        }
+        document.getElementById('loadingOverlay').style.display = 'none';
+        if (errorCount === 0) showToast("✅ 所有变更已同步至云端");
+        else showToast(`⚠️ 同步完成，${errorCount} 个账号更新失败`);
+        renderTable();
+    }
+
+    // ================== 团队名称管理 ==================
+    function saveTeamToLocal() { localStorage.setItem(TEAM_KEY, currentTeam); }
+    function loadTeamFromLocal() {
+        const saved = localStorage.getItem(TEAM_KEY);
+        if (saved && saved.trim()) currentTeam = saved;
+        else currentTeam = "Art Grid Dynamics Garcia Miami";
+        document.getElementById('teamNameInput').value = currentTeam;
+        updateTeamDisplay();
+    }
+    function updateTeamDisplay() {
+        const span = document.getElementById('currentTeamDisplay');
+        if (span) span.innerText = `🏷️ 当前团队: ${currentTeam}`;
+    }
+    function setNewTeam(newTeam) {
+        if (!newTeam.trim()) { showToast("团队名称不能为空"); return false; }
+        currentTeam = newTeam.trim();
+        saveTeamToLocal();
+        updateTeamDisplay();
+        renderTable();
+        showToast(`团队已更改为: ${currentTeam}`);
+        return true;
+    }
+
+    // ================== 渲染表格 ==================
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        let joinedTotal = 0, genuineTotal = 0;
+        accounts.forEach((acc, idx) => {
+            if (acc.joinedTeam) joinedTotal++;
+            if (acc.isGenuine) genuineTotal++;
+            const tr = document.createElement('tr');
+            const tdSel = document.createElement('td');
+            const chk = document.createElement('input');
+            chk.type = 'checkbox'; chk.className = 'row-selector'; chk.dataset.index = idx;
+            tdSel.appendChild(chk);
+            tr.appendChild(tdSel);
+
+            const tdEmail = document.createElement('td');
+            tdEmail.className = 'email-cell'; tdEmail.textContent = acc.email;
+            tr.appendChild(tdEmail);
+
+            const tdTeam = document.createElement('td');
+            const teamLabel = document.createElement('label'); teamLabel.className = 'checkbox-smart';
+            const teamChk = document.createElement('input');
+            teamChk.type = 'checkbox'; teamChk.checked = acc.joinedTeam;
+            teamChk.className = 'team-checkbox'; teamChk.dataset.index = idx;
+            const teamSpan = document.createElement('span'); teamSpan.textContent = acc.joinedTeam ? `已加入 ${currentTeam}` : '未加入';
+            teamLabel.appendChild(teamChk); teamLabel.appendChild(teamSpan);
+            if (acc.joinedTeam) { const badge = document.createElement('span'); badge.className = 'badge-team'; badge.textContent = currentTeam.length > 12 ? currentTeam.slice(0,10)+'..' : currentTeam; teamLabel.appendChild(badge); }
+            tdTeam.appendChild(teamLabel);
+            tr.appendChild(tdTeam);
+
+            const tdGenuine = document.createElement('td');
+            const genuineLabel = document.createElement('label'); genuineLabel.className = 'checkbox-smart';
+            const genuineChk = document.createElement('input');
+            genuineChk.type = 'checkbox'; genuineChk.checked = acc.isGenuine;
+            genuineChk.className = 'genuine-checkbox'; genuineChk.dataset.index = idx;
+            const genuineSpan = document.createElement('span'); genuineSpan.textContent = acc.isGenuine ? '✅ 正版' : '⭕ 未认证';
+            genuineLabel.appendChild(genuineChk); genuineLabel.appendChild(genuineSpan);
+            tdGenuine.appendChild(genuineLabel);
+            tr.appendChild(tdGenuine);
+
+            const tdStart = document.createElement('td');
+            const startInput = document.createElement('input');
+            startInput.type = 'text';
+            startInput.value = acc.subscriptionStart || '';
+            startInput.className = 'date-input';
+            startInput.placeholder = "YYYY-MM-DD";
+            startInput.dataset.index = idx;
+            startInput.dataset.field = 'subscriptionStart';
+            tdStart.appendChild(startInput);
+            tr.appendChild(tdStart);
+
+            const tdEnd = document.createElement('td');
+            const endInput = document.createElement('input');
+            endInput.type = 'text';
+            endInput.value = acc.subscriptionEnd || '';
+            endInput.className = 'date-input';
+            endInput.placeholder = "YYYY-MM-DD";
+            endInput.dataset.index = idx;
+            endInput.dataset.field = 'subscriptionEnd';
+            tdEnd.appendChild(endInput);
+            tr.appendChild(tdEnd);
+
+            const tdAction = document.createElement('td');
+            const delBtn = document.createElement('button'); delBtn.textContent = '🗑️'; delBtn.className = 'delete-icon'; delBtn.dataset.index = idx;
+            tdAction.appendChild(delBtn);
+            tr.appendChild(tdAction);
+            tbody.appendChild(tr);
+        });
+        document.getElementById('totalAccounts').innerText = accounts.length;
+        document.getElementById('joinedTeamCount').innerText = joinedTotal;
+        document.getElementById('genuineCount').innerText = genuineTotal;
+        document.getElementById('expiringCount').innerText = accounts.filter(acc => daysRemaining(acc.subscriptionEnd) <= 30).length;
+        const allSelectors = document.querySelectorAll('.row-selector');
+        const selectAllChk = document.getElementById('selectAllCheckbox');
+        if (selectAllChk) {
+            const checkedCount = Array.from(allSelectors).filter(cb => cb.checked).length;
+            selectAllChk.checked = (checkedCount === allSelectors.length && allSelectors.length > 0);
+            selectAllChk.indeterminate = (checkedCount > 0 && checkedCount < allSelectors.length);
+        }
+    }
+
+    function handleDateChange(e) {
+        if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
+            const idx = parseInt(e.target.dataset.index);
+            const field = e.target.dataset.field;
+            if (isNaN(idx) || !accounts[idx]) return;
+            let rawValue = e.target.value.trim();
+            if (rawValue === "") { showToast("日期不能为空"); e.target.value = accounts[idx][field]; return; }
+            let stdDate = parseToStandardDate(rawValue);
+            if (!stdDate) {
+                showToast(`日期格式无效，请使用 YYYY-MM-DD 或 YYYY/MM/DD 格式`);
+                e.target.value = accounts[idx][field];
+                return;
+            }
+            if (field === 'subscriptionStart') {
+                accounts[idx].subscriptionStart = stdDate;
+                accounts[idx].subscriptionEnd = addOneYearToDateStr(stdDate);
+                showToast(`订阅起始已更新为 ${stdDate}，到期自动顺延至 ${accounts[idx].subscriptionEnd}`);
+            } else if (field === 'subscriptionEnd') {
+                accounts[idx].subscriptionEnd = stdDate;
+                showToast(`到期日期已更新为 ${stdDate}`);
+            }
+            renderTable();
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => syncLocalChangesToCloud(), 800);
+        }
+    }
+
+    function getSelectedIndices() {
+        return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb => parseInt(cb.dataset.index)).filter(i => !isNaN(i));
+    }
+    async function batchUpdate(property, newValue) {
+        const indices = getSelectedIndices();
+        if (indices.length === 0) { showToast('请至少勾选一个账号'); return; }
+        for (let idx of indices) {
+            if (accounts[idx]) accounts[idx][property] = newValue;
+        }
+        renderTable();
+        await syncLocalChangesToCloud();
+        showToast(`已更新 ${indices.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
+    }
+    async function deleteSelected() {
+        const indices = getSelectedIndices();
+        if (indices.length === 0) { showToast('没有选中任何账号'); return; }
+        if (confirm(`永久删除 ${indices.length} 个账号？`)) {
+            const toDelete = indices.map(i => accounts[i].id);
+            for (let id of toDelete) await deleteRecord(id);
+            accounts = accounts.filter((_, idx) => !indices.includes(idx));
+            renderTable();
+            showToast(`已删除 ${indices.length} 个账号`);
+        }
+    }
+    async function addAccount(emailRaw) {
+        const email = emailRaw.trim();
+        if (!email) { showToast('邮箱不能为空'); return false; }
+        if (!/^\S+@\S+\.\S+$/.test(email)) { showToast('邮箱格式无效'); return false; }
+        if (accounts.some(acc => acc.email.toLowerCase() === email.toLowerCase())) { showToast('账号已存在'); return false; }
+        let sub = getDefaultSubscription();
+        const newFields = {
+            Email: email,
+            joinedTeam: false,
+            isGenuine: false,
+            subscriptionStart: sub.subscriptionStart,
+            subscriptionEnd: sub.subscriptionEnd
+        };
+        try {
+            const created = await createRecord(newFields);
+            accounts.push({
+                id: created.id,
+                email: created.fields.Email,
+                joinedTeam: created.fields.joinedTeam,
+                isGenuine: created.fields.isGenuine,
+                subscriptionStart: created.fields.subscriptionStart,
+                subscriptionEnd: created.fields.subscriptionEnd
+            });
+            renderTable();
+            showToast(`添加成功: ${email}`);
+            return true;
+        } catch(e) {
+            showToast("添加失败，请重试");
+            return false;
+        }
+    }
+    async function deleteAccountByIndex(index) {
+        if (index >= 0 && index < accounts.length && confirm(`删除 ${accounts[index].email} ？`)) {
+            await deleteRecord(accounts[index].id);
+            accounts.splice(index, 1);
+            renderTable();
+            showToast('已删除');
+        }
+    }
+    async function resetToDefault() {
+        if (!confirm('重置将删除所有现有账号，并恢复初始邮箱列表')) return;
+        for (let acc of accounts) await deleteRecord(acc.id);
+        const defaultEmails = [
+            "chenshe2007@outlook.com", "ChenGorGor@outlook.com", "AdobeCloud999@outlook.com",
+            "AdobeCloud1888@outlook.com", "qzkm68e4@outlook.com", "jantek1000@gmail.com",
+            "hello@tanlineproject.biz", "wuyiping315@outlook.com", "dibox.diego@gmail.com",
+            "2571138584@qq.com", "Adoblife8888@outlook.com", "panjingru0210@outlook.com",
+            "3168551@qq.com", "molanjunfeng@outlook.com", "liubabya@outlook.com",
+            "wudie881031@gmail.com", "llllynn076@gmail.com", "sharkmoment2018@outlook.com",
+            "Gscf7890@outlook.com", "wangjian@liangzao.wang", "imwangyeah@gmail.com",
+            "ezaiezaixse@gmail.com", "xiaoxuelian121@outlook.com", "libaozeng038@gmail.com",
+            "t15651116661@gmail.com", "threefinger520@outlook.com", "qiangqiangx2@gmail.com",
+            "zhshy0506@gmail.com", "DAFAWW124@outlook.com", "1468890279@qq.com",
+            "jun6hao0719@gmail.com"
+        ];
+        let newAccounts = [];
+        for (let email of defaultEmails) {
+            let sub = getDefaultSubscription();
+            const created = await createRecord({
+                Email: email,
+                joinedTeam: false,
+                isGenuine: false,
+                subscriptionStart: sub.subscriptionStart,
+                subscriptionEnd: sub.subscriptionEnd
+            });
+            newAccounts.push({
+                id: created.id,
+                email: created.fields.Email,
+                joinedTeam: created.fields.joinedTeam,
+                isGenuine: created.fields.isGenuine,
+                subscriptionStart: created.fields.subscriptionStart,
+                subscriptionEnd: created.fields.subscriptionEnd
+            });
+        }
+        accounts = newAccounts;
+        renderTable();
+        showToast('已重置为默认账号列表');
+    }
+    function exportToJson() {
+        const exportData = accounts.map(({ id, ...rest }) => rest);
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `adobe_team_${todayStandard()}.json`; a.click(); URL.revokeObjectURL(url);
+        showToast('导出JSON成功');
+    }
+    async function importFromJson(file) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (!Array.isArray(imported)) throw new Error();
+                for (let acc of accounts) await deleteRecord(acc.id);
+                accounts = [];
+                for (let item of imported) {
+                    if (!item.email) continue;
+                    const fields = {
+                        Email: item.email,
+                        joinedTeam: item.joinedTeam === true,
+                        isGenuine: item.isGenuine === true,
+                        subscriptionStart: item.subscriptionStart || getDefaultSubscription().subscriptionStart,
+                        subscriptionEnd: item.subscriptionEnd || addOneYearToDateStr(item.subscriptionStart || todayStandard())
+                    };
+                    const created = await createRecord(fields);
+                    accounts.push({
+                        id: created.id,
+                        email: created.fields.Email,
+                        joinedTeam: created.fields.joinedTeam,
+                        isGenuine: created.fields.isGenuine,
+                        subscriptionStart: created.fields.subscriptionStart,
+                        subscriptionEnd: created.fields.subscriptionEnd
+                    });
+                }
+                renderTable();
+                showToast(`导入 ${accounts.length} 个账号`);
+            } catch(err) { showToast('JSON文件无效'); }
+        };
+        reader.readAsText(file);
+    }
+    async function importFromTxt(file, autoJoinTeam = true) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const content = e.target.result;
+            const lines = content.split(/\r?\n/);
+            let addedCount = 0;
+            for (let line of lines) {
+                let email = line.trim();
+                if (email === "") continue;
+                if (!/^\S+@\S+\.\S+$/.test(email)) continue;
+                if (accounts.some(acc => acc.email.toLowerCase() === email.toLowerCase())) continue;
+                let sub = getDefaultSubscription();
+                const fields = {
+                    Email: email,
+                    joinedTeam: autoJoinTeam,
+                    isGenuine: false,
+                    subscriptionStart: sub.subscriptionStart,
+                    subscriptionEnd: sub.subscriptionEnd
+                };
+                const created = await createRecord(fields);
+                accounts.push({
+                    id: created.id,
+                    email: created.fields.Email,
+                    joinedTeam: created.fields.joinedTeam,
+                    isGenuine: created.fields.isGenuine,
+                    subscriptionStart: created.fields.subscriptionStart,
+                    subscriptionEnd: created.fields.subscriptionEnd
+                });
+                addedCount++;
+            }
+            if (addedCount > 0) { renderTable(); showToast(`TXT导入完成: 新增 ${addedCount} 个账号`); }
+            else { showToast(`没有新增账号`); }
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+        if (toastTimer) clearTimeout(toastTimer);
+        const existing = document.querySelector('.toast-message');
+        if (existing) existing.remove();
+        const toast = document.createElement('div'); toast.className = 'toast-message'; toast.textContent = msg;
+        document.body.appendChild(toast);
+        toastTimer = setTimeout(() => toast.remove(), 2500);
+    }
+
+    function bindEvents() {
+        const tbody = document.getElementById('tableBody');
+        tbody?.addEventListener('change', (e) => {
+            if (e.target.classList.contains('team-checkbox')) { const idx = parseInt(e.target.dataset.index); if (!isNaN(idx)) accounts[idx].joinedTeam = e.target.checked; renderTable(); syncLocalChangesToCloud(); }
+            if (e.target.classList.contains('genuine-checkbox')) { const idx = parseInt(e.target.dataset.index); if (!isNaN(idx)) accounts[idx].isGenuine = e.target.checked; renderTable(); syncLocalChangesToCloud(); }
+        });
+        tbody?.addEventListener('blur', handleDateChange, true);
+        tbody?.addEventListener('click', (e) => { if (e.target.classList.contains('delete-icon')) deleteAccountByIndex(parseInt(e.target.dataset.index)); });
+        document.getElementById('selectAllCheckbox')?.addEventListener('change', (e) => document.querySelectorAll('.row-selector').forEach(cb => cb.checked = e.target.checked));
+        document.getElementById('batchJoinTeam')?.addEventListener('click', () => batchUpdate('joinedTeam', true));
+        document.getElementById('batchLeaveTeam')?.addEventListener('click', () => batchUpdate('joinedTeam', false));
+        document.getElementById('batchSetGenuine')?.addEventListener('click', () => batchUpdate('isGenuine', true));
+        document.getElementById('batchRemoveGenuine')?.addEventListener('click', () => batchUpdate('isGenuine', false));
+        document.getElementById('deleteSelectedBtn')?.addEventListener('click', deleteSelected);
+        document.getElementById('addAccountBtn')?.addEventListener('click', () => { const inp = document.getElementById('newEmailInput'); if (inp.value && addAccount(inp.value)) inp.value = ''; });
+        document.getElementById('resetDefaultBtn')?.addEventListener('click', resetToDefault);
+        document.getElementById('exportJsonBtn')?.addEventListener('click', exportToJson);
+        document.getElementById('refreshFromCloud')?.addEventListener('click', () => loadFromCloud(true));
+        document.getElementById('updateTeamBtn')?.addEventListener('click', () => { const newTeam = document.getElementById('teamNameInput').value; setNewTeam(newTeam); renderTable(); });
+        const importJson = document.getElementById('importJsonInput'); importJson?.addEventListener('change', (e) => { if (e.target.files[0]) importFromJson(e.target.files[0]); importJson.value = ''; });
+        const txtImport = document.getElementById('txtImportInput');
+        txtImport?.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                const autoJoin = confirm('是否将导入的所有账号自动加入当前团队？\n点击“确定”则自动加入，点击“取消”仅添加账号不加入团队。');
+                importFromTxt(e.target.files[0], autoJoin);
+            }
+            txtImport.value = '';
+        });
+        document.getElementById('newEmailInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { const inp = e.target; if (inp.value && addAccount(inp.value)) inp.value = ''; } });
+    }
+
+    async function init() {
+        loadTeamFromLocal();
+        await loadFromCloud(true);
+        bindEvents();
+    }
+    init();
+</script>
+</body>
+</html>
