@@ -112,6 +112,20 @@ tailwind.config = {
       margin: 0 auto;
     }
   }
+  /* 折叠面板样式优化 */
+  details > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+  details > summary .chevron {
+    transition: transform 0.2s ease;
+  }
+  details[open] > summary .chevron {
+    transform: rotate(180deg);
+  }
 }
 
 /* ===== 时间主题切换：夜间模式覆盖样式 ===== */
@@ -202,6 +216,12 @@ body.night-mode .bg-primary {
 body.night-mode .border-primary\/30 {
   border-color: #3b82f6 !important;
 }
+body.night-mode details.bg-slate-800\/30 {
+  background-color: rgba(0,0,0,0.3) !important;
+}
+body.night-mode details.bg-slate-800\/30 summary {
+  color: #cbd5e1 !important;
+}
 </style>
 </head>
 <body class="bg-slate-50 text-dark font-sans antialiased scroll-smooth mobile-tap-highlight" id="app-body">
@@ -232,7 +252,7 @@ body.night-mode .border-primary\/30 {
 </div>
 </nav>
 
-<!-- Banner (措辞合规化：弱化绝对官方表述) -->
+<!-- Banner -->
 <header class="relative overflow-hidden bg-gradient-to-br from-primary via-indigo-700 to-blue-800 text-white py-16 md:py-28">
 <div class="absolute inset-0 opacity-20 mix-blend-overlay">
 <div class="absolute -top-24 -left-24 w-72 h-72 bg-white rounded-full filter blur-[80px] animate-blob"></div>
@@ -350,7 +370,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
-<!-- 插件推荐板块 (合规化表述) -->
+<!-- 插件推荐板块 -->
 <section id="plugins" class="py-16 md:py-20 px-4 bg-gradient-to-br from-slate-50 via-white to-slate-100">
 <div class="max-w-6xl mx-auto">
 <div class="text-center mb-10 md:mb-12">
@@ -389,7 +409,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
-<!-- 主营业务预览 (措辞调整) -->
+<!-- 主营业务预览 -->
 <section class="py-14 md:py-16 px-4 bg-white">
 <div class="max-w-6xl mx-auto text-center">
 <h2 class="text-2xl md:text-4xl font-bold text-dark mb-3">我们的主营业务</h2>
@@ -497,6 +517,35 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </section>
 
+<!-- ========= 友情链接区块 ========= -->
+<section class="py-12 md:py-16 px-4 bg-slate-50/80 border-t border-slate-200">
+<div class="max-w-6xl mx-auto">
+<div class="text-center mb-6">
+<h2 class="text-xl md:text-2xl font-bold text-dark inline-flex items-center gap-2">
+<i class="fa fa-link text-primary"></i> 友情链接
+</h2>
+<p class="text-slate-500 text-sm mt-1">值得信赖的软件资源合作伙伴</p>
+</div>
+<div class="flex flex-wrap justify-center gap-4 md:gap-6">
+<a href="https://www.downcc.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<i class="fa fa-download text-primary/70"></i> 绿色资源网
+</a>
+<a href="https://www.xiazaizhijia.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<i class="fa fa-cloud-download text-primary/70"></i> 下载之家
+</a>
+<a href="https://www.zhuzhu.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<i class="fa fa-puzzle-piece text-primary/70"></i> 猪猪软件库
+</a>
+<a href="https://www.lingdu.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<i class="fa fa-cube text-primary/70"></i> 零度软件园
+</a>
+<a href="https://www.macdown.com/" target="_blank" rel="noopener noreferrer" class="bg-white hover:bg-primary/5 border border-slate-200 rounded-full px-5 py-2.5 text-slate-700 hover:text-primary transition-all duration-200 text-sm md:text-base font-medium shadow-sm hover:shadow-md flex items-center gap-2">
+<i class="fa fa-apple text-primary/70"></i> Macdown技术社区
+</a>
+</div>
+</div>
+</section>
+
 <!-- 右侧悬浮微信按钮 -->
 <button id="openFloatContact" class="fixed right-4 bottom-24 md:right-5 md:top-1/2 md:-translate-y-1/2 z-40 bg-wechat text-white rounded-full shadow-2xl hover:scale-105 transition-all flex items-center justify-center w-12 h-12 md:w-14 md:h-14" style="cursor: pointer; box-shadow: 0 8px 20px rgba(7,193,96,0.3);">
 <i class="fa fa-weixin text-xl md:text-2xl"></i>
@@ -523,7 +572,7 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 </div>
 </div>
 
-<!-- 页脚 + 合规声明 + 个人博客声明 -->
+<!-- 页脚 + 精简折叠式合规声明 -->
 <footer class="bg-dark text-slate-300 pt-12 pb-8">
 <div class="max-w-7xl mx-auto px-4">
 <div class="grid md:grid-cols-2 gap-8 text-center md:text-left border-b border-slate-700/50 pb-8 mb-6">
@@ -543,23 +592,20 @@ Adobe / Autodesk / Microsoft 合作服务商 · 全系列正版插件推荐渠�
 <span class="flex items-center gap-1 text-xs md:text-sm"><i class="fa fa-shield"></i> 隐私安全保护</span>
 </div>
 
-<!-- 个人博客声明 (明确博客属性) -->
-<div class="bg-slate-800/30 rounded-xl p-3 max-w-4xl mx-auto border border-slate-700/60 mb-3">
-<p class="text-xs text-slate-300 text-center leading-relaxed">
-📢 <span class="font-semibold text-white">个人博客声明：</span> 本站为个人博客网站，所有内容（包括软件介绍、插件说明、服务描述等）均基于个人经验与行业信息分享，不构成任何商业承诺或法律要约。网站中提及的“合作渠道”、“正版推荐”等表述均代表个人对可靠渠道的整理，具体授权资质请以厂商官方公示为准。访问者应自行核实信息并承担使用风险。
-</p>
+<!-- 折叠式免责声明（美观紧凑） -->
+<details class="bg-slate-800/30 rounded-lg p-2 max-w-4xl mx-auto border border-slate-700/50 text-left group">
+<summary class="cursor-pointer list-none flex items-center justify-between gap-2 text-xs text-slate-300 hover:text-white transition">
+<span class="flex items-center gap-1.5">
+<i class="fa fa-info-circle text-primary text-xs"></i>
+<span class="font-medium">⚠️ 免责声明 & 版权说明</span>
+</span>
+<i class="fa fa-chevron-down chevron text-slate-400 text-[10px] transition-transform"></i>
+</summary>
+<div class="mt-3 pt-2 border-t border-slate-700/30 text-[10px] md:text-[11px] text-slate-300 leading-relaxed space-y-1">
+<p><span class="font-semibold text-white">📢 个人博客声明：</span> 本站为个人博客网站，所有内容均基于个人经验与行业信息分享，不构成任何商业承诺或法律要约。网站中提及的“合作渠道”、“正版推荐”等表述代表个人对可靠渠道的整理，具体授权资质请以厂商官方公示为准。</p>
+<p><span class="font-semibold text-white">⚠️ 重要免责：</span> 本站提供的软件及插件资源仅供个人学习、技术研究使用，<span class="text-yellow-300">严禁任何形式的商业用途</span>。商业使用请通过官方渠道购买授权。用户违规使用产生的一切法律纠纷由用户自行承担，本博客不承担任何连带责任。若您认为本站内容侵犯了您的合法权益，请与我们联系，我们将第一时间核实处理。</p>
 </div>
-
-<!-- 重要免责声明块 -->
-<div class="bg-slate-800/50 rounded-xl p-4 max-w-4xl mx-auto border border-slate-700 text-left">
-<p class="text-[11px] md:text-xs text-slate-300 leading-relaxed">
-<span class="font-bold text-white text-xs md:text-sm">⚠️ 重要免责声明：</span><br>
-1. 本网站提供的所有软件、插件及相关资源，<span class="text-yellow-300 font-semibold">仅供个人学习、技术研究或软件评估使用</span>，<span class="text-red-300 font-bold">严禁任何形式的商业用途</span>。用户若需商业使用，请务必通过官方渠道购买对应商业授权。<br>
-2. 用户下载安装任何软件前，请自行确认该软件的使用许可条款。如因用户擅自将本站资源用于商业行为、非法分发或侵犯第三方权益，所产生的一切法律纠纷及责任均由用户自行承担，<span class="text-white">本博客（乐哲软件）及运营者不承担任何连带法律责任</span>。<br>
-3. 本站作为正版软件推荐渠道，仅提供合作指引及技术支持。我们鼓励用户尊重软件知识产权，使用合法授权。任何超出个人学习范围的商业使用行为，请主动联系厂商获取商业授权。<br>
-4. 若您认为本站内容侵犯了您的合法权益，请通过官方联系方式与我们沟通，我们将第一时间核实处理。
-</p>
-</div>
+</details>
 
 <div class="flex flex-wrap justify-center items-center gap-3 text-[10px] md:text-xs text-slate-500 mt-6">
 <span>版权所有 © 2026 乐哲软件 保留所有权利</span>
@@ -619,7 +665,7 @@ const mobileMenuBtn = document.getElementById('mobile-menu-btn');
 const mobileMenu = document.getElementById('mobile-menu');
 if(mobileMenuBtn && mobileMenu) mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
 
-// ===== 百度自动推送（无配额限制）=====
+// 百度自动推送
 (function(){
     var bp = document.createElement('script');
     var curProtocol = window.location.protocol.split(':')[0];
@@ -633,13 +679,12 @@ if(mobileMenuBtn && mobileMenu) mobileMenuBtn.addEventListener('click', () => mo
     s.parentNode.insertBefore(bp, s);
 })();
 
-// ===== 根据当前时间自动切换网站主题颜色（夜间模式：18:00 - 次日06:00）=====
+// 夜间模式自动切换
 function applyTimeBasedTheme() {
   const body = document.getElementById('app-body');
   if (!body) return;
   const now = new Date();
   const hours = now.getHours();
-  // 夜间时段：18:00 到 次日 06:00
   const isNight = hours >= 18 || hours < 6;
   if (isNight) {
     body.classList.add('night-mode');
@@ -647,9 +692,7 @@ function applyTimeBasedTheme() {
     body.classList.remove('night-mode');
   }
 }
-// 初始化时执行一次
 applyTimeBasedTheme();
-// 可选：每小时检查一次（保持主题随时间变化，无需刷新页面）
 setInterval(applyTimeBasedTheme, 3600000);
 </script>
 </body>
