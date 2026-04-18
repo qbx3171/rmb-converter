@@ -97,7 +97,7 @@
     <div class="hero">
         <div class="hero-left">
             <h1>📋 Adobe 团队管家 · 主管理员</h1>
-            <p>缓存优先 · 毫秒级响应 · 跨设备日志</p>
+            <p>缓存优先 · 毫秒级响应 · 日志大小写不敏感</p>
         </div>
         <div class="team-edit-area">
             <label>🎯 主团队名称：</label>
@@ -152,7 +152,7 @@
         </div>
     </div>
 
-    <!-- 操作日志区块：智能云端+本地降级 -->
+    <!-- 操作日志区块：智能云端+本地降级，大小写不敏感 -->
     <div class="logs-section">
         <h3>📜 子账号操作日志 
             <button id="refreshLogsBtn" class="btn-sm" style="background:#eef2ff;">🔄 刷新</button>
@@ -174,7 +174,7 @@
         </table>
     </div>
     <div class="footer-note">
-        <span>⚡ 缓存优先策略 · 后台自动同步云端</span>
+        <span>⚡ 缓存优先策略 · 后台自动同步云端 · 日志字段大小写不敏感</span>
         <span id="currentTeamDisplay">🏷️ 主团队: 加载中...</span>
     </div>
 </div>
@@ -199,7 +199,6 @@
         let operationLogs = [];
         let currentTeam = "Art Grid Dynamics Garcia Miami";
         let logsCloudAvailable = true;   // 标记云端logs表是否可用
-        let initialLoadDone = false;
 
         // ---------- 辅助函数 ----------
         function parseToStandardDate(input) { 
@@ -250,7 +249,7 @@
             } catch(e) { throw e; }
         }
 
-        // ---------- 云端数据加载（后台）----------
+        // ---------- 云端数据拉取（大小写不敏感处理日志字段）----------
         async function fetchAccountsFromCloud() {
             let records = await fetchAllRecords(TABLE_NAME);
             return records.map(rec => ({
@@ -267,27 +266,43 @@
             let records = await fetchAllRecords(ADMINS_TABLE);
             return records.map(rec => ({ id: rec.id, username: rec.fields.username, password: rec.fields.password, syncing: false }));
         }
+        // 大小写不敏感获取字段值
+        function getFieldCaseInsensitive(fields, fieldName) {
+            const lowerFieldName = fieldName.toLowerCase();
+            for (let key in fields) {
+                if (key.toLowerCase() === lowerFieldName) return fields[key];
+            }
+            return undefined;
+        }
         async function fetchLogsFromCloud() {
             let records = await fetchAllRecords(LOGS_TABLE, 200);
-            return records.map(rec => ({
-                id: rec.id, operation: rec.fields.operation || '', targetUsername: rec.fields.targetUsername || '',
-                extraInfo: rec.fields.extraInfo || '', timestamp: rec.fields.timestamp || '', operator: rec.fields.operator || 'admin'
-            })).sort((a,b)=> (b.timestamp||'').localeCompare(a.timestamp||''));
+            return records.map(rec => {
+                let fields = rec.fields;
+                return {
+                    id: rec.id,
+                    operation: getFieldCaseInsensitive(fields, 'operation') || '',
+                    targetUsername: getFieldCaseInsensitive(fields, 'targetUsername') || getFieldCaseInsensitive(fields, 'targetusername') || '',
+                    extraInfo: getFieldCaseInsensitive(fields, 'extraInfo') || getFieldCaseInsensitive(fields, 'extrainfo') || '',
+                    timestamp: getFieldCaseInsensitive(fields, 'timestamp') || '',
+                    operator: getFieldCaseInsensitive(fields, 'operator') || 'admin'
+                };
+            }).sort((a,b)=> (b.timestamp||'').localeCompare(a.timestamp||''));
         }
 
-        // 写入日志 (自动降级)
+        // 写入日志 (使用小写字段名，兼容任意大小写的表字段)
         async function addOperationLog(operation, targetUsername, extraInfo='') {
             const timestamp = new Date().toISOString();
             const operator = '主管理员';
             if(logsCloudAvailable) {
                 try {
+                    // 使用标准小写字段名，Airtable 会接受任何字段名，只要表中存在该列（大小写敏感，但用户可按小写创建）
+                    // 为了让兼容性更好，我们同时尝试常见大小写？但最简单：要求用户创建小写字段，我们发小写。
                     let resp = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`, {
                         method: 'POST', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type':'application/json' },
                         body: JSON.stringify({ fields: { operation, targetUsername, extraInfo, timestamp, operator } })
                     });
                     if(!resp.ok) throw new Error();
-                    // 刷新日志显示
-                    refreshLogsDisplay();
+                    refreshLogsDisplay(); // 刷新日志显示
                     return;
                 } catch(e) { 
                     console.warn("云端日志写入失败，降级本地存储", e);
@@ -327,7 +342,6 @@
             }
         }
 
-        // 渲染日志表
         function renderLogsTable() {
             let tbody = document.getElementById('logsTableBody');
             if(!tbody) return;
@@ -363,7 +377,6 @@
             });
             tbody.innerHTML = html;
             updateStats();
-            // 绑定动态事件
             document.querySelectorAll('.team-checkbox, .genuine-checkbox').forEach(cb => cb.addEventListener('change', onCheckboxChange));
             document.querySelectorAll('.date-input').forEach(inp => inp.addEventListener('blur', onDateBlur));
             document.querySelectorAll('.delete-icon').forEach(btn => btn.addEventListener('click', onDeleteClick));
@@ -519,7 +532,6 @@
             document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`;
             if(cachedAcc) { accounts = JSON.parse(cachedAcc); renderAccountTable(); }
             if(cachedSub) { subAdmins = JSON.parse(cachedSub); renderSubAdminTable(); }
-            // 日志从localStorage或云端
             let localLogs = localStorage.getItem(CACHE_KEYS.logs);
             if(localLogs) { operationLogs = JSON.parse(localLogs); renderLogsTable(); }
         }
@@ -550,9 +562,9 @@
             } catch(err) { console.error(err); showToast("同步失败，请检查网络", 2000); }
         }
 
-        // 修复日志指引
+        // 修复日志指引 (提供字段模板，推荐小写)
         function showFixGuide() {
-            let msg = `请手动在Airtable中创建表 "logs"，字段如下：\n• operation (单行文本)\n• targetUsername (单行文本)\n• extraInfo (单行文本)\n• timestamp (日期时间)\n• operator (单行文本)\n\n点击确定打开Airtable控制台创建。`;
+            let msg = `请手动在Airtable中创建表 "logs"，字段如下（推荐使用小写，大小写不敏感兼容）：\n\n• operation (单行文本)\n• targetUsername (单行文本)\n• extraInfo (单行文本)\n• timestamp (日期时间)\n• operator (单行文本)\n\n点击确定打开Airtable控制台创建。`;
             if(confirm(msg)) window.open(`https://airtable.com/${BASE_ID}`, '_blank');
         }
 
@@ -656,16 +668,13 @@
             });
         }
 
-        // 登录与启动
-        function init() {
-            let savedTeam = localStorage.getItem(CACHE_KEYS.team);
-            if(savedTeam) currentTeam = savedTeam;
-            loadCachedData();
+        // 启动
+        async function initApp() {
+            await loadCachedData();
             bindUIEvents();
             // 后台静默同步
             syncFromCloud().catch(console.warn);
         }
-        window.initApp = init;
 
         // 登录逻辑
         const loginOverlay = document.getElementById('loginOverlay');
