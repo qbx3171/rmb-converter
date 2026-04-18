@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Adobe 团队管家 · 主管理员（实时日志版）</title>
+    <title>Adobe 团队管家 · 主管理员</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
@@ -95,7 +95,7 @@
     <div class="hero">
         <div class="hero-left">
             <h1>📋 Adobe 团队管家 · 主管理员</h1>
-            <p>实时日志自动刷新 · 跨设备同步</p>
+            <p>实时日志自动刷新 · 显示具体操作人</p>
         </div>
         <div class="team-edit-area">
             <label>🎯 主团队名称：</label>
@@ -154,8 +154,18 @@
         <h3>📜 子账号操作日志 <button id="refreshLogsBtn" class="btn-sm" style="background:#eef2ff;">🔄 刷新日志</button> <span id="logStorageHint" class="log-status-badge">☁️ 云端同步模式</span></h3>
         <div class="scroll-logs">
             <table class="log-table">
-                <thead><tr><th>⏱️ 操作时间</th><th>🔧 操作类型</th><th>👤 目标子账号/邮箱</th><th>📝 详情</th></tr></thead>
-                <tbody id="logsTableBody"><tr><td colspan="4" style="text-align:center;">加载日志中...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>⏱️ 操作时间</th>
+                        <th>🔧 操作类型</th>
+                        <th>👤 目标子账号/邮箱</th>
+                        <th>📝 详情</th>
+                        <th>👥 操作人</th>
+                    </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                    <tr><td colspan="5" style="text-align:center;">加载日志中...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
@@ -291,11 +301,11 @@
             let tbody = document.getElementById('logsTableBody');
             if(!tbody) return;
             if(errorState) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#b91c1c;">⚠️ 无法读取日志表，请确保 logs 表包含字段: operation, targetUsername, extraInfo, timestamp, operator</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#b91c1c;">⚠️ 无法读取日志表，请确保 logs 表包含字段: operation, targetUsername, extraInfo, timestamp, operator</td></tr>';
                 return;
             }
             if(operationLogs.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无操作日志，子管理员操作后会自动记录</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">暂无操作日志，子管理员操作后会自动记录</td></tr>';
                 return;
             }
             let html = '';
@@ -306,6 +316,7 @@
                     <td>${escapeHtml(log.operation)}</td>
                     <td>${escapeHtml(log.targetUsername)}</td>
                     <td>${escapeHtml(log.extraInfo || '—')}</td>
+                    <td>${escapeHtml(log.operator)}</td>
                 </tr>`;
             }
             tbody.innerHTML = html;
