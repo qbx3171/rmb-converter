@@ -8,71 +8,59 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
         .glass-panel { max-width: 1600px; margin: 0 auto; background: rgba(255,255,255,0.97); backdrop-filter: blur(2px); border-radius: 1.8rem; box-shadow: 0 20px 40px -12px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.5); overflow: hidden; }
-        .hero { background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%); padding: 1.2rem 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.8rem; color: white; }
-        .hero-left h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-        .hero-left p { font-size: 0.7rem; opacity: 0.8; margin-top: 4px; }
-        .team-edit-area { background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border-radius: 60px; padding: 6px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-        .team-edit-area label { font-size: 0.75rem; font-weight: 500; }
-        .team-input { background: rgba(255,255,240,0.9); border: none; border-radius: 40px; padding: 6px 14px; font-size: 0.8rem; color: #1e3a5f; min-width: 180px; }
-        .update-team-btn { background: #ffd966; color: #2c3e2f; border: none; border-radius: 40px; padding: 4px 12px; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
-        .stats-grid { display: flex; gap: 12px; padding: 1rem 1.5rem; background: #f9fbfd; border-bottom: 1px solid #e9eef3; flex-wrap: wrap; }
-        .stat-item { background: white; border-radius: 40px; padding: 0.3rem 1rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 0 0 1px #eef2f8; font-weight: 500; display: flex; align-items: baseline; gap: 8px; font-size: 0.8rem; }
-        .stat-number { font-size: 1.4rem; font-weight: 800; color: #1f6e5c; line-height: 1; }
-        .action-bar { padding: 0.8rem 1.2rem; background: white; border-bottom: 1px solid #eef2f8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
-        .btn-group, .sync-group { display: flex; flex-wrap: wrap; gap: 6px; }
-        button, .btn-outline { background: #f1f5f9; border: none; padding: 6px 14px; border-radius: 40px; font-weight: 500; font-size: 0.75rem; cursor: pointer; transition: all 0.2s ease; color: #1e3a5f; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .hero { background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%); padding: 1rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.8rem; color: white; }
+        .hero-left h1 { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .hero-left p { font-size: 0.6rem; opacity: 0.8; margin-top: 2px; }
+        .team-edit-area { background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border-radius: 60px; padding: 4px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .team-edit-area label { font-size: 0.7rem; font-weight: 500; }
+        .team-input { background: rgba(255,255,240,0.9); border: none; border-radius: 40px; padding: 4px 10px; font-size: 0.7rem; color: #1e3a5f; min-width: 140px; }
+        .update-team-btn { background: #ffd966; color: #2c3e2f; border: none; border-radius: 40px; padding: 3px 10px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .stats-grid { display: flex; gap: 8px; padding: 0.8rem 1rem; background: #f9fbfd; border-bottom: 1px solid #e9eef3; flex-wrap: wrap; }
+        .stat-item { background: white; border-radius: 30px; padding: 0.2rem 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 0 0 1px #eef2f8; font-weight: 500; display: flex; align-items: baseline; gap: 5px; font-size: 0.7rem; }
+        .stat-number { font-size: 1.2rem; font-weight: 800; color: #1f6e5c; line-height: 1; }
+        .action-bar { padding: 0.6rem 1rem; background: white; border-bottom: 1px solid #eef2f8; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+        .btn-group, .sync-group { display: flex; flex-wrap: wrap; gap: 5px; }
+        button, .btn-outline { background: #f1f5f9; border: none; padding: 5px 10px; border-radius: 30px; font-weight: 500; font-size: 0.7rem; cursor: pointer; transition: all 0.2s ease; color: #1e3a5f; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
         button.primary { background: #1b6b5e; color: white; }
         button.accent { background: #2c5f8a; color: white; }
         button.warning { background: #fff1e5; color: #b45a2e; }
         button.danger { background: #ffe8e8; color: #c2412c; }
         button.success { background: #e0f2e9; color: #146b3a; }
-        .add-section { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; }
-        .add-section input { padding: 6px 14px; border-radius: 40px; border: 1px solid #cbdde9; background: white; min-width: 180px; font-size: 0.8rem; flex: 1; }
+        .add-section { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; flex: 1; }
+        .add-section input { padding: 5px 10px; border-radius: 30px; border: 1px solid #cbdde9; background: white; min-width: 150px; font-size: 0.7rem; flex: 1; }
         .file-import { background: #eef2ff; }
-        .table-container { overflow-x: auto; padding: 0 0 0.5rem 0; }
-        .modern-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .modern-table th { text-align: left; padding: 0.8rem 0.6rem; background: #fefefe; font-weight: 600; color: #2c4c6c; border-bottom: 1px solid #e4e9f0; }
-        .modern-table td { padding: 0.7rem 0.6rem; border-bottom: 1px solid #f0f3f9; vertical-align: middle; }
-        .email-cell { font-family: monospace; font-weight: 500; word-break: break-all; max-width: 200px; }
-        .date-input { padding: 6px 8px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.75rem; width: 120px; background: white; font-family: monospace; }
-        .checkbox-smart { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
-        .checkbox-smart input { width: 18px; height: 18px; accent-color: #1b6b5e; }
-        .badge-team { background: #ddf3e8; color: #146b3a; border-radius: 30px; padding: 2px 10px; font-size: 0.65rem; font-weight: 600; margin-left: 6px; white-space: nowrap; }
-        .delete-icon { background: none; border: none; font-size: 1.1rem; cursor: pointer; color: #9aaebf; padding: 4px 8px; border-radius: 30px; }
-        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 8px 20px; border-radius: 40px; font-size: 0.75rem; z-index: 1000; pointer-events: none; white-space: nowrap; }
-        .footer-note { padding: 0.8rem 1.2rem; background: #fafdff; border-top: 1px solid #eef2f8; font-size: 0.65rem; color: #6a7c8f; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-        /* 全屏遮罩仅用于批量操作（耗时较长） */
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 0 0.5rem 0; }
+        .modern-table { min-width: 700px; width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        .modern-table th { text-align: left; padding: 0.6rem 0.4rem; background: #fefefe; font-weight: 600; color: #2c4c6c; border-bottom: 1px solid #e4e9f0; }
+        .modern-table td { padding: 0.5rem 0.4rem; border-bottom: 1px solid #f0f3f9; vertical-align: middle; }
+        .email-cell { font-family: monospace; font-weight: 500; word-break: break-all; max-width: 180px; }
+        .date-input { padding: 4px 6px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.65rem; width: 100px; background: white; font-family: monospace; }
+        .checkbox-smart { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+        .checkbox-smart input { width: 16px; height: 16px; accent-color: #1b6b5e; }
+        .badge-team { background: #ddf3e8; color: #146b3a; border-radius: 30px; padding: 1px 6px; font-size: 0.6rem; font-weight: 600; margin-left: 4px; white-space: nowrap; }
+        .delete-icon { background: none; border: none; font-size: 1rem; cursor: pointer; color: #9aaebf; padding: 2px 6px; border-radius: 30px; }
+        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 6px 16px; border-radius: 40px; font-size: 0.7rem; z-index: 1000; pointer-events: none; white-space: nowrap; }
+        .footer-note { padding: 0.6rem 1rem; background: #fafdff; border-top: 1px solid #eef2f8; font-size: 0.6rem; color: #6a7c8f; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; display: none; }
-        /* 美化登录卡片 */
-        .login-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(12px);
-            z-index: 3000; display: flex; align-items: center; justify-content: center;
-        }
-        .login-card {
-            background: rgba(255,255,255,0.95); border-radius: 2rem; padding: 2rem 1.8rem;
-            width: 340px; text-align: center; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3);
-            backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.5);
-        }
-        .login-card h2 {
-            font-size: 1.5rem; margin-bottom: 0.5rem; color: #1e3a5f;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .login-card p { font-size: 0.75rem; color: #6c86a3; margin-bottom: 1.2rem; }
-        .login-card input {
-            width: 100%; padding: 12px 16px; margin: 0.8rem 0; border: 1px solid #cbdde9;
-            border-radius: 60px; font-size: 0.9rem; background: white; outline: none;
-            transition: 0.2s; text-align: center;
-        }
+        .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: rgba(255,255,255,0.95); border-radius: 1.5rem; padding: 1.5rem 1.2rem; width: 280px; text-align: center; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.3); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.5); }
+        .login-card h2 { font-size: 1.3rem; margin-bottom: 0.3rem; color: #1e3a5f; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .login-card p { font-size: 0.7rem; color: #6c86a3; margin-bottom: 1rem; }
+        .login-card input { width: 100%; padding: 8px 12px; margin: 0.5rem 0; border: 1px solid #cbdde9; border-radius: 40px; font-size: 0.85rem; background: white; outline: none; text-align: center; }
         .login-card input:focus { border-color: #1b6b5e; box-shadow: 0 0 0 2px rgba(27,107,94,0.2); }
-        .login-card button {
-            background: linear-gradient(135deg, #1b6b5e, #0f5348); color: white; border: none;
-            padding: 10px 20px; border-radius: 60px; width: 100%; font-weight: 600;
-            cursor: pointer; transition: 0.2s; margin-top: 0.5rem;
-        }
+        .login-card button { background: linear-gradient(135deg, #1b6b5e, #0f5348); color: white; border: none; padding: 8px 16px; border-radius: 40px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 0.5rem; }
         .login-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
-        .login-card .error { color: #c2412c; font-size: 0.7rem; margin-top: 0.5rem; }
-        @media (max-width: 900px) { .modern-table th, .modern-table td { padding: 0.5rem 0.3rem; } .date-input { width: 105px; } }
+        .login-card .error { color: #c2412c; font-size: 0.65rem; margin-top: 0.5rem; }
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .hero-left h1 { font-size: 1rem; }
+            .stat-item { font-size: 0.6rem; }
+            .stat-number { font-size: 1rem; }
+            button, .btn-outline { font-size: 0.65rem; padding: 4px 8px; }
+            .add-section input { font-size: 0.65rem; min-width: 120px; }
+            .date-input { width: 85px; }
+            .modern-table th, .modern-table td { padding: 0.4rem 0.3rem; }
+        }
     </style>
 </head>
 <body>
@@ -90,44 +78,44 @@
 <div class="glass-panel">
     <div class="hero">
         <div class="hero-left">
-            <h1>📋 Adobe 团队管家 · 订阅管理 (云同步)</h1>
-            <p>数据实时保存在 Airtable，所有管理员操作即时生效</p>
+            <h1>📋 Adobe 团队管家 · 订阅管理</h1>
+            <p>数据实时保存在 Airtable，操作即时生效</p>
         </div>
         <div class="team-edit-area">
             <label>🎯 当前团队：</label>
             <input type="text" id="teamNameInput" class="team-input" placeholder="团队名称">
-            <button id="updateTeamBtn" class="update-team-btn">更改团队</button>
+            <button id="updateTeamBtn" class="update-team-btn">更改</button>
         </div>
     </div>
     <div class="stats-grid">
         <div class="stat-item">📬 总账号 <span class="stat-number" id="totalAccounts">0</span></div>
         <div class="stat-item">✅ 已加入团队 <span class="stat-number" id="joinedTeamCount">0</span></div>
         <div class="stat-item">⭐ 正版客户 <span class="stat-number" id="genuineCount">0</span></div>
-        <div class="stat-item">⏳ 即将过期(≤30天含已过期) <span class="stat-number" id="expiringCount">0</span></div>
+        <div class="stat-item">⏳ 即将过期 <span class="stat-number" id="expiringCount">0</span></div>
     </div>
     <div class="action-bar">
         <div class="btn-group">
-            <button id="batchJoinTeam" class="primary">➕ 批量加入团队</button>
+            <button id="batchJoinTeam" class="primary">➕ 批量加入</button>
             <button id="batchLeaveTeam" class="warning">➖ 批量移出</button>
             <button id="batchSetGenuine" class="primary">⭐ 批量正版</button>
             <button id="batchRemoveGenuine" class="warning">🔄 取消正版</button>
             <button id="deleteSelectedBtn" class="danger">🗑️ 删除选中</button>
         </div>
         <div class="sync-group">
-            <button id="refreshFromCloud" class="accent">🔄 刷新云数据</button>
+            <button id="refreshFromCloud" class="accent">🔄 刷新</button>
             <button id="exportJsonBtn" class="">💾 导出JSON</button>
             <label for="importJsonInput" class="btn-outline" style="cursor:pointer;">📂 导入JSON</label>
             <input type="file" id="importJsonInput" accept=".json" style="display:none">
-            <button id="resetDefaultBtn" class="">⟳ 重置默认数据</button>
+            <button id="resetDefaultBtn" class="">⟳ 重置</button>
         </div>
     </div>
     <div class="action-bar" style="border-top: none; padding-top: 0; flex-wrap: wrap;">
         <div class="add-section">
             <input type="email" id="newEmailInput" placeholder="单个邮箱添加 ...">
             <button id="addAccountBtn" class="primary">➕ 添加</button>
-            <label for="txtImportInput" class="btn-outline file-import" style="cursor:pointer;">📄 从TXT批量导入</label>
+            <label for="txtImportInput" class="btn-outline file-import" style="cursor:pointer;">📄 从TXT导入</label>
             <input type="file" id="txtImportInput" accept=".txt" style="display:none">
-            <span style="font-size:0.65rem; color:#6c86a3;">✔️ TXT每行一个邮箱，新账号自动订阅1年</span>
+            <span style="font-size:0.6rem; color:#6c86a3;">✔️ TXT每行一个邮箱</span>
         </div>
     </div>
     <div class="table-container">
@@ -137,7 +125,7 @@
         </table>
     </div>
     <div class="footer-note">
-        <span>⚡ 所有数据实时同步至云端，管理员任何修改都会立即生效，用户查询页面会自动更新。</span>
+        <span>⚡ 数据实时同步至云端</span>
         <span id="currentTeamDisplay">🏷️ 团队: 加载中...</span>
     </div>
 </div>
@@ -166,7 +154,7 @@
         const pwd = passwordInput.value;
         if (pwd === ADMIN_PASSWORD) {
             hideLogin();
-            initApp(); // 初始化应用
+            initApp();
         } else {
             loginError.textContent = '密码错误，请重试';
         }
@@ -185,7 +173,7 @@
     const TEAM_KEY = "AdobeCurrentTeamCloud";
     let dateSyncTimeout = null;
 
-    // ================== 日期工具 ==================
+    // 日期工具函数
     function parseToStandardDate(input) {
         if (!input || typeof input !== 'string') return null;
         let str = input.trim();
@@ -246,7 +234,7 @@
         return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
     }
 
-    // ================== Airtable 操作 ==================
+    // Airtable 操作
     async function fetchAllRecords() {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         let allRecords = [];
@@ -265,7 +253,6 @@
         return allRecords;
     }
 
-    // 加载数据时不显示任何遮罩或toast，仅更新表格
     async function loadFromCloud() {
         try {
             const records = await fetchAllRecords();
@@ -288,7 +275,6 @@
         }
     }
 
-    // 更新单条记录（增量同步，无遮罩，仅toast）
     async function updateSingleRecord(account, showSuccessToast = true) {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${account.id}`;
         const resp = await fetch(url, {
@@ -326,7 +312,6 @@
         if (!resp.ok) throw new Error(`删除失败 ${resp.status}`);
     }
 
-    // 批量并发更新（每批5个），用于批量操作，显示遮罩
     async function batchUpdateRecords(accountsToUpdate) {
         const batchSize = 5;
         for (let i = 0; i < accountsToUpdate.length; i += batchSize) {
@@ -335,7 +320,7 @@
         }
     }
 
-    // ================== 团队名称管理 ==================
+    // 团队名称管理
     function saveTeamToLocal() { localStorage.setItem(TEAM_KEY, currentTeam); }
     function loadTeamFromLocal() {
         const saved = localStorage.getItem(TEAM_KEY);
@@ -358,7 +343,7 @@
         return true;
     }
 
-    // ================== 渲染表格 ==================
+    // 渲染表格
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
@@ -385,7 +370,7 @@
             teamChk.className = 'team-checkbox'; teamChk.dataset.index = idx;
             const teamSpan = document.createElement('span'); teamSpan.textContent = acc.joinedTeam ? `已加入 ${currentTeam}` : '未加入';
             teamLabel.appendChild(teamChk); teamLabel.appendChild(teamSpan);
-            if (acc.joinedTeam) { const badge = document.createElement('span'); badge.className = 'badge-team'; badge.textContent = currentTeam.length > 12 ? currentTeam.slice(0,10)+'..' : currentTeam; teamLabel.appendChild(badge); }
+            if (acc.joinedTeam) { const badge = document.createElement('span'); badge.className = 'badge-team'; badge.textContent = currentTeam.length > 10 ? currentTeam.slice(0,8)+'..' : currentTeam; teamLabel.appendChild(badge); }
             tdTeam.appendChild(teamLabel);
             tr.appendChild(tdTeam);
 
@@ -440,7 +425,7 @@
         }
     }
 
-    // 日期修改处理（增量同步，无遮罩，防抖）
+    // 日期修改
     function handleDateChange(e) {
         if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
             const idx = parseInt(e.target.dataset.index);
@@ -450,7 +435,7 @@
             if (rawValue === "") { showToast("日期不能为空"); e.target.value = accounts[idx][field]; return; }
             let stdDate = parseToStandardDate(rawValue);
             if (!stdDate) {
-                showToast(`日期格式无效，请使用 YYYY-MM-DD 或 YYYY/MM/DD 格式`);
+                showToast(`日期格式无效，请使用 YYYY-MM-DD 格式`);
                 e.target.value = accounts[idx][field];
                 return;
             }
@@ -458,13 +443,12 @@
             if (field === 'subscriptionStart') {
                 acc.subscriptionStart = stdDate;
                 acc.subscriptionEnd = addOneYearToDateStr(stdDate);
-                showToast(`订阅起始已更新为 ${stdDate}，到期自动顺延至 ${acc.subscriptionEnd}`);
+                showToast(`订阅起始已更新为 ${stdDate}，到期自动顺延`);
             } else if (field === 'subscriptionEnd') {
                 acc.subscriptionEnd = stdDate;
                 showToast(`到期日期已更新为 ${stdDate}`);
             }
             renderTable();
-            // 防抖同步单条记录，不显示遮罩
             if (dateSyncTimeout) clearTimeout(dateSyncTimeout);
             dateSyncTimeout = setTimeout(async () => {
                 try {
@@ -472,7 +456,6 @@
                     showToast("日期已同步");
                 } catch (err) {
                     showToast("同步失败，请重试");
-                    console.error(err);
                 }
             }, 500);
         }
@@ -482,7 +465,6 @@
         return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb => parseInt(cb.dataset.index)).filter(i => !isNaN(i));
     }
 
-    // 批量更新团队/正版状态（显示遮罩，因为涉及多条记录）
     async function batchUpdate(property, newValue) {
         const indices = getSelectedIndices();
         if (indices.length === 0) { showToast('请至少勾选一个账号'); return; }
@@ -502,7 +484,6 @@
             showToast(`已更新 ${toUpdate.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
         } catch (err) {
             showToast("同步失败，请重试");
-            console.error(err);
         } finally {
             overlay.style.display = 'none';
         }
@@ -526,7 +507,6 @@
             showToast(`已删除 ${toDelete.length} 个账号`);
         } catch (err) {
             showToast("删除失败，请重试");
-            console.error(err);
         } finally {
             overlay.style.display = 'none';
         }
@@ -580,7 +560,6 @@
                 showToast('已删除');
             } catch (err) {
                 showToast("删除失败");
-                console.error(err);
             } finally {
                 overlay.style.display = 'none';
             }
@@ -592,9 +571,7 @@
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
         try {
-            for (let acc of accounts) {
-                await deleteRecord(acc.id);
-            }
+            for (let acc of accounts) await deleteRecord(acc.id);
             const defaultEmails = [
                 "chenshe2007@outlook.com", "ChenGorGor@outlook.com", "AdobeCloud999@outlook.com",
                 "AdobeCloud1888@outlook.com", "qzkm68e4@outlook.com", "jantek1000@gmail.com",
@@ -632,7 +609,6 @@
             showToast('已重置为默认账号列表');
         } catch (err) {
             showToast("重置失败，请重试");
-            console.error(err);
         } finally {
             overlay.style.display = 'none';
         }
@@ -655,9 +631,7 @@
                 if (!Array.isArray(imported)) throw new Error();
                 const overlay = document.getElementById('loadingOverlay');
                 overlay.style.display = 'flex';
-                for (let acc of accounts) {
-                    await deleteRecord(acc.id);
-                }
+                for (let acc of accounts) await deleteRecord(acc.id);
                 accounts = [];
                 const batchSize = 5;
                 for (let i = 0; i < imported.length; i += batchSize) {
@@ -734,7 +708,6 @@
                 showToast(`TXT导入完成: 新增 ${emailsToAdd.length} 个账号`);
             } catch(err) {
                 showToast("导入失败，请重试");
-                console.error(err);
             } finally {
                 overlay.style.display = 'none';
             }
@@ -749,10 +722,7 @@
         if (existing) existing.remove();
         const toast = document.createElement('div'); toast.className = 'toast-message'; toast.textContent = msg;
         document.body.appendChild(toast);
-        if (duration > 0) {
-            toastTimer = setTimeout(() => toast.remove(), duration);
-        }
-        return toast;
+        if (duration > 0) toastTimer = setTimeout(() => toast.remove(), duration);
     }
 
     function bindEvents() {
@@ -814,7 +784,7 @@
 
     async function initApp() {
         loadTeamFromLocal();
-        await loadFromCloud(); // 静默加载，无遮罩无toast
+        await loadFromCloud();
         bindEvents();
     }
 
