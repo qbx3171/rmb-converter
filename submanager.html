@@ -51,7 +51,7 @@
         .login-card button { background: linear-gradient(135deg, #1b6b5e, #0f5348); color: white; border: none; padding: 8px 16px; border-radius: 40px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 0.5rem; }
         .login-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .login-card .error { color: #c2412c; font-size: 0.65rem; margin-top: 0.5rem; }
-        /* 团队名称显示与修改区域 */
+        /* 团队信息栏（含修改密码按钮） */
         .team-info-bar {
             background: #eef2ff;
             border-radius: 0.8rem;
@@ -77,6 +77,9 @@
             border-radius: 30px;
             font-size: 0.7rem;
             cursor: pointer;
+        }
+        .team-info-bar .btn-change-pwd {
+            background: #2c5f8a;
         }
         body.night-mode .team-info-bar {
             background: #1e293b;
@@ -116,10 +119,13 @@
         <div class="team-edit-area" style="visibility: hidden; display: none;"></div>
     </div>
 
-    <!-- 团队名称显示与修改栏 -->
+    <!-- 团队名称显示与修改栏（增加修改密码按钮） -->
     <div id="teamInfoBar" class="team-info-bar" style="display: none;">
         <span>🏷️ 当前团队名称：<span id="currentTeamNameDisplay" class="team-name"></span></span>
-        <button id="changeTeamNameBtn">✏️ 修改团队名称</button>
+        <div style="display: flex; gap: 8px;">
+            <button id="changeTeamNameBtn">✏️ 修改团队名称</button>
+            <button id="changePasswordBtn" class="btn-change-pwd">🔑 修改登录密码</button>
+        </div>
     </div>
 
     <div class="stats-grid">
@@ -326,7 +332,7 @@
         }
     }
 
-    // 优化：批量更新客户的团队名称（一次最多10条，使用批量PATCH接口）
+    // 批量更新客户的团队名称（一次最多10条，使用批量PATCH接口）
     async function batchUpdateTeamName(recordsToUpdate, newTeamName) {
         const batchSize = 10;
         for (let i = 0; i < recordsToUpdate.length; i += batchSize) {
@@ -342,16 +348,13 @@
                 body: JSON.stringify({ records: updates })
             });
             if (!resp.ok) throw new Error(`批量更新失败: ${resp.status}`);
-            // 可选：等待一小会儿避免限流
             await new Promise(resolve => setTimeout(resolve, 50));
         }
     }
 
-    // 修改团队名称：更新 admins 表 + 批量更新该子账号所有客户的 teamName（使用批量接口）
+    // 修改团队名称（无遮罩，静默更新）
     async function updateOwnTeamName(newTeamName) {
         if (!newTeamName.trim()) { showToast("团队名称不能为空"); return false; }
-        const overlay = document.getElementById('loadingOverlay');
-        overlay.style.display = 'flex';
         try {
             // 1. 更新 admins 表中的团队名
             const urlAdmin = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
@@ -365,14 +368,13 @@
             // 2. 获取当前子账号的所有客户（需要更新 teamName）
             const recordsToUpdate = accounts.filter(acc => acc.teamName === currentUserTeam);
             if (recordsToUpdate.length > 0) {
-                // 使用批量更新接口
                 await batchUpdateTeamName(recordsToUpdate, newTeamName);
             }
             // 3. 更新本地变量和界面
             currentUserTeam = newTeamName;
             document.getElementById('currentTeamNameDisplay').innerText = currentUserTeam;
             document.getElementById('currentTeamDisplay').innerHTML = `🏷️ 当前团队: ${currentUserTeam}`;
-            // 重新加载客户列表（刷新本地 accounts 数组）
+            // 重新加载客户列表
             await loadFromCloud();
             showToast(`团队名称已更新为“${newTeamName}”，共更新 ${recordsToUpdate.length} 个客户`);
             return true;
@@ -380,8 +382,26 @@
             console.error(err);
             showToast("更新失败，请重试");
             return false;
-        } finally {
-            overlay.style.display = 'none';
+        }
+    }
+
+    // 修改登录密码
+    async function updateOwnPassword(newPassword) {
+        if (!newPassword.trim()) { showToast("密码不能为空"); return false; }
+        try {
+            const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
+            const resp = await fetch(url, {
+                method: 'PATCH',
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fields: { password: newPassword } })
+            });
+            if (!resp.ok) throw new Error(`更新密码失败`);
+            showToast("密码已更新，下次登录请使用新密码");
+            return true;
+        } catch (err) {
+            console.error(err);
+            showToast("更新密码失败，请重试");
+            return false;
         }
     }
 
@@ -806,10 +826,20 @@
             txtImport.value = '';
         });
         document.getElementById('newEmailInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { const inp = e.target; if (inp.value && addAccount(inp.value)) inp.value = ''; } });
+        // 修改团队名称按钮
         document.getElementById('changeTeamNameBtn')?.addEventListener('click', async () => {
             const newTeam = prompt("请输入新的团队名称：", currentUserTeam);
             if (newTeam && newTeam.trim() !== currentUserTeam) {
                 await updateOwnTeamName(newTeam.trim());
+            }
+        });
+        // 修改登录密码按钮
+        document.getElementById('changePasswordBtn')?.addEventListener('click', async () => {
+            const newPwd = prompt("请输入新的登录密码：");
+            if (newPwd && newPwd.trim()) {
+                await updateOwnPassword(newPwd.trim());
+            } else if (newPwd !== null) {
+                showToast("密码不能为空");
             }
         });
     }
