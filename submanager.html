@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Adobe 团队管家 · 子管理员</title>
+    <title>Adobe 团队管家 · 子管理员（显示具体操作人）</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
@@ -92,7 +92,7 @@
     <div class="hero">
         <div class="hero-left">
             <h1>📋 Adobe 团队管家 · 子管理员</h1>
-            <p>所有操作自动记录日志 · 主管理员实时可见</p>
+            <p>所有操作自动记录日志 · 会显示具体操作人</p>
         </div>
     </div>
 
@@ -139,11 +139,11 @@
     <div class="table-container">
         <table class="modern-table" id="accountTable">
             <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></thead>
-            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
+            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></table></tbody>
         </table>
     </div>
     <div class="footer-note">
-        <span>⚡ 所有操作实时写入Airtable · 主管理员同步可见 · 操作日志自动记录</span>
+        <span>⚡ 所有操作实时写入Airtable · 主管理员同步可见 · 操作日志会记录操作人</span>
         <span id="currentTeamDisplay"></span>
     </div>
 </div>
@@ -168,7 +168,7 @@
     let accounts = [];
     let currentUserTeam = "";
     let currentAdminRecordId = "";
-    let currentUsername = "";
+    let currentUsername = "";          // 当前登录的子管理员用户名，用于日志
     let dateSyncTimeout = null;
 
     // ================= 日期工具 =================
@@ -210,11 +210,11 @@
     function showToast(msg, duration=2500) { let existing = document.querySelector('.toast-message'); if(existing) existing.remove(); let toast = document.createElement('div'); toast.className='toast-message'; toast.textContent=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(), duration); }
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-    // ================= 日志写入（增强版，带详细日志）=================
+    // ================= 日志写入（operator 使用 currentUsername）=================
     async function addAccountLog(operation, targetEmail, extraInfo = '') {
         const timestamp = new Date().toISOString();
-        const operator = currentUsername || '子管理员';
-        console.log('[LOG] 准备写入日志:', { operation, targetEmail, extraInfo, timestamp, operator });
+        const operator = currentUsername || '未知子管理员';   // 关键：使用当前登录的用户名
+        console.log(`[LOG] ${operator} 执行操作: ${operation}`, { targetEmail, extraInfo });
         try {
             const url = `https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`;
             const payload = {
@@ -237,7 +237,7 @@
                 showToast(`⚠️ 日志记录失败: ${responseData.error?.message || '未知错误'}，请检查logs表字段`, 4000);
             } else {
                 console.log('[LOG] 写入成功:', responseData);
-                showToast(`📝 操作已记录日志`, 1500);
+                // 可选：不弹提示，避免干扰
             }
         } catch(e) {
             console.error('[LOG] 网络错误:', e);
@@ -306,7 +306,7 @@
         }
     }
 
-    // ================= 业务逻辑 =================
+    // ================= 业务逻辑（所有操作均调用 addAccountLog）=================
     async function loadFromCloud() {
         try {
             const records = await fetchAllRecords(ACCOUNTS_TABLE);
@@ -661,7 +661,7 @@
         });
     }
 
-    // ================= 登录验证 =================
+    // ================= 登录验证（记录 currentUsername）=================
     async function verifySubAdmin() {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
@@ -672,7 +672,7 @@
             if (found) {
                 currentAdminRecordId = found.id;
                 currentUserTeam = found.fields.teamName || "";
-                currentUsername = username;
+                currentUsername = username;   // 关键：保存当前登录的用户名
                 loginOverlay.style.display = 'none';
                 mainContent.style.display = 'block';
                 const teamInfoBar = document.getElementById('teamInfoBar');
