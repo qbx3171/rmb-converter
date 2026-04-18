@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Adobe 团队管家 · 子管理员</title>
+    <title>Adobe 团队管家 · 子管理员（同步版）</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
@@ -51,7 +51,6 @@
         .login-card button { background: linear-gradient(135deg, #1b6b5e, #0f5348); color: white; border: none; padding: 8px 16px; border-radius: 40px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 0.5rem; }
         .login-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .login-card .error { color: #c2412c; font-size: 0.65rem; margin-top: 0.5rem; }
-        /* 团队信息栏（含修改密码按钮） */
         .team-info-bar {
             background: #eef2ff;
             border-radius: 0.8rem;
@@ -65,26 +64,9 @@
             font-size: 0.8rem;
             font-weight: 500;
         }
-        .team-info-bar .team-name {
-            color: #1e6bdf;
-            font-weight: 700;
-        }
-        .team-info-bar button {
-            background: #1b6b5e;
-            color: white;
-            border: none;
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            cursor: pointer;
-        }
-        .team-info-bar .btn-change-pwd {
-            background: #2c5f8a;
-        }
-        body.night-mode .team-info-bar {
-            background: #1e293b;
-            color: #cbd5e1;
-        }
+        .team-info-bar .team-name { color: #1e6bdf; font-weight: 700; }
+        .team-info-bar button { background: #1b6b5e; color: white; border: none; padding: 4px 12px; border-radius: 30px; font-size: 0.7rem; cursor: pointer; }
+        .team-info-bar .btn-change-pwd { background: #2c5f8a; }
         @media (max-width: 600px) {
             body { padding: 12px; }
             .hero-left h1 { font-size: 1rem; }
@@ -114,12 +96,11 @@
     <div class="hero">
         <div class="hero-left">
             <h1>📋 Adobe 团队管家 · 子管理员</h1>
-            <p>数据实时保存在 Airtable，操作即时生效</p>
+            <p>数据实时写入Airtable · 主管理员刷新即见</p>
         </div>
         <div class="team-edit-area" style="visibility: hidden; display: none;"></div>
     </div>
 
-    <!-- 团队名称显示与修改栏（增加修改密码按钮） -->
     <div id="teamInfoBar" class="team-info-bar" style="display: none;">
         <span>🏷️ 当前团队名称：<span id="currentTeamNameDisplay" class="team-name"></span></span>
         <div style="display: flex; gap: 8px;">
@@ -162,12 +143,12 @@
 
     <div class="table-container">
         <table class="modern-table" id="accountTable">
-            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></tr></thead>
-            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...―</td></tbody>
+            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th>}</thead>
+            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...―</td></tr></tbody>
         </table>
     </div>
     <div class="footer-note">
-        <span>⚡ 数据实时同步至云端</span>
+        <span>⚡ 所有操作实时写入Airtable · 主管理员同步可见</span>
         <span id="currentTeamDisplay"></span>
     </div>
 </div>
@@ -175,6 +156,7 @@
 </div>
 
 <script>
+    // ================= 配置与全局变量 =================
     const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
     const BASE_ID = "appKUCGZCrZIH51dG";
     const ADMINS_TABLE = "admins";
@@ -187,12 +169,12 @@
     const passwordInput = document.getElementById('subPassword');
     const loginError = document.getElementById('loginError');
 
-    let accounts = [];
-    let currentUserTeam = "";
-    let currentAdminRecordId = "";
+    let accounts = [];               // 当前团队下的账号列表
+    let currentUserTeam = "";       // 当前子管理员所属团队名称
+    let currentAdminRecordId = "";  // admins表中的记录ID
     let dateSyncTimeout = null;
 
-    // 日期工具函数
+    // ================= 日期工具函数（与主管理员保持一致） =================
     function parseToStandardDate(input) {
         if (!input || typeof input !== 'string') return null;
         let str = input.trim();
@@ -221,10 +203,7 @@
     function addOneYearToDateStr(dateStr) {
         let std = parseToStandardDate(dateStr);
         if (!std) return "";
-        let parts = std.split('-');
-        let year = parseInt(parts[0],10);
-        let month = parseInt(parts[1],10);
-        let day = parseInt(parts[2],10);
+        let [year, month, day] = std.split('-').map(Number);
         let newDate = new Date(year, month-1, day);
         newDate.setFullYear(newDate.getFullYear() + 1);
         let y = newDate.getFullYear();
@@ -250,16 +229,15 @@
         let today = new Date(); today.setHours(0,0,0,0);
         let end = new Date(stdEnd);
         if (isNaN(end.getTime())) return Infinity;
-        return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+        return Math.ceil((end - today) / (1000*60*60*24));
     }
 
+    // ================= Airtable 通用请求 =================
     async function fetchAllRecords(table) {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${table}`;
-        let allRecords = [];
-        let offset = null;
+        let allRecords = [], offset = null;
         do {
-            let fetchUrl = url;
-            if (offset) fetchUrl += `?offset=${offset}`;
+            let fetchUrl = url + (offset ? `?offset=${offset}` : '');
             const resp = await fetch(fetchUrl, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const data = await resp.json();
@@ -267,23 +245,6 @@
             offset = data.offset;
         } while (offset);
         return allRecords;
-    }
-
-    async function loadFromCloud() {
-        try {
-            const records = await fetchAllRecords(ACCOUNTS_TABLE);
-            let allAccounts = records.map(rec => ({
-                id: rec.id,
-                email: rec.fields.Email,
-                joinedTeam: rec.fields.joinedTeam === true,
-                isGenuine: rec.fields.isGenuine === true,
-                subscriptionStart: rec.fields.subscriptionStart || getDefaultSubscription().subscriptionStart,
-                subscriptionEnd: rec.fields.subscriptionEnd || getDefaultSubscription().subscriptionEnd,
-                teamName: rec.fields.teamName || ''
-            }));
-            accounts = allAccounts.filter(acc => acc.teamName === currentUserTeam);
-            renderTable();
-        } catch(e) { console.error(e); showToast("加载云端数据失败"); }
     }
 
     async function updateSingleRecord(account, showSuccessToast = true) {
@@ -324,23 +285,22 @@
         if (!resp.ok) throw new Error(`删除失败 ${resp.status}`);
     }
 
+    // 批量更新（逐条，保证可靠）
     async function batchUpdateRecords(accountsToUpdate) {
         const batchSize = 5;
         for (let i = 0; i < accountsToUpdate.length; i += batchSize) {
             const batch = accountsToUpdate.slice(i, i + batchSize);
             await Promise.all(batch.map(acc => updateSingleRecord(acc, false)));
+            await new Promise(r => setTimeout(r, 30));
         }
     }
 
-    // 批量更新客户的团队名称（一次最多10条，使用批量PATCH接口）
+    // 批量更新团队名称（使用PATCH /records 接口）
     async function batchUpdateTeamName(recordsToUpdate, newTeamName) {
         const batchSize = 10;
         for (let i = 0; i < recordsToUpdate.length; i += batchSize) {
             const batch = recordsToUpdate.slice(i, i + batchSize);
-            const updates = batch.map(rec => ({
-                id: rec.id,
-                fields: { teamName: newTeamName }
-            }));
+            const updates = batch.map(rec => ({ id: rec.id, fields: { teamName: newTeamName } }));
             const url = `https://api.airtable.com/v0/${BASE_ID}/${ACCOUNTS_TABLE}`;
             const resp = await fetch(url, {
                 method: 'PATCH',
@@ -348,13 +308,34 @@
                 body: JSON.stringify({ records: updates })
             });
             if (!resp.ok) throw new Error(`批量更新失败: ${resp.status}`);
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise(r => setTimeout(r, 50));
         }
     }
 
-    // 修改团队名称（无遮罩，静默更新）
+    // ================= 子管理员业务逻辑 =================
+    // 加载当前团队的所有账号
+    async function loadFromCloud() {
+        try {
+            const records = await fetchAllRecords(ACCOUNTS_TABLE);
+            let allAccounts = records.map(rec => ({
+                id: rec.id,
+                email: rec.fields.Email,
+                joinedTeam: rec.fields.joinedTeam === true,
+                isGenuine: rec.fields.isGenuine === true,
+                subscriptionStart: rec.fields.subscriptionStart || getDefaultSubscription().subscriptionStart,
+                subscriptionEnd: rec.fields.subscriptionEnd || getDefaultSubscription().subscriptionEnd,
+                teamName: rec.fields.teamName || ''
+            }));
+            accounts = allAccounts.filter(acc => acc.teamName === currentUserTeam);
+            renderTable();
+        } catch(e) { console.error(e); showToast("加载云端数据失败"); }
+    }
+
+    // 修改团队名称（同步更新admins表 + 当前团队所有账号的teamName）
     async function updateOwnTeamName(newTeamName) {
         if (!newTeamName.trim()) { showToast("团队名称不能为空"); return false; }
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
         try {
             // 1. 更新 admins 表中的团队名
             const urlAdmin = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
@@ -365,7 +346,7 @@
             });
             if (!respAdmin.ok) throw new Error(`更新管理员记录失败`);
             
-            // 2. 获取当前子账号的所有客户（需要更新 teamName）
+            // 2. 更新当前团队所有账号的 teamName
             const recordsToUpdate = accounts.filter(acc => acc.teamName === currentUserTeam);
             if (recordsToUpdate.length > 0) {
                 await batchUpdateTeamName(recordsToUpdate, newTeamName);
@@ -374,20 +355,23 @@
             currentUserTeam = newTeamName;
             document.getElementById('currentTeamNameDisplay').innerText = currentUserTeam;
             document.getElementById('currentTeamDisplay').innerHTML = `🏷️ 当前团队: ${currentUserTeam}`;
-            // 重新加载客户列表
-            await loadFromCloud();
+            await loadFromCloud();  // 重新加载以刷新所有账号的teamName
             showToast(`团队名称已更新为“${newTeamName}”，共更新 ${recordsToUpdate.length} 个客户`);
             return true;
         } catch (err) {
             console.error(err);
             showToast("更新失败，请重试");
             return false;
+        } finally {
+            overlay.style.display = 'none';
         }
     }
 
     // 修改登录密码
     async function updateOwnPassword(newPassword) {
         if (!newPassword.trim()) { showToast("密码不能为空"); return false; }
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
         try {
             const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
             const resp = await fetch(url, {
@@ -402,167 +386,12 @@
             console.error(err);
             showToast("更新密码失败，请重试");
             return false;
+        } finally {
+            overlay.style.display = 'none';
         }
     }
 
-    // 渲染表格
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        let joinedTotal = 0, genuineTotal = 0;
-        accounts.forEach((acc, idx) => {
-            if (acc.joinedTeam) joinedTotal++;
-            if (acc.isGenuine) genuineTotal++;
-            const tr = document.createElement('tr');
-            const tdSel = document.createElement('td');
-            const chk = document.createElement('input');
-            chk.type = 'checkbox'; chk.className = 'row-selector'; chk.dataset.index = idx;
-            tdSel.appendChild(chk);
-            tr.appendChild(tdSel);
-            const tdEmail = document.createElement('td');
-            tdEmail.className = 'email-cell'; tdEmail.textContent = acc.email;
-            tr.appendChild(tdEmail);
-            const tdTeam = document.createElement('td');
-            const teamLabel = document.createElement('label'); teamLabel.className = 'checkbox-smart';
-            const teamChk = document.createElement('input');
-            teamChk.type = 'checkbox'; teamChk.checked = acc.joinedTeam;
-            teamChk.className = 'team-checkbox'; teamChk.dataset.index = idx;
-            const teamSpan = document.createElement('span'); teamSpan.textContent = acc.joinedTeam ? `已加入 ${currentUserTeam}` : '未加入';
-            teamLabel.appendChild(teamChk); teamLabel.appendChild(teamSpan);
-            if (acc.joinedTeam) { const badge = document.createElement('span'); badge.className = 'badge-team'; badge.textContent = currentUserTeam.length > 10 ? currentUserTeam.slice(0,8)+'..' : currentUserTeam; teamLabel.appendChild(badge); }
-            tdTeam.appendChild(teamLabel);
-            tr.appendChild(tdTeam);
-            const tdGenuine = document.createElement('td');
-            const genuineLabel = document.createElement('label'); genuineLabel.className = 'checkbox-smart';
-            const genuineChk = document.createElement('input');
-            genuineChk.type = 'checkbox'; genuineChk.checked = acc.isGenuine;
-            genuineChk.className = 'genuine-checkbox'; genuineChk.dataset.index = idx;
-            const genuineSpan = document.createElement('span'); genuineSpan.textContent = acc.isGenuine ? '✅ 正版' : '⭕ 未认证';
-            genuineLabel.appendChild(genuineChk); genuineLabel.appendChild(genuineSpan);
-            tdGenuine.appendChild(genuineLabel);
-            tr.appendChild(tdGenuine);
-            const tdStart = document.createElement('td');
-            const startInput = document.createElement('input');
-            startInput.type = 'text';
-            startInput.value = acc.subscriptionStart || '';
-            startInput.className = 'date-input';
-            startInput.placeholder = "YYYY-MM-DD";
-            startInput.dataset.index = idx;
-            startInput.dataset.field = 'subscriptionStart';
-            tdStart.appendChild(startInput);
-            tr.appendChild(tdStart);
-            const tdEnd = document.createElement('td');
-            const endInput = document.createElement('input');
-            endInput.type = 'text';
-            endInput.value = acc.subscriptionEnd || '';
-            endInput.className = 'date-input';
-            endInput.placeholder = "YYYY-MM-DD";
-            endInput.dataset.index = idx;
-            endInput.dataset.field = 'subscriptionEnd';
-            tdEnd.appendChild(endInput);
-            tr.appendChild(tdEnd);
-            const tdTeamName = document.createElement('td');
-            tdTeamName.textContent = acc.teamName;
-            tr.appendChild(tdTeamName);
-            const tdAction = document.createElement('td');
-            const delBtn = document.createElement('button'); delBtn.textContent = '🗑️'; delBtn.className = 'delete-icon'; delBtn.dataset.index = idx;
-            tdAction.appendChild(delBtn);
-            tr.appendChild(tdAction);
-            tbody.appendChild(tr);
-        });
-        document.getElementById('totalAccounts').innerText = accounts.length;
-        document.getElementById('joinedTeamCount').innerText = joinedTotal;
-        document.getElementById('genuineCount').innerText = genuineTotal;
-        document.getElementById('expiringCount').innerText = accounts.filter(acc => daysRemaining(acc.subscriptionEnd) <= 30).length;
-        const allSelectors = document.querySelectorAll('.row-selector');
-        const selectAllChk = document.getElementById('selectAllCheckbox');
-        if (selectAllChk) {
-            const checkedCount = Array.from(allSelectors).filter(cb => cb.checked).length;
-            selectAllChk.checked = (checkedCount === allSelectors.length && allSelectors.length > 0);
-            selectAllChk.indeterminate = (checkedCount > 0 && checkedCount < allSelectors.length);
-        }
-    }
-
-    // 日期修改
-    function handleDateChange(e) {
-        if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
-            const idx = parseInt(e.target.dataset.index);
-            const field = e.target.dataset.field;
-            if (isNaN(idx) || !accounts[idx]) return;
-            let rawValue = e.target.value.trim();
-            if (rawValue === "") { showToast("日期不能为空"); e.target.value = accounts[idx][field]; return; }
-            let stdDate = parseToStandardDate(rawValue);
-            if (!stdDate) {
-                showToast(`日期格式无效，请使用 YYYY-MM-DD 格式`);
-                e.target.value = accounts[idx][field];
-                return;
-            }
-            const acc = accounts[idx];
-            if (field === 'subscriptionStart') {
-                acc.subscriptionStart = stdDate;
-                acc.subscriptionEnd = addOneYearToDateStr(stdDate);
-                showToast(`订阅起始已更新为 ${stdDate}，到期自动顺延`);
-            } else if (field === 'subscriptionEnd') {
-                acc.subscriptionEnd = stdDate;
-                showToast(`到期日期已更新为 ${stdDate}`);
-            }
-            renderTable();
-            if (dateSyncTimeout) clearTimeout(dateSyncTimeout);
-            dateSyncTimeout = setTimeout(async () => {
-                try {
-                    await updateSingleRecord(acc, false);
-                    showToast("日期已同步");
-                } catch (err) { showToast("同步失败，请重试"); }
-            }, 500);
-        }
-    }
-
-    function getSelectedIndices() {
-        return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb => parseInt(cb.dataset.index)).filter(i => !isNaN(i));
-    }
-
-    async function batchUpdate(property, newValue) {
-        const indices = getSelectedIndices();
-        if (indices.length === 0) { showToast('请至少勾选一个账号'); return; }
-        const toUpdate = [];
-        for (let idx of indices) {
-            if (accounts[idx]) {
-                accounts[idx][property] = newValue;
-                toUpdate.push(accounts[idx]);
-            }
-        }
-        renderTable();
-        if (toUpdate.length === 0) return;
-        const overlay = document.getElementById('loadingOverlay');
-        overlay.style.display = 'flex';
-        try {
-            await batchUpdateRecords(toUpdate);
-            showToast(`已更新 ${toUpdate.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
-        } catch (err) { showToast("同步失败，请重试"); }
-        finally { overlay.style.display = 'none'; }
-    }
-
-    async function deleteSelected() {
-        const indices = getSelectedIndices();
-        if (indices.length === 0) { showToast('没有选中任何账号'); return; }
-        if (!confirm(`永久删除 ${indices.length} 个账号？`)) return;
-        const toDelete = indices.map(i => accounts[i]);
-        const overlay = document.getElementById('loadingOverlay');
-        overlay.style.display = 'flex';
-        try {
-            const batchSize = 5;
-            for (let i = 0; i < toDelete.length; i += batchSize) {
-                const batch = toDelete.slice(i, i + batchSize);
-                await Promise.all(batch.map(acc => deleteRecord(acc.id)));
-            }
-            accounts = accounts.filter((_, idx) => !indices.includes(idx));
-            renderTable();
-            showToast(`已删除 ${toDelete.length} 个账号`);
-        } catch (err) { showToast("删除失败，请重试"); }
-        finally { overlay.style.display = 'none'; }
-    }
-
+    // 添加单个账号
     async function addAccount(emailRaw) {
         const email = emailRaw.trim();
         if (!email) { showToast('邮箱不能为空'); return false; }
@@ -597,23 +426,52 @@
         finally { overlay.style.display = 'none'; }
     }
 
-    async function deleteAccountByIndex(index) {
-        if (index >= 0 && index < accounts.length && confirm(`删除 ${accounts[index].email} ？`)) {
-            const acc = accounts[index];
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.style.display = 'flex';
-            try {
-                await deleteRecord(acc.id);
-                accounts.splice(index, 1);
-                renderTable();
-                showToast('已删除');
-            } catch (err) { showToast("删除失败"); }
-            finally { overlay.style.display = 'none'; }
-        }
+    // 删除选中账号
+    async function deleteSelected() {
+        const indices = getSelectedIndices();
+        if (indices.length === 0) { showToast('没有选中任何账号'); return; }
+        if (!confirm(`永久删除 ${indices.length} 个账号？`)) return;
+        const toDelete = indices.map(i => accounts[i]);
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+        try {
+            const batchSize = 5;
+            for (let i = 0; i < toDelete.length; i += batchSize) {
+                const batch = toDelete.slice(i, i + batchSize);
+                await Promise.all(batch.map(acc => deleteRecord(acc.id)));
+            }
+            accounts = accounts.filter((_, idx) => !indices.includes(idx));
+            renderTable();
+            showToast(`已删除 ${toDelete.length} 个账号`);
+        } catch (err) { showToast("删除失败，请重试"); }
+        finally { overlay.style.display = 'none'; }
     }
 
+    // 批量更新字段（joinedTeam 或 isGenuine）
+    async function batchUpdate(property, newValue) {
+        const indices = getSelectedIndices();
+        if (indices.length === 0) { showToast('请至少勾选一个账号'); return; }
+        const toUpdate = [];
+        for (let idx of indices) {
+            if (accounts[idx]) {
+                accounts[idx][property] = newValue;
+                toUpdate.push(accounts[idx]);
+            }
+        }
+        renderTable();
+        if (toUpdate.length === 0) return;
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+        try {
+            await batchUpdateRecords(toUpdate);
+            showToast(`已更新 ${toUpdate.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
+        } catch (err) { showToast("同步失败，请重试"); }
+        finally { overlay.style.display = 'none'; }
+    }
+
+    // 重置为默认账号列表（仅当前团队）
     async function resetToDefault() {
-        if (!confirm('重置将删除当前子账号团队的所有账号，并恢复初始邮箱列表')) return;
+        if (!confirm('重置将删除当前团队的所有账号，并恢复初始邮箱列表')) return;
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
         try {
@@ -659,6 +517,7 @@
         finally { overlay.style.display = 'none'; }
     }
 
+    // 导出JSON（仅当前团队账号）
     function exportToJson() {
         const exportData = accounts.map(({ id, ...rest }) => rest);
         const dataStr = JSON.stringify(exportData, null, 2);
@@ -668,6 +527,7 @@
         showToast('导出JSON成功');
     }
 
+    // 导入JSON（覆盖当前团队账号）
     async function importFromJson(file) {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -711,6 +571,7 @@
         reader.readAsText(file);
     }
 
+    // 从TXT导入（批量添加）
     async function importFromTxt(file, autoJoinTeam = true) {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -761,19 +622,91 @@
         reader.readAsText(file, 'UTF-8');
     }
 
-    let toastTimer = null;
-    function showToast(msg, duration = 2500) {
-        if (toastTimer) clearTimeout(toastTimer);
-        const existing = document.querySelector('.toast-message');
-        if (existing) existing.remove();
-        const toast = document.createElement('div'); toast.className = 'toast-message'; toast.textContent = msg;
-        document.body.appendChild(toast);
-        if (duration > 0) toastTimer = setTimeout(() => toast.remove(), duration);
+    // ================= UI 渲染与交互 =================
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        let joinedTotal = 0, genuineTotal = 0;
+        accounts.forEach((acc, idx) => {
+            if (acc.joinedTeam) joinedTotal++;
+            if (acc.isGenuine) genuineTotal++;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="checkbox" class="row-selector" data-index="${idx}"></td>
+                <td class="email-cell">${escapeHtml(acc.email)}</td>
+                <td><label class="checkbox-smart"><input type="checkbox" class="team-checkbox" data-index="${idx}" ${acc.joinedTeam ? 'checked' : ''}><span>${acc.joinedTeam ? `已加入 ${currentUserTeam}` : '未加入'}</span>${acc.joinedTeam ? `<span class="badge-team">${currentUserTeam.length > 10 ? currentUserTeam.slice(0,8)+'..' : currentUserTeam}</span>` : ''}</label></td>
+                <td><label class="checkbox-smart"><input type="checkbox" class="genuine-checkbox" data-index="${idx}" ${acc.isGenuine ? 'checked' : ''}><span>${acc.isGenuine ? '✅ 正版' : '⭕ 未认证'}</span></label></td>
+                <td><input type="text" class="date-input" data-index="${idx}" data-field="subscriptionStart" value="${escapeHtml(acc.subscriptionStart || '')}" placeholder="YYYY-MM-DD"></td>
+                <td><input type="text" class="date-input" data-index="${idx}" data-field="subscriptionEnd" value="${escapeHtml(acc.subscriptionEnd || '')}" placeholder="YYYY-MM-DD"></td>
+                <td>${escapeHtml(acc.teamName)}</td>
+                <td><button class="delete-icon" data-index="${idx}">🗑️</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('totalAccounts').innerText = accounts.length;
+        document.getElementById('joinedTeamCount').innerText = joinedTotal;
+        document.getElementById('genuineCount').innerText = genuineTotal;
+        document.getElementById('expiringCount').innerText = accounts.filter(acc => daysRemaining(acc.subscriptionEnd) <= 30).length;
+        const allSelectors = document.querySelectorAll('.row-selector');
+        const selectAllChk = document.getElementById('selectAllCheckbox');
+        if (selectAllChk) {
+            const checkedCount = Array.from(allSelectors).filter(cb => cb.checked).length;
+            selectAllChk.checked = (checkedCount === allSelectors.length && allSelectors.length > 0);
+            selectAllChk.indeterminate = (checkedCount > 0 && checkedCount < allSelectors.length);
+        }
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+    function getSelectedIndices() {
+        return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb => parseInt(cb.dataset.index)).filter(i => !isNaN(i));
+    }
+
+    function handleDateChange(e) {
+        if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
+            const idx = parseInt(e.target.dataset.index);
+            const field = e.target.dataset.field;
+            if (isNaN(idx) || !accounts[idx]) return;
+            let rawValue = e.target.value.trim();
+            if (rawValue === "") { showToast("日期不能为空"); e.target.value = accounts[idx][field]; return; }
+            let stdDate = parseToStandardDate(rawValue);
+            if (!stdDate) {
+                showToast(`日期格式无效，请使用 YYYY-MM-DD 格式`);
+                e.target.value = accounts[idx][field];
+                return;
+            }
+            const acc = accounts[idx];
+            if (field === 'subscriptionStart') {
+                acc.subscriptionStart = stdDate;
+                acc.subscriptionEnd = addOneYearToDateStr(stdDate);
+                showToast(`订阅起始已更新为 ${stdDate}，到期自动顺延`);
+            } else if (field === 'subscriptionEnd') {
+                acc.subscriptionEnd = stdDate;
+                showToast(`到期日期已更新为 ${stdDate}`);
+            }
+            renderTable();
+            if (dateSyncTimeout) clearTimeout(dateSyncTimeout);
+            dateSyncTimeout = setTimeout(async () => {
+                try {
+                    await updateSingleRecord(acc, false);
+                    showToast("日期已同步");
+                } catch (err) { showToast("同步失败，请重试"); }
+            }, 500);
+        }
+    }
+
+    async function deleteAccountByIndex(index) {
+        if (index >= 0 && index < accounts.length && confirm(`删除 ${accounts[index].email} ？`)) {
+            const acc = accounts[index];
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
+            try {
+                await deleteRecord(acc.id);
+                accounts.splice(index, 1);
+                renderTable();
+                showToast('已删除');
+            } catch (err) { showToast("删除失败"); }
+            finally { overlay.style.display = 'none'; }
+        }
     }
 
     function bindEvents() {
@@ -816,34 +749,27 @@
         document.getElementById('resetDefaultBtn')?.addEventListener('click', resetToDefault);
         document.getElementById('exportJsonBtn')?.addEventListener('click', exportToJson);
         document.getElementById('refreshFromCloud')?.addEventListener('click', async () => { showToast("刷新中..."); await loadFromCloud(); showToast("刷新完成"); });
-        const importJson = document.getElementById('importJsonInput'); importJson?.addEventListener('change', (e) => { if (e.target.files[0]) importFromJson(e.target.files[0]); importJson.value = ''; });
-        const txtImport = document.getElementById('txtImportInput');
-        txtImport?.addEventListener('change', (e) => {
+        document.getElementById('importJsonInput')?.addEventListener('change', (e) => { if (e.target.files[0]) importFromJson(e.target.files[0]); e.target.value = ''; });
+        document.getElementById('txtImportInput')?.addEventListener('change', (e) => {
             if (e.target.files[0]) {
                 const autoJoin = confirm('是否将导入的所有账号自动加入当前团队？\n点击“确定”则自动加入，点击“取消”仅添加账号不加入团队。');
                 importFromTxt(e.target.files[0], autoJoin);
             }
-            txtImport.value = '';
+            e.target.value = '';
         });
         document.getElementById('newEmailInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { const inp = e.target; if (inp.value && addAccount(inp.value)) inp.value = ''; } });
-        // 修改团队名称按钮
         document.getElementById('changeTeamNameBtn')?.addEventListener('click', async () => {
             const newTeam = prompt("请输入新的团队名称：", currentUserTeam);
-            if (newTeam && newTeam.trim() !== currentUserTeam) {
-                await updateOwnTeamName(newTeam.trim());
-            }
+            if (newTeam && newTeam.trim() !== currentUserTeam) await updateOwnTeamName(newTeam.trim());
         });
-        // 修改登录密码按钮
         document.getElementById('changePasswordBtn')?.addEventListener('click', async () => {
             const newPwd = prompt("请输入新的登录密码：");
-            if (newPwd && newPwd.trim()) {
-                await updateOwnPassword(newPwd.trim());
-            } else if (newPwd !== null) {
-                showToast("密码不能为空");
-            }
+            if (newPwd && newPwd.trim()) await updateOwnPassword(newPwd.trim());
+            else if (newPwd !== null) showToast("密码不能为空");
         });
     }
 
+    // ================= 登录验证 =================
     async function verifySubAdmin() {
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
@@ -884,6 +810,18 @@
             loginError.textContent = "验证失败，请重试";
             return false;
         }
+    }
+
+    function showToast(msg, duration = 2500) {
+        let existing = document.querySelector('.toast-message');
+        if (existing) existing.remove();
+        const toast = document.createElement('div'); toast.className = 'toast-message'; toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), duration);
+    }
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
 
     loginBtn.addEventListener('click', verifySubAdmin);
