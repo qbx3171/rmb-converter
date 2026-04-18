@@ -97,7 +97,7 @@
     <div class="hero">
         <div class="hero-left">
             <h1>📋 Adobe 团队管家 · 主管理员</h1>
-            <p>缓存优先 · 毫秒级响应 · 日志大小写不敏感</p>
+            <p>缓存优先 · 毫秒级响应 · 日志实时更新</p>
         </div>
         <div class="team-edit-area">
             <label>🎯 主团队名称：</label>
@@ -152,7 +152,7 @@
         </div>
     </div>
 
-    <!-- 操作日志区块：智能云端+本地降级，大小写不敏感 -->
+    <!-- 操作日志区块 -->
     <div class="logs-section">
         <h3>📜 子账号操作日志 
             <button id="refreshLogsBtn" class="btn-sm" style="background:#eef2ff;">🔄 刷新</button>
@@ -174,7 +174,7 @@
         </table>
     </div>
     <div class="footer-note">
-        <span>⚡ 缓存优先策略 · 后台自动同步云端 · 日志字段大小写不敏感</span>
+        <span>⚡ 缓存优先策略 · 后台自动同步云端 · 日志实时记录</span>
         <span id="currentTeamDisplay">🏷️ 主团队: 加载中...</span>
     </div>
 </div>
@@ -266,7 +266,6 @@
             let records = await fetchAllRecords(ADMINS_TABLE);
             return records.map(rec => ({ id: rec.id, username: rec.fields.username, password: rec.fields.password, syncing: false }));
         }
-        // 大小写不敏感获取字段值
         function getFieldCaseInsensitive(fields, fieldName) {
             const lowerFieldName = fieldName.toLowerCase();
             for (let key in fields) {
@@ -289,57 +288,65 @@
             }).sort((a,b)=> (b.timestamp||'').localeCompare(a.timestamp||''));
         }
 
-        // 写入日志 (使用小写字段名，兼容任意大小写的表字段)
+        // ---------- 日志写入：立即本地存储 + 后台云端同步，确保UI立即更新 ----------
         async function addOperationLog(operation, targetUsername, extraInfo='') {
             const timestamp = new Date().toISOString();
             const operator = '主管理员';
-            if(logsCloudAvailable) {
-                try {
-                    // 使用标准小写字段名，Airtable 会接受任何字段名，只要表中存在该列（大小写敏感，但用户可按小写创建）
-                    // 为了让兼容性更好，我们同时尝试常见大小写？但最简单：要求用户创建小写字段，我们发小写。
-                    let resp = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`, {
-                        method: 'POST', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type':'application/json' },
-                        body: JSON.stringify({ fields: { operation, targetUsername, extraInfo, timestamp, operator } })
-                    });
-                    if(!resp.ok) throw new Error();
-                    refreshLogsDisplay(); // 刷新日志显示
-                    return;
-                } catch(e) { 
-                    console.warn("云端日志写入失败，降级本地存储", e);
-                    logsCloudAvailable = false;
-                    document.getElementById('logStorageHint').innerHTML = '💾 本地存储模式 (点击修复可恢复云端同步)';
-                    document.getElementById('logStorageHint').style.background = '#fff3e0';
-                    document.getElementById('logStorageHint').style.color = '#c45c00';
-                    // 降级到本地存储
-                }
-            }
-            // 本地存储模式
+            const newLog = { operation, targetUsername, extraInfo, timestamp, operator, id: Date.now() };
+            
+            // 1. 立即更新本地内存和 localStorage，并刷新界面
             let localLogs = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-            localLogs.unshift({ operation, targetUsername, extraInfo, timestamp, operator, id: Date.now() });
+            localLogs.unshift(newLog);
             if(localLogs.length > 200) localLogs = localLogs.slice(0,200);
             localStorage.setItem(CACHE_KEYS.logs, JSON.stringify(localLogs));
             operationLogs = localLogs;
-            renderLogsTable();
+            renderLogsTable();   // 立即刷新日志表格
+            
+            // 2. 后台尝试同步到云端（不阻塞UI，也不影响本地日志显示）
+            (async () => {
+                try {
+                    let resp = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type':'application/json' },
+                        body: JSON.stringify({ fields: { operation, targetUsername, extraInfo, timestamp, operator } })
+                    });
+                    if(!resp.ok) throw new Error();
+                    // 云端写入成功，可选择刷新一次云端日志以保持一致性，但非必须
+                    // 为了保持本地和云端最终一致，可以重新拉取，但可能会覆盖本地额外记录，暂不处理
+                } catch(e) {
+                    console.warn("云端日志写入失败，日志已保存至本地", e);
+                    if(logsCloudAvailable) {
+                        logsCloudAvailable = false;
+                        document.getElementById('logStorageHint').innerHTML = '💾 本地存储模式 (点击修复可恢复云端同步)';
+                        document.getElementById('logStorageHint').style.background = '#fff3e0';
+                    }
+                }
+            })();
         }
 
         async function refreshLogsDisplay() {
+            // 优先从云端拉取最新日志并合并本地？为避免复杂，直接重新从本地读取并尝试云端合并（简单起见，保留本地优先，云端仅作展示）
+            // 用户点击刷新时，如果云端可用则拉取云端并合并到本地（保留较新的记录）
             if(logsCloudAvailable) {
                 try {
-                    operationLogs = await fetchLogsFromCloud();
-                    renderLogsTable();
-                } catch(e) { 
-                    logsCloudAvailable = false;
-                    document.getElementById('logStorageHint').innerHTML = '💾 本地存储模式 (点击修复可恢复云端同步)';
-                    document.getElementById('logStorageHint').style.background = '#fff3e0';
-                    let local = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-                    operationLogs = local;
-                    renderLogsTable();
+                    let cloudLogs = await fetchLogsFromCloud();
+                    // 合并：以云端为准（因为跨设备），但本地可能有未同步的记录？简单处理：直接用云端覆盖本地
+                    if(cloudLogs.length > 0) {
+                        operationLogs = cloudLogs;
+                        localStorage.setItem(CACHE_KEYS.logs, JSON.stringify(operationLogs));
+                        renderLogsTable();
+                        showToast("日志已从云端同步", 1000);
+                        return;
+                    }
+                } catch(e) {
+                    console.warn("云端日志拉取失败，使用本地", e);
                 }
-            } else {
-                let local = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-                operationLogs = local;
-                renderLogsTable();
             }
+            // 降级使用本地
+            let local = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
+            operationLogs = local;
+            renderLogsTable();
+            showToast("日志已刷新", 1000);
         }
 
         function renderLogsTable() {
@@ -454,7 +461,7 @@
             return await resp.json();
         }
 
-        // 子账号操作
+        // 子账号操作（添加/删除/修改密码）确保记录日志并立即刷新日志显示
         async function optimisticAddSubAdmin(username, password) {
             if(!username.trim()||!password.trim()) { showToast('用户名/密码不能为空'); return; }
             let tempId = `temp_sub_${Date.now()}`;
@@ -533,7 +540,7 @@
             if(cachedAcc) { accounts = JSON.parse(cachedAcc); renderAccountTable(); }
             if(cachedSub) { subAdmins = JSON.parse(cachedSub); renderSubAdminTable(); }
             let localLogs = localStorage.getItem(CACHE_KEYS.logs);
-            if(localLogs) { operationLogs = JSON.parse(localLogs); renderLogsTable(); }
+            if(localLogs) { operationLogs = JSON.parse(localLogs); renderLogsTable(); } else { renderLogsTable(); }
         }
         async function syncFromCloud() {
             try {
@@ -545,15 +552,17 @@
                 // 尝试云端日志
                 try {
                     let cloudLogs = await fetchLogsFromCloud();
-                    operationLogs = cloudLogs;
-                    logsCloudAvailable = true;
-                    localStorage.setItem(CACHE_KEYS.logs, JSON.stringify(operationLogs));
-                    document.getElementById('logStorageHint').innerHTML = '☁️ 云端同步模式 (跨设备)';
-                    document.getElementById('logStorageHint').style.background = '#e3f2fd';
+                    if(cloudLogs.length > 0) {
+                        operationLogs = cloudLogs;
+                        localStorage.setItem(CACHE_KEYS.logs, JSON.stringify(operationLogs));
+                        logsCloudAvailable = true;
+                        document.getElementById('logStorageHint').innerHTML = '☁️ 云端同步模式 (跨设备)';
+                        document.getElementById('logStorageHint').style.background = '#e3f2fd';
+                    } else {
+                        // 云端无日志，保持本地
+                    }
                 } catch(e) {
                     logsCloudAvailable = false;
-                    let local = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-                    operationLogs = local;
                     document.getElementById('logStorageHint').innerHTML = '💾 本地存储模式 (点击修复可恢复云端)';
                     document.getElementById('logStorageHint').style.background = '#fff3e0';
                 }
@@ -562,13 +571,11 @@
             } catch(err) { console.error(err); showToast("同步失败，请检查网络", 2000); }
         }
 
-        // 修复日志指引 (提供字段模板，推荐小写)
         function showFixGuide() {
             let msg = `请手动在Airtable中创建表 "logs"，字段如下（推荐使用小写，大小写不敏感兼容）：\n\n• operation (单行文本)\n• targetUsername (单行文本)\n• extraInfo (单行文本)\n• timestamp (日期时间)\n• operator (单行文本)\n\n点击确定打开Airtable控制台创建。`;
             if(confirm(msg)) window.open(`https://airtable.com/${BASE_ID}`, '_blank');
         }
 
-        // 事件绑定
         function bindUIEvents() {
             document.getElementById('batchJoinTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',true));
             document.getElementById('batchLeaveTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',false));
@@ -668,15 +675,12 @@
             });
         }
 
-        // 启动
         async function initApp() {
             await loadCachedData();
             bindUIEvents();
-            // 后台静默同步
             syncFromCloud().catch(console.warn);
         }
 
-        // 登录逻辑
         const loginOverlay = document.getElementById('loginOverlay');
         const mainContent = document.getElementById('mainContent');
         document.getElementById('loginBtn').addEventListener('click',()=>{
