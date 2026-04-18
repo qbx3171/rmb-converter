@@ -11,10 +11,6 @@
         .hero { background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%); padding: 1rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.8rem; color: white; }
         .hero-left h1 { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .hero-left p { font-size: 0.6rem; opacity: 0.8; margin-top: 2px; }
-        .team-edit-area { background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border-radius: 60px; padding: 4px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .team-edit-area label { font-size: 0.7rem; font-weight: 500; }
-        .team-input { background: rgba(255,255,240,0.9); border: none; border-radius: 40px; padding: 4px 10px; font-size: 0.7rem; color: #1e3a5f; min-width: 140px; }
-        .update-team-btn { background: #ffd966; color: #2c3e2f; border: none; border-radius: 40px; padding: 3px 10px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
         .stats-grid { display: flex; gap: 8px; padding: 0.8rem 1rem; background: #f9fbfd; border-bottom: 1px solid #e9eef3; flex-wrap: wrap; }
         .stat-item { background: white; border-radius: 30px; padding: 0.2rem 0.8rem; box-shadow: 0 1px 2px rgba(0,0,0,0.02), 0 0 0 1px #eef2f8; font-weight: 500; display: flex; align-items: baseline; gap: 5px; font-size: 0.7rem; }
         .stat-number { font-size: 1.2rem; font-weight: 800; color: #1f6e5c; line-height: 1; }
@@ -98,7 +94,6 @@
             <h1>📋 Adobe 团队管家 · 子管理员</h1>
             <p>所有操作自动记录日志 · 主管理员实时可见</p>
         </div>
-        <div class="team-edit-area" style="visibility: hidden; display: none;"></div>
     </div>
 
     <div id="teamInfoBar" class="team-info-bar" style="display: none;">
@@ -215,10 +210,11 @@
     function showToast(msg, duration=2500) { let existing = document.querySelector('.toast-message'); if(existing) existing.remove(); let toast = document.createElement('div'); toast.className='toast-message'; toast.textContent=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(), duration); }
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-    // ================= 日志写入（增强错误诊断）=================
+    // ================= 日志写入（增强版，带详细日志）=================
     async function addAccountLog(operation, targetEmail, extraInfo = '') {
         const timestamp = new Date().toISOString();
         const operator = currentUsername || '子管理员';
+        console.log('[LOG] 准备写入日志:', { operation, targetEmail, extraInfo, timestamp, operator });
         try {
             const url = `https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`;
             const payload = {
@@ -230,7 +226,6 @@
                     operator: operator
                 }
             };
-            console.log('[LOG] 准备写入:', payload);
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
@@ -242,6 +237,7 @@
                 showToast(`⚠️ 日志记录失败: ${responseData.error?.message || '未知错误'}，请检查logs表字段`, 4000);
             } else {
                 console.log('[LOG] 写入成功:', responseData);
+                showToast(`📝 操作已记录日志`, 1500);
             }
         } catch(e) {
             console.error('[LOG] 网络错误:', e);
