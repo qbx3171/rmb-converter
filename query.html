@@ -33,35 +33,77 @@
         .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ccc; border-top-color: #1b6b5e; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 550px) { body { padding: 1rem; } .header h1 { font-size: 1.4rem; } .input-group button { padding: 0 20px; } }
+        
+        /* 新增返回首页按钮样式 - 完全独立，不影响原有布局 */
+        .home-nav-wrapper {
+            max-width: 680px;
+            width: 100%;
+            margin: 0 auto 1rem auto;
+            text-align: left;
+        }
+        .home-return-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(27,107,94,0.3);
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #1b6b5e;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .home-return-btn:hover {
+            background: white;
+            border-color: #1b6b5e;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transform: translateY(-1px);
+        }
+        .home-return-btn:active {
+            transform: translateY(1px);
+        }
     </style>
 </head>
 <body>
-<div class="query-card">
-    <div class="header">
-        <h1>🔍 Adobe 订阅状态查询</h1>
-        <p>输入您的邮箱，验证团队授权、订阅起止时间</p>
-        <div class="team-badge">🎯 数据实时同步</div>
+<div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+    <!-- 新增返回首页按钮区域，完全独立于卡片，不改变任何原有结构和功能 -->
+    <div class="home-nav-wrapper">
+        <button class="home-return-btn" id="backToHomeBtn" type="button">🏠 返回首页</button>
     </div>
-    <div class="query-area">
-        <div class="input-group">
-            <input type="email" id="emailInput" placeholder="请输入您的 Adobe 邮箱地址" autocomplete="off">
-            <button id="queryBtn">查询订阅</button>
+
+    <div class="query-card">
+        <div class="header">
+            <h1>🔍 Adobe 订阅状态查询</h1>
+            <p>输入您的邮箱，验证团队授权、订阅起止时间</p>
+            <div class="team-badge">🎯 数据实时同步</div>
         </div>
-        <div id="resultArea" style="min-height: 100px;"><div style="text-align: center; color: #7e8c9e; padding: 20px;">✨ 输入邮箱后点击查询，即可看到团队授权及订阅详情</div></div>
-        <div class="guide-section">
-            <h3>📘 Creative Cloud 加入团队指引</h3>
-            <ul class="guide-steps">
-                <li>1️⃣ 打开 <strong>Creative Cloud 桌面应用</strong>，点击右上角<strong>头像</strong> → <strong>注销</strong>。</li>
-                <li>2️⃣ 重新使用您的 Adobe 账号和密码<strong>登录</strong>。</li>
-                <li>3️⃣ 登录过程中，当出现<strong>“加入团队”</strong>提示时，点击加入。</li>
-                <li>4️⃣ 移动文件选择：<strong>移入个人云存储中</strong>（保留个人云储存）。</li>
-                <li>5️⃣ 随后<strong>配置文件</strong>选择您的团队名称即可正常使用。</li>
-            </ul>
-            <p style="margin-top: 12px; font-size: 0.7rem; color:#b45a2e;">⚠️ 若未出现“加入团队”，请确认您的账号已被管理员添加到团队中，且订阅未过期。</p>
+        <div class="query-area">
+            <div class="input-group">
+                <input type="email" id="emailInput" placeholder="请输入您的 Adobe 邮箱地址" autocomplete="off">
+                <button id="queryBtn">查询订阅</button>
+            </div>
+            <div id="resultArea" style="min-height: 100px;"><div style="text-align: center; color: #7e8c9e; padding: 20px;">✨ 输入邮箱后点击查询，即可看到团队授权及订阅详情</div></div>
+            <div class="guide-section">
+                <h3>📘 Creative Cloud 加入团队指引</h3>
+                <ul class="guide-steps">
+                    <li>1️⃣ 打开 <strong>Creative Cloud 桌面应用</strong>，点击右上角<strong>头像</strong> → <strong>注销</strong>。</li>
+                    <li>2️⃣ 重新使用您的 Adobe 账号和密码<strong>登录</strong>。</li>
+                    <li>3️⃣ 登录过程中，当出现<strong>“加入团队”</strong>提示时，点击加入。</li>
+                    <li>4️⃣ 移动文件选择：<strong>移入个人云存储中</strong>（保留个人云储存）。</li>
+                    <li>5️⃣ 随后<strong>配置文件</strong>选择您的团队名称即可正常使用。</li>
+                </ul>
+                <p style="margin-top: 12px; font-size: 0.7rem; color:#b45a2e;">⚠️ 若未出现“加入团队”，请确认您的账号已被管理员添加到团队中，且订阅未过期。</p>
+            </div>
         </div>
+        <div class="footer-note">⚡ 数据与后台实时同步，团队名称由管理员动态配置。<br>订阅到期前30天会显示提醒，请联系管理员续期。</div>
     </div>
-    <div class="footer-note">⚡ 数据与后台实时同步，团队名称由管理员动态配置。<br>订阅到期前30天会显示提醒，请联系管理员续期。</div>
 </div>
+
 <script>
     // ================== Airtable 配置（与主后台完全相同） ==================
     const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
@@ -244,12 +286,26 @@
         await fetchAccounts();
     }
 
+    // 返回首页功能 (完全独立, 不干扰原有逻辑)
+    function initHomeButton() {
+        const homeBtn = document.getElementById('backToHomeBtn');
+        if (homeBtn) {
+            homeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                // 跳转到网站根目录（首页）
+                // 使用 location.origin 确保跳转到站点首页，适配各种部署环境
+                window.location.href = location.origin || '/';
+            });
+        }
+    }
+
     function init() {
         preloadData();
         const queryBtn = document.getElementById('queryBtn');
         const emailInput = document.getElementById('emailInput');
         queryBtn.addEventListener('click', handleQuery);
         emailInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleQuery(); });
+        initHomeButton();  // 初始化返回首页按钮
     }
     init();
 </script>
