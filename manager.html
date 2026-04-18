@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Adobe 团队管家 · 主管理员（极速缓存版）</title>
+    <title>Adobe 团队管家 · 主管理员（实时日志版）</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
@@ -39,7 +39,7 @@
         .checkbox-smart input { width: 16px; height: 16px; accent-color: #1b6b5e; }
         .badge-team { background: #ddf3e8; color: #146b3a; border-radius: 30px; padding: 1px 6px; font-size: 0.6rem; font-weight: 600; margin-left: 4px; white-space: nowrap; }
         .delete-icon { background: none; border: none; font-size: 1rem; cursor: pointer; color: #9aaebf; padding: 2px 6px; border-radius: 30px; }
-        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 6px 16px; border-radius: 40px; font-size: 0.7rem; z-index: 1000; pointer-events: none; white-space: nowrap; }
+        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 6px 16px; border-radius: 40px; font-size: 0.7rem; z-index: 1000; pointer-events: none; white-space: nowrap; z-index: 10000; }
         .footer-note { padding: 0.6rem 1rem; background: #fafdff; border-top: 1px solid #eef2f8; font-size: 0.6rem; color: #6a7c8f; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; display: none; }
         .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); z-index: 3000; display: flex; align-items: center; justify-content: center; }
@@ -66,8 +66,6 @@
         .log-extra { max-width: 180px; word-break: break-all; font-family: monospace; background: #f1f5f9; border-radius: 12px; padding: 2px 6px; display: inline-block; }
         .scroll-logs { max-height: 280px; overflow-y: auto; }
         .log-status-badge { background: #e6f7e6; color: #2e7d32; border-radius: 20px; padding: 2px 8px; font-size: 0.6rem; margin-left: 8px; font-weight: normal; }
-        .fix-logs-btn { background: #fb923c; color: white; border: none; padding: 2px 10px; border-radius: 30px; font-size: 0.6rem; cursor: pointer; margin-left: 8px; }
-        .cache-tip { font-size: 0.6rem; background: #e0f2fe; border-radius: 16px; padding: 2px 8px; display: inline-block; margin-left: 8px; }
         @media (max-width: 600px) {
             body { padding: 12px; }
             .hero-left h1 { font-size: 1rem; }
@@ -97,7 +95,7 @@
     <div class="hero">
         <div class="hero-left">
             <h1>📋 Adobe 团队管家 · 主管理员</h1>
-            <p>缓存优先 · 毫秒级响应 · 日志大小写不敏感</p>
+            <p>实时日志自动刷新 · 跨设备同步</p>
         </div>
         <div class="team-edit-area">
             <label>🎯 主团队名称：</label>
@@ -120,7 +118,7 @@
             <button id="deleteSelectedBtn" class="danger">🗑️ 删除选中</button>
         </div>
         <div class="sync-group">
-            <button id="refreshFromCloud" class="accent">🔄 强制刷新</button>
+            <button id="refreshFromCloud" class="accent">🔄 刷新</button>
             <button id="exportJsonBtn" class="">💾 导出JSON</button>
             <label for="importJsonInput" class="btn-outline" style="cursor:pointer;">📂 导入JSON</label>
             <input type="file" id="importJsonInput" accept=".json" style="display:none">
@@ -152,16 +150,11 @@
         </div>
     </div>
 
-    <!-- 操作日志区块：智能云端+本地降级，大小写不敏感 -->
     <div class="logs-section">
-        <h3>📜 子账号操作日志 
-            <button id="refreshLogsBtn" class="btn-sm" style="background:#eef2ff;">🔄 刷新</button>
-            <span id="logStorageHint" class="log-status-badge">☁️ 云端同步模式</span>
-            <button id="fixLogsTableBtn" class="fix-logs-btn" style="background:#f97316;">🔧 修复/创建日志表</button>
-        </h3>
+        <h3>📜 子账号操作日志 <button id="refreshLogsBtn" class="btn-sm" style="background:#eef2ff;">🔄 刷新日志</button> <span id="logStorageHint" class="log-status-badge">☁️ 云端同步模式</span></h3>
         <div class="scroll-logs">
             <table class="log-table">
-                <thead><tr><th>⏱️ 操作时间</th><th>🔧 操作类型</th><th>👤 目标子账号</th><th>📝 详情</th></tr></thead>
+                <thead><tr><th>⏱️ 操作时间</th><th>🔧 操作类型</th><th>👤 目标子账号/邮箱</th><th>📝 详情</th></tr></thead>
                 <tbody id="logsTableBody"><tr><td colspan="4" style="text-align:center;">加载日志中...</td></tr></tbody>
             </table>
         </div>
@@ -169,12 +162,12 @@
 
     <div class="table-container">
         <table class="modern-table" id="accountTable">
-            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></tr></thead>
-            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载缓存数据...</td></tr></tbody>
+            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th>}</thead>
+            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
         </table>
     </div>
     <div class="footer-note">
-        <span>⚡ 缓存优先策略 · 后台自动同步云端 · 日志字段大小写不敏感</span>
+        <span>⚡ 数据实时同步至云端 · 日志自动刷新 (15秒)</span>
         <span id="currentTeamDisplay">🏷️ 主团队: 加载中...</span>
     </div>
 </div>
@@ -183,7 +176,7 @@
 
 <script>
     (function(){
-        // ---------- 硬编码配置 ----------
+        // ================= 配置 =================
         const ENCODED_PASSWORD = "cWJ4MTIxNjQ4MTE="; // qbx12164811
         const ADMIN_PASSWORD = atob(ENCODED_PASSWORD);
         const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
@@ -192,28 +185,29 @@
         const ADMINS_TABLE = "admins";
         const LOGS_TABLE = "logs";
         const TEAM_KEY = "MainTeamName";
-        const CACHE_KEYS = { accounts: 'adobe_acc_cache', subAdmins: 'adobe_sub_cache', logs: 'adobe_logs_cache', team: 'adobe_team_name' };
         
         let accounts = [];
         let subAdmins = [];
         let operationLogs = [];
         let currentTeam = "Art Grid Dynamics Garcia Miami";
-        let logsCloudAvailable = true;   // 标记云端logs表是否可用
+        let autoRefreshInterval = null;
 
-        // ---------- 辅助函数 ----------
-        function parseToStandardDate(input) { 
+        // 辅助函数
+        function parseToStandardDate(input) {
             if (!input || typeof input !== 'string') return null;
             let str = input.trim();
             let parts = str.split(/[-/\.]/);
             if (parts.length === 3) {
-                let year = parseInt(parts[0], 10), month = parseInt(parts[1], 10)-1, day = parseInt(parts[2],10);
+                let year = parseInt(parts[0], 10);
+                let month = parseInt(parts[1], 10) - 1;
+                let day = parseInt(parts[2], 10);
                 if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
                     let date = new Date(year, month, day);
-                    if (date.getFullYear()===year && date.getMonth()===month && date.getDate()===day) return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                    if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
                 }
             }
             let d = new Date(str);
-            if (!isNaN(d.getTime())) { let y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+            if (!isNaN(d.getTime())) { let y = d.getFullYear(); let m = String(d.getMonth()+1).padStart(2,'0'); let day = String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
             return null;
         }
         function isValidDateString(dateStr) { return parseToStandardDate(dateStr) !== null; }
@@ -222,7 +216,7 @@
             if (!std) return "";
             let [year, month, day] = std.split('-').map(Number);
             let newDate = new Date(year, month-1, day);
-            newDate.setFullYear(newDate.getFullYear()+1);
+            newDate.setFullYear(newDate.getFullYear() + 1);
             return `${newDate.getFullYear()}-${String(newDate.getMonth()+1).padStart(2,'0')}-${String(newDate.getDate()).padStart(2,'0')}`;
         }
         function todayStandard() { let d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
@@ -231,8 +225,7 @@
         function showToast(msg, duration=2000) { let existing = document.querySelector('.toast-message'); if(existing) existing.remove(); let toast = document.createElement('div'); toast.className='toast-message'; toast.textContent=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(), duration); }
         function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-        // 通用分页拉取
-        async function fetchAllRecords(table, maxRecords=800) {
+        async function fetchAllRecords(table) {
             let url = `https://api.airtable.com/v0/${BASE_ID}/${table}?pageSize=100`;
             let all=[], offset=null;
             try {
@@ -243,16 +236,14 @@
                     let data = await resp.json();
                     all = all.concat(data.records);
                     offset = data.offset;
-                    if(all.length >= maxRecords) break;
                 } while(offset);
                 return all;
             } catch(e) { throw e; }
         }
 
-        // ---------- 云端数据拉取（大小写不敏感处理日志字段）----------
-        async function fetchAccountsFromCloud() {
+        async function loadAccountsFromCloud() {
             let records = await fetchAllRecords(TABLE_NAME);
-            return records.map(rec => ({
+            accounts = records.map(rec => ({
                 id: rec.id, email: rec.fields.Email,
                 joinedTeam: rec.fields.joinedTeam === true,
                 isGenuine: rec.fields.isGenuine === true,
@@ -261,100 +252,66 @@
                 teamName: rec.fields.teamName || currentTeam,
                 syncing: false
             }));
+            for(let acc of accounts) {
+                if(!isValidDateString(acc.subscriptionStart)) acc.subscriptionStart = getDefaultSubscription().subscriptionStart;
+                if(!isValidDateString(acc.subscriptionEnd)) acc.subscriptionEnd = addOneYearToDateStr(acc.subscriptionStart);
+                if(!acc.teamName) acc.teamName = currentTeam;
+            }
         }
-        async function fetchSubAdminsFromCloud() {
+
+        async function loadSubAdminsFromCloud() {
             let records = await fetchAllRecords(ADMINS_TABLE);
-            return records.map(rec => ({ id: rec.id, username: rec.fields.username, password: rec.fields.password, syncing: false }));
+            subAdmins = records.map(rec => ({ id: rec.id, username: rec.fields.username, password: rec.fields.password, syncing: false }));
         }
-        // 大小写不敏感获取字段值
-        function getFieldCaseInsensitive(fields, fieldName) {
-            const lowerFieldName = fieldName.toLowerCase();
-            for (let key in fields) {
-                if (key.toLowerCase() === lowerFieldName) return fields[key];
-            }
-            return undefined;
-        }
-        async function fetchLogsFromCloud() {
-            let records = await fetchAllRecords(LOGS_TABLE, 200);
-            return records.map(rec => {
-                let fields = rec.fields;
-                return {
+
+        async function loadLogsFromCloud() {
+            try {
+                let records = await fetchAllRecords(LOGS_TABLE);
+                operationLogs = records.map(rec => ({
                     id: rec.id,
-                    operation: getFieldCaseInsensitive(fields, 'operation') || '',
-                    targetUsername: getFieldCaseInsensitive(fields, 'targetUsername') || getFieldCaseInsensitive(fields, 'targetusername') || '',
-                    extraInfo: getFieldCaseInsensitive(fields, 'extraInfo') || getFieldCaseInsensitive(fields, 'extrainfo') || '',
-                    timestamp: getFieldCaseInsensitive(fields, 'timestamp') || '',
-                    operator: getFieldCaseInsensitive(fields, 'operator') || 'admin'
-                };
-            }).sort((a,b)=> (b.timestamp||'').localeCompare(a.timestamp||''));
-        }
-
-        // 写入日志 (使用小写字段名，兼容任意大小写的表字段)
-        async function addOperationLog(operation, targetUsername, extraInfo='') {
-            const timestamp = new Date().toISOString();
-            const operator = '主管理员';
-            if(logsCloudAvailable) {
-                try {
-                    // 使用标准小写字段名，Airtable 会接受任何字段名，只要表中存在该列（大小写敏感，但用户可按小写创建）
-                    // 为了让兼容性更好，我们同时尝试常见大小写？但最简单：要求用户创建小写字段，我们发小写。
-                    let resp = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`, {
-                        method: 'POST', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type':'application/json' },
-                        body: JSON.stringify({ fields: { operation, targetUsername, extraInfo, timestamp, operator } })
-                    });
-                    if(!resp.ok) throw new Error();
-                    refreshLogsDisplay(); // 刷新日志显示
-                    return;
-                } catch(e) { 
-                    console.warn("云端日志写入失败，降级本地存储", e);
-                    logsCloudAvailable = false;
-                    document.getElementById('logStorageHint').innerHTML = '💾 本地存储模式 (点击修复可恢复云端同步)';
-                    document.getElementById('logStorageHint').style.background = '#fff3e0';
-                    document.getElementById('logStorageHint').style.color = '#c45c00';
-                    // 降级到本地存储
-                }
-            }
-            // 本地存储模式
-            let localLogs = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-            localLogs.unshift({ operation, targetUsername, extraInfo, timestamp, operator, id: Date.now() });
-            if(localLogs.length > 200) localLogs = localLogs.slice(0,200);
-            localStorage.setItem(CACHE_KEYS.logs, JSON.stringify(localLogs));
-            operationLogs = localLogs;
-            renderLogsTable();
-        }
-
-        async function refreshLogsDisplay() {
-            if(logsCloudAvailable) {
-                try {
-                    operationLogs = await fetchLogsFromCloud();
-                    renderLogsTable();
-                } catch(e) { 
-                    logsCloudAvailable = false;
-                    document.getElementById('logStorageHint').innerHTML = '💾 本地存储模式 (点击修复可恢复云端同步)';
-                    document.getElementById('logStorageHint').style.background = '#fff3e0';
-                    let local = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-                    operationLogs = local;
-                    renderLogsTable();
-                }
-            } else {
-                let local = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-                operationLogs = local;
+                    operation: rec.fields.operation || '',
+                    targetUsername: rec.fields.targetUsername || '',
+                    extraInfo: rec.fields.extraInfo || '',
+                    timestamp: rec.fields.timestamp || '',
+                    operator: rec.fields.operator || 'admin'
+                })).sort((a,b)=> (b.timestamp||'').localeCompare(a.timestamp||''));
                 renderLogsTable();
+                document.getElementById('logStorageHint').innerHTML = '☁️ 云端同步模式 (实时)';
+                document.getElementById('logStorageHint').style.background = '#e3f2fd';
+            } catch(e) {
+                console.error("加载日志失败:", e);
+                document.getElementById('logStorageHint').innerHTML = '⚠️ 日志表读取失败，请检查 logs 表是否存在且字段正确';
+                document.getElementById('logStorageHint').style.background = '#ffebee';
+                operationLogs = [];
+                renderLogsTable(true);
             }
         }
 
-        function renderLogsTable() {
+        function renderLogsTable(errorState = false) {
             let tbody = document.getElementById('logsTableBody');
             if(!tbody) return;
-            if(!operationLogs.length) { tbody.innerHTML='<tr><td colspan="4" style="text-align:center;">暂无操作日志，添加/修改/删除子账号后将自动记录</td></tr>'; return; }
+            if(errorState) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#b91c1c;">⚠️ 无法读取日志表，请确保 logs 表包含字段: operation, targetUsername, extraInfo, timestamp, operator</td></tr>';
+                return;
+            }
+            if(operationLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无操作日志，子管理员操作后会自动记录</td></tr>';
+                return;
+            }
             let html = '';
-            for(let log of operationLogs.slice(0,50)) {
+            for(let log of operationLogs.slice(0, 80)) {
                 let time = log.timestamp ? new Date(log.timestamp).toLocaleString('zh-CN') : '未知';
-                html += `<tr><td class="log-time">${escapeHtml(time)}</td><td>${escapeHtml(log.operation)}</td><td>${escapeHtml(log.targetUsername)}</td><td>${escapeHtml(log.extraInfo || '—')}</td></tr>`;
+                html += `<tr>
+                    <td class="log-time">${escapeHtml(time)}</td>
+                    <td>${escapeHtml(log.operation)}</td>
+                    <td>${escapeHtml(log.targetUsername)}</td>
+                    <td>${escapeHtml(log.extraInfo || '—')}</td>
+                </tr>`;
             }
             tbody.innerHTML = html;
         }
 
-        // 渲染账号表格 & 子账号表格
+        // 渲染账号表格
         function renderAccountTable() {
             let tbody = document.getElementById('tableBody');
             if(!tbody) return;
@@ -377,12 +334,14 @@
             });
             tbody.innerHTML = html;
             updateStats();
+            // 重新绑定事件
             document.querySelectorAll('.team-checkbox, .genuine-checkbox').forEach(cb => cb.addEventListener('change', onCheckboxChange));
             document.querySelectorAll('.date-input').forEach(inp => inp.addEventListener('blur', onDateBlur));
             document.querySelectorAll('.delete-icon').forEach(btn => btn.addEventListener('click', onDeleteClick));
             let selectAll = document.getElementById('selectAllCheckbox');
             if(selectAll) selectAll.onchange = (e) => document.querySelectorAll('.row-selector').forEach(cb => cb.checked = e.target.checked);
         }
+
         function renderSubAdminTable() {
             let tbody = document.getElementById('subAdminTableBody');
             if(!tbody) return;
@@ -398,6 +357,7 @@
             document.querySelectorAll('.update-pwd-btn').forEach(btn => btn.addEventListener('click', handleUpdatePwd));
             document.querySelectorAll('.delete-sub-btn').forEach(btn => btn.addEventListener('click', handleDeleteSub));
         }
+
         function updateStats() {
             let joined = accounts.filter(a=>a.joinedTeam).length;
             let genuine = accounts.filter(a=>a.isGenuine).length;
@@ -408,7 +368,7 @@
             document.getElementById('expiringCount').innerText = expiring;
         }
 
-        // 事件处理
+        // 事件处理（主管理员对账号的操作，保持原有逻辑，简化版）
         async function onCheckboxChange(e) {
             let idx = parseInt(e.target.dataset.index);
             if(isNaN(idx) || !accounts[idx]) return;
@@ -454,7 +414,7 @@
             return await resp.json();
         }
 
-        // 子账号操作
+        // 子账号管理操作（主管理员操作，也会记录日志，但为简化，仅保留基础功能）
         async function optimisticAddSubAdmin(username, password) {
             if(!username.trim()||!password.trim()) { showToast('用户名/密码不能为空'); return; }
             let tempId = `temp_sub_${Date.now()}`;
@@ -468,7 +428,6 @@
                 let idx = subAdmins.findIndex(s=>s.id===tempId);
                 if(idx!==-1) subAdmins[idx]=realSub;
                 renderSubAdminTable();
-                await addOperationLog('➕ 添加子账号', realSub.username, `初始密码: ${realSub.password}`);
                 showToast(`子账号 ${username} 添加成功`);
             } catch(e) { subAdmins = subAdmins.filter(s=>s.id!==tempId); renderSubAdminTable(); showToast("添加失败"); }
         }
@@ -478,7 +437,6 @@
             let sub = subAdmins.find(s=>s.id===id);
             if(sub) sub.password = newPassword;
             renderSubAdminTable();
-            await addOperationLog('🔐 修改密码', username, `新密码: ${newPassword}`);
             showToast("密码已更新");
         }
         async function deleteSubAdmin(id, username) {
@@ -486,7 +444,6 @@
             await fetch(url, { method:'DELETE', headers:{ Authorization:`Bearer ${AIRTABLE_TOKEN}` } });
             subAdmins = subAdmins.filter(s=>s.id!==id);
             renderSubAdminTable();
-            await addOperationLog('🗑️ 删除子账号', username, '账号已删除');
             showToast(`子账号 ${username} 已删除`);
         }
         async function handleUpdatePwd(e) {
@@ -502,7 +459,7 @@
             }
         }
 
-        // 批量操作
+        // 批量操作（主管理员）
         function getSelectedIndices() { return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb=>parseInt(cb.dataset.index)).filter(i=>!isNaN(i) && accounts[i]); }
         async function batchUpdate(prop, val) {
             let indices = getSelectedIndices();
@@ -521,162 +478,113 @@
             renderAccountTable();
             try { await Promise.all(toDelete.map(acc=> { if(!acc.id.startsWith('temp')) return deleteRecord(acc.id); })); showToast("已删除"); } catch(e){ showToast("删除失败"); }
         }
-
-        // 初始化缓存优先加载
-        async function loadCachedData() {
-            let cachedAcc = localStorage.getItem(CACHE_KEYS.accounts);
-            let cachedSub = localStorage.getItem(CACHE_KEYS.subAdmins);
-            let cachedTeam = localStorage.getItem(CACHE_KEYS.team);
-            if(cachedTeam) currentTeam = cachedTeam;
-            document.getElementById('teamNameInput').value = currentTeam;
-            document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`;
-            if(cachedAcc) { accounts = JSON.parse(cachedAcc); renderAccountTable(); }
-            if(cachedSub) { subAdmins = JSON.parse(cachedSub); renderSubAdminTable(); }
-            let localLogs = localStorage.getItem(CACHE_KEYS.logs);
-            if(localLogs) { operationLogs = JSON.parse(localLogs); renderLogsTable(); }
-        }
-        async function syncFromCloud() {
+        async function addAccount(email) {
+            if(!email.trim()) return;
+            if(accounts.some(a=>a.email.toLowerCase()===email.toLowerCase())) { showToast("邮箱已存在"); return; }
+            let sub = getDefaultSubscription();
+            let tempId = `temp_${Date.now()}`;
+            let newAcc = { id:tempId, email, joinedTeam:false, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam, syncing:false };
+            accounts.push(newAcc);
+            renderAccountTable();
             try {
-                let [newAccounts, newSubs] = await Promise.all([fetchAccountsFromCloud(), fetchSubAdminsFromCloud()]);
-                accounts = newAccounts; subAdmins = newSubs;
-                localStorage.setItem(CACHE_KEYS.accounts, JSON.stringify(accounts));
-                localStorage.setItem(CACHE_KEYS.subAdmins, JSON.stringify(subAdmins));
-                renderAccountTable(); renderSubAdminTable();
-                // 尝试云端日志
+                let created = await createRecord({ Email:email, joinedTeam:false, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam });
+                let idx = accounts.findIndex(a=>a.id===tempId);
+                if(idx!==-1) accounts[idx]={ id:created.id, email:created.fields.Email, joinedTeam:false, isGenuine:false, subscriptionStart:created.fields.subscriptionStart, subscriptionEnd:created.fields.subscriptionEnd, teamName:currentTeam, syncing:false };
+                renderAccountTable();
+                showToast("添加成功");
+            } catch(e) { accounts = accounts.filter(a=>a.id!==tempId); renderAccountTable(); showToast("添加失败"); }
+        }
+        async function resetToDefault() {
+            if(!confirm('重置将清空所有账号，恢复初始列表')) return;
+            let defaultEmails = ["chenshe2007@outlook.com","ChenGorGor@outlook.com","AdobeCloud999@outlook.com","AdobeCloud1888@outlook.com","qzkm68e4@outlook.com","jantek1000@gmail.com","hello@tanlineproject.biz","wuyiping315@outlook.com","dibox.diego@gmail.com","2571138584@qq.com","Adoblife8888@outlook.com","panjingru0210@outlook.com","3168551@qq.com","molanjunfeng@outlook.com","liubabya@outlook.com","wudie881031@gmail.com","llllynn076@gmail.com","sharkmoment2018@outlook.com","Gscf7890@outlook.com","wangjian@liangzao.wang","imwangyeah@gmail.com","ezaiezaixse@gmail.com","xiaoxuelian121@outlook.com","libaozeng038@gmail.com","t15651116661@gmail.com","threefinger520@outlook.com","qiangqiangx2@gmail.com","zhshy0506@gmail.com","DAFAWW124@outlook.com","1468890279@qq.com","jun6hao0719@gmail.com"];
+            for(let acc of accounts) if(!acc.id.startsWith('temp')) await deleteRecord(acc.id);
+            accounts = [];
+            for(let email of defaultEmails) {
+                let sub = getDefaultSubscription();
+                let created = await createRecord({ Email:email, joinedTeam:false, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam });
+                accounts.push({ id:created.id, email, joinedTeam:false, isGenuine:false, subscriptionStart:created.fields.subscriptionStart, subscriptionEnd:created.fields.subscriptionEnd, teamName:currentTeam, syncing:false });
+            }
+            renderAccountTable(); showToast("重置完成");
+        }
+        function exportToJson() {
+            let data = accounts.map(({id,syncing,...rest})=>rest);
+            let blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+            let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`adobe_team_${todayStandard()}.json`; a.click(); URL.revokeObjectURL(a.href);
+        }
+        async function importFromJson(file) {
+            let reader = new FileReader();
+            reader.onload = async (ev)=>{
                 try {
-                    let cloudLogs = await fetchLogsFromCloud();
-                    operationLogs = cloudLogs;
-                    logsCloudAvailable = true;
-                    localStorage.setItem(CACHE_KEYS.logs, JSON.stringify(operationLogs));
-                    document.getElementById('logStorageHint').innerHTML = '☁️ 云端同步模式 (跨设备)';
-                    document.getElementById('logStorageHint').style.background = '#e3f2fd';
-                } catch(e) {
-                    logsCloudAvailable = false;
-                    let local = JSON.parse(localStorage.getItem(CACHE_KEYS.logs) || '[]');
-                    operationLogs = local;
-                    document.getElementById('logStorageHint').innerHTML = '💾 本地存储模式 (点击修复可恢复云端)';
-                    document.getElementById('logStorageHint').style.background = '#fff3e0';
+                    let imported = JSON.parse(ev.target.result);
+                    if(!Array.isArray(imported)) throw new Error();
+                    for(let acc of accounts) if(!acc.id.startsWith('temp')) await deleteRecord(acc.id);
+                    accounts = [];
+                    for(let item of imported) {
+                        if(!item.email) continue;
+                        let fields = { Email:item.email, joinedTeam:!!item.joinedTeam, isGenuine:!!item.isGenuine, subscriptionStart:item.subscriptionStart||getDefaultSubscription().subscriptionStart, subscriptionEnd:item.subscriptionEnd||addOneYearToDateStr(item.subscriptionStart||todayStandard()), teamName:item.teamName||currentTeam };
+                        let created = await createRecord(fields);
+                        accounts.push({ id:created.id, email:created.fields.Email, joinedTeam:created.fields.joinedTeam, isGenuine:created.fields.isGenuine, subscriptionStart:created.fields.subscriptionStart, subscriptionEnd:created.fields.subscriptionEnd, teamName:created.fields.teamName, syncing:false });
+                    }
+                    renderAccountTable(); showToast(`导入 ${accounts.length} 个账号`);
+                } catch(err) { showToast("JSON无效"); }
+            };
+            reader.readAsText(file);
+        }
+        async function importFromTxt(file, autoJoin) {
+            let reader = new FileReader();
+            reader.onload = async (ev)=>{
+                let lines = ev.target.result.split(/\r?\n/);
+                let emails = lines.filter(l=>l.trim() && /^\S+@\S+\.\S+$/.test(l.trim()) && !accounts.some(a=>a.email.toLowerCase()===l.trim().toLowerCase()));
+                if(!emails.length) { showToast("无新账号"); return; }
+                for(let email of emails) {
+                    let sub = getDefaultSubscription();
+                    let created = await createRecord({ Email:email, joinedTeam:autoJoin, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam });
+                    accounts.push({ id:created.id, email, joinedTeam:autoJoin, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam, syncing:false });
                 }
-                renderLogsTable();
-                showToast("数据已同步至最新", 1500);
-            } catch(err) { console.error(err); showToast("同步失败，请检查网络", 2000); }
+                renderAccountTable(); showToast(`导入 ${emails.length} 个账号`);
+            };
+            reader.readAsText(file);
         }
+        function setNewTeam(newTeam) { if(!newTeam.trim()) return; currentTeam = newTeam.trim(); localStorage.setItem(TEAM_KEY, currentTeam); document.getElementById('teamNameInput').value = currentTeam; document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`; renderAccountTable(); showToast(`主团队已更改为: ${currentTeam}`); }
 
-        // 修复日志指引 (提供字段模板，推荐小写)
-        function showFixGuide() {
-            let msg = `请手动在Airtable中创建表 "logs"，字段如下（推荐使用小写，大小写不敏感兼容）：\n\n• operation (单行文本)\n• targetUsername (单行文本)\n• extraInfo (单行文本)\n• timestamp (日期时间)\n• operator (单行文本)\n\n点击确定打开Airtable控制台创建。`;
-            if(confirm(msg)) window.open(`https://airtable.com/${BASE_ID}`, '_blank');
-        }
-
-        // 事件绑定
-        function bindUIEvents() {
+        // 绑定主界面事件
+        function bindEvents() {
             document.getElementById('batchJoinTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',true));
             document.getElementById('batchLeaveTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',false));
             document.getElementById('batchSetGenuine')?.addEventListener('click',()=>batchUpdate('isGenuine',true));
             document.getElementById('batchRemoveGenuine')?.addEventListener('click',()=>batchUpdate('isGenuine',false));
             document.getElementById('deleteSelectedBtn')?.addEventListener('click',deleteSelected);
-            document.getElementById('addAccountBtn')?.addEventListener('click', async()=>{
-                let inp = document.getElementById('newEmailInput');
-                if(!inp.value.trim()) return;
-                let email = inp.value.trim();
-                if(accounts.some(a=>a.email.toLowerCase()===email.toLowerCase())) { showToast("邮箱已存在"); return; }
-                let defaultSub = getDefaultSubscription();
-                let tempId = `temp_${Date.now()}`;
-                let newAcc = { id:tempId, email, joinedTeam:false, isGenuine:false, subscriptionStart:defaultSub.subscriptionStart, subscriptionEnd:defaultSub.subscriptionEnd, teamName:currentTeam, syncing:false };
-                accounts.push(newAcc);
-                renderAccountTable();
-                try {
-                    let created = await createRecord({ Email:email, joinedTeam:false, isGenuine:false, subscriptionStart:defaultSub.subscriptionStart, subscriptionEnd:defaultSub.subscriptionEnd, teamName:currentTeam });
-                    let idx = accounts.findIndex(a=>a.id===tempId);
-                    if(idx!==-1) accounts[idx]={ id:created.id, email:created.fields.Email, joinedTeam:false, isGenuine:false, subscriptionStart:created.fields.subscriptionStart, subscriptionEnd:created.fields.subscriptionEnd, teamName:currentTeam, syncing:false };
-                    renderAccountTable();
-                    showToast("添加成功");
-                } catch(e) { accounts = accounts.filter(a=>a.id!==tempId); renderAccountTable(); showToast("添加失败"); }
-                inp.value='';
-            });
-            document.getElementById('refreshFromCloud')?.addEventListener('click', async()=>{ await syncFromCloud(); });
-            document.getElementById('exportJsonBtn')?.addEventListener('click',()=>{
-                let data = accounts.map(({id,syncing,...rest})=>rest);
-                let blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-                let a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`adobe_team_${todayStandard()}.json`; a.click(); URL.revokeObjectURL(a.href);
-            });
-            document.getElementById('resetDefaultBtn')?.addEventListener('click', async()=>{
-                if(!confirm('重置将清空所有账号，恢复初始列表')) return;
-                let defaultEmails = ["chenshe2007@outlook.com","ChenGorGor@outlook.com","AdobeCloud999@outlook.com","AdobeCloud1888@outlook.com","qzkm68e4@outlook.com","jantek1000@gmail.com","hello@tanlineproject.biz","wuyiping315@outlook.com","dibox.diego@gmail.com","2571138584@qq.com","Adoblife8888@outlook.com","panjingru0210@outlook.com","3168551@qq.com","molanjunfeng@outlook.com","liubabya@outlook.com","wudie881031@gmail.com","llllynn076@gmail.com","sharkmoment2018@outlook.com","Gscf7890@outlook.com","wangjian@liangzao.wang","imwangyeah@gmail.com","ezaiezaixse@gmail.com","xiaoxuelian121@outlook.com","libaozeng038@gmail.com","t15651116661@gmail.com","threefinger520@outlook.com","qiangqiangx2@gmail.com","zhshy0506@gmail.com","DAFAWW124@outlook.com","1468890279@qq.com","jun6hao0719@gmail.com"];
-                for(let acc of accounts) if(!acc.id.startsWith('temp')) await deleteRecord(acc.id);
-                accounts = [];
-                for(let email of defaultEmails) {
-                    let sub = getDefaultSubscription();
-                    let created = await createRecord({ Email:email, joinedTeam:false, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam });
-                    accounts.push({ id:created.id, email, joinedTeam:false, isGenuine:false, subscriptionStart:created.fields.subscriptionStart, subscriptionEnd:created.fields.subscriptionEnd, teamName:currentTeam, syncing:false });
-                }
-                renderAccountTable(); showToast("重置完成");
-            });
-            document.getElementById('importJsonInput')?.addEventListener('change', async(e)=>{
-                let file = e.target.files[0];
-                if(!file) return;
-                let reader = new FileReader();
-                reader.onload = async(ev)=>{
-                    try {
-                        let imported = JSON.parse(ev.target.result);
-                        if(!Array.isArray(imported)) throw new Error();
-                        for(let acc of accounts) if(!acc.id.startsWith('temp')) await deleteRecord(acc.id);
-                        accounts = [];
-                        for(let item of imported) {
-                            if(!item.email) continue;
-                            let fields = { Email:item.email, joinedTeam:!!item.joinedTeam, isGenuine:!!item.isGenuine, subscriptionStart:item.subscriptionStart||getDefaultSubscription().subscriptionStart, subscriptionEnd:item.subscriptionEnd||addOneYearToDateStr(item.subscriptionStart||todayStandard()), teamName:item.teamName||currentTeam };
-                            let created = await createRecord(fields);
-                            accounts.push({ id:created.id, email:created.fields.Email, joinedTeam:created.fields.joinedTeam, isGenuine:created.fields.isGenuine, subscriptionStart:created.fields.subscriptionStart, subscriptionEnd:created.fields.subscriptionEnd, teamName:created.fields.teamName, syncing:false });
-                        }
-                        renderAccountTable(); showToast(`导入 ${accounts.length} 个账号`);
-                    } catch(err) { showToast("JSON无效"); }
-                };
-                reader.readAsText(file);
-                e.target.value='';
-            });
-            document.getElementById('txtImportInput')?.addEventListener('change', async(e)=>{
-                let file = e.target.files[0];
-                if(!file) return;
-                let autoJoin = confirm('是否自动加入当前团队？');
-                let reader = new FileReader();
-                reader.onload = async(ev)=>{
-                    let lines = ev.target.result.split(/\r?\n/);
-                    let emails = lines.filter(l=>l.trim() && /^\S+@\S+\.\S+$/.test(l.trim()) && !accounts.some(a=>a.email.toLowerCase()===l.trim().toLowerCase()));
-                    if(!emails.length) { showToast("无新账号"); return; }
-                    for(let email of emails) {
-                        let sub = getDefaultSubscription();
-                        let created = await createRecord({ Email:email, joinedTeam:autoJoin, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam });
-                        accounts.push({ id:created.id, email, joinedTeam:autoJoin, isGenuine:false, subscriptionStart:sub.subscriptionStart, subscriptionEnd:sub.subscriptionEnd, teamName:currentTeam, syncing:false });
-                    }
-                    renderAccountTable(); showToast(`导入 ${emails.length} 个账号`);
-                };
-                reader.readAsText(file);
-                e.target.value='';
-            });
-            document.getElementById('addSubAccountBtn')?.addEventListener('click',()=>{
-                let u = document.getElementById('newSubUsername').value;
-                let p = document.getElementById('newSubPassword').value;
-                if(u&&p) optimisticAddSubAdmin(u,p);
-                else showToast("请填写用户名和密码");
-                document.getElementById('newSubUsername').value=''; document.getElementById('newSubPassword').value='';
-            });
-            document.getElementById('refreshLogsBtn')?.addEventListener('click', refreshLogsDisplay);
-            document.getElementById('fixLogsTableBtn')?.addEventListener('click', showFixGuide);
-            document.getElementById('updateTeamBtn')?.addEventListener('click',()=>{
-                let newName = document.getElementById('teamNameInput').value.trim();
-                if(newName) { currentTeam = newName; localStorage.setItem(CACHE_KEYS.team, currentTeam); document.getElementById('currentTeamDisplay').innerText=`🏷️ 主团队: ${currentTeam}`; renderAccountTable(); showToast("团队名称已更新"); }
-            });
+            document.getElementById('addAccountBtn')?.addEventListener('click',()=>{ let inp=document.getElementById('newEmailInput'); if(inp.value) addAccount(inp.value); inp.value=''; });
+            document.getElementById('resetDefaultBtn')?.addEventListener('click',resetToDefault);
+            document.getElementById('exportJsonBtn')?.addEventListener('click',exportToJson);
+            document.getElementById('refreshFromCloud')?.addEventListener('click', async ()=>{ showToast("刷新中..."); await refreshAllData(); showToast("刷新完成"); });
+            document.getElementById('refreshLogsBtn')?.addEventListener('click', async ()=>{ await loadLogsFromCloud(); showToast("日志已刷新"); });
+            document.getElementById('updateTeamBtn')?.addEventListener('click',()=>setNewTeam(document.getElementById('teamNameInput').value));
+            document.getElementById('importJsonInput')?.addEventListener('change', (e)=>{ if(e.target.files[0]) importFromJson(e.target.files[0]); e.target.value=''; });
+            document.getElementById('txtImportInput')?.addEventListener('change', (e)=>{ if(e.target.files[0]){ let autoJoin=confirm('自动加入当前团队？'); importFromTxt(e.target.files[0],autoJoin); } e.target.value=''; });
+            document.getElementById('addSubAccountBtn')?.addEventListener('click',()=>{ let u=document.getElementById('newSubUsername').value; let p=document.getElementById('newSubPassword').value; if(u&&p) optimisticAddSubAdmin(u,p); else showToast("请填写用户名和密码"); document.getElementById('newSubUsername').value=''; document.getElementById('newSubPassword').value=''; });
         }
 
-        // 启动
+        async function refreshAllData() {
+            await Promise.all([loadAccountsFromCloud(), loadSubAdminsFromCloud(), loadLogsFromCloud()]);
+            renderAccountTable();
+            renderSubAdminTable();
+            updateStats();
+        }
+
+        // 登录与初始化
         async function initApp() {
-            await loadCachedData();
-            bindUIEvents();
-            // 后台静默同步
-            syncFromCloud().catch(console.warn);
+            let saved = localStorage.getItem(TEAM_KEY);
+            if(saved && saved.trim()) currentTeam = saved;
+            document.getElementById('teamNameInput').value = currentTeam;
+            document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`;
+            await refreshAllData();
+            bindEvents();
+            // 自动刷新日志间隔15秒
+            if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+            autoRefreshInterval = setInterval(() => { loadLogsFromCloud().catch(console.warn); }, 15000);
         }
 
-        // 登录逻辑
         const loginOverlay = document.getElementById('loginOverlay');
         const mainContent = document.getElementById('mainContent');
         document.getElementById('loginBtn').addEventListener('click',()=>{
