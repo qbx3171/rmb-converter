@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Adobe 团队管家 · 主管理员</title>
+    <title>Adobe 团队管家 · 子管理员</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
@@ -30,7 +30,7 @@
         .add-section input { padding: 5px 10px; border-radius: 30px; border: 1px solid #cbdde9; background: white; min-width: 150px; font-size: 0.7rem; flex: 1; }
         .file-import { background: #eef2ff; }
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 0 0.5rem 0; }
-        .modern-table { min-width: 800px; width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        .modern-table { min-width: 700px; width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         .modern-table th { text-align: left; padding: 0.6rem 0.4rem; background: #fefefe; font-weight: 600; color: #2c4c6c; border-bottom: 1px solid #e4e9f0; }
         .modern-table td { padding: 0.5rem 0.4rem; border-bottom: 1px solid #f0f3f9; vertical-align: middle; }
         .email-cell { font-family: monospace; font-weight: 500; word-break: break-all; max-width: 180px; }
@@ -51,12 +51,10 @@
         .login-card button { background: linear-gradient(135deg, #1b6b5e, #0f5348); color: white; border: none; padding: 8px 16px; border-radius: 40px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 0.5rem; }
         .login-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .login-card .error { color: #c2412c; font-size: 0.65rem; margin-top: 0.5rem; }
-        .subadmin-section { margin: 1rem; padding: 1rem; background: #f8fafc; border-radius: 1rem; border: 1px solid #e2e8f0; }
-        .subadmin-section h3 { font-size: 1rem; margin-bottom: 0.5rem; }
-        .subadmin-table { width: 100%; font-size: 0.7rem; border-collapse: collapse; }
-        .subadmin-table th, .subadmin-table td { padding: 0.4rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
-        .subadmin-table input { padding: 4px 8px; border-radius: 20px; border: 1px solid #cbdde9; width: 100%; }
-        .btn-sm { padding: 2px 8px; font-size: 0.6rem; }
+        /* 子账号团队设置区域 */
+        .team-setup { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 1rem; padding: 0.8rem; margin: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+        .team-setup label { font-weight: 600; font-size: 0.7rem; }
+        .team-setup input { padding: 4px 8px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.7rem; width: 200px; }
         @media (max-width: 600px) {
             body { padding: 12px; }
             .hero-left h1 { font-size: 1rem; }
@@ -72,9 +70,10 @@
 <body>
 <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
-        <h2>🔐 主管理员登录</h2>
-        <p>请输入管理密码</p>
-        <input type="password" id="adminPasswordInput" placeholder="密码" autocomplete="off">
+        <h2>🔐 子管理员登录</h2>
+        <p>请输入用户名和密码</p>
+        <input type="text" id="subUsername" placeholder="用户名" autocomplete="off">
+        <input type="password" id="subPassword" placeholder="密码" autocomplete="off">
         <button id="loginBtn">登录</button>
         <div id="loginError" class="error"></div>
     </div>
@@ -84,15 +83,18 @@
 <div class="glass-panel">
     <div class="hero">
         <div class="hero-left">
-            <h1>📋 Adobe 团队管家 · 主管理员</h1>
+            <h1>📋 Adobe 团队管家 · 子管理员</h1>
             <p>数据实时保存在 Airtable，操作即时生效</p>
         </div>
-        <div class="team-edit-area">
-            <label>🎯 主团队名称：</label>
-            <input type="text" id="teamNameInput" class="team-input" placeholder="团队名称">
-            <button id="updateTeamBtn" class="update-team-btn">更改</button>
-        </div>
+        <div class="team-edit-area" style="visibility: hidden; display: none;"></div>
     </div>
+
+    <div id="teamSetupArea" class="team-setup" style="display: none;">
+        <span>🏷️ 当前团队名称：</span>
+        <input type="text" id="userTeamNameInput" placeholder="请输入您的团队名称" style="flex: 1;">
+        <button id="saveTeamNameBtn" class="primary btn-sm">保存团队名称</button>
+    </div>
+
     <div class="stats-grid">
         <div class="stat-item">📬 总账号 <span class="stat-number" id="totalAccounts">0</span></div>
         <div class="stat-item">✅ 已加入团队 <span class="stat-number" id="joinedTeamCount">0</span></div>
@@ -125,22 +127,6 @@
         </div>
     </div>
 
-    <!-- 子账号管理模块（仅用户名和密码） -->
-    <div class="subadmin-section">
-        <h3>👥 子账号管理</h3>
-        <div style="margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
-            <input type="text" id="newSubUsername" placeholder="子账号用户名" style="padding: 4px 8px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.7rem;">
-            <input type="text" id="newSubPassword" placeholder="初始密码" style="padding: 4px 8px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.7rem;">
-            <button id="addSubAccountBtn" class="primary btn-sm">➕ 添加子账号</button>
-        </div>
-        <div style="overflow-x: auto;">
-            <table class="subadmin-table" id="subAdminTable">
-                <thead><tr><th>用户名</th><th>密码</th><th>操作</th></tr></thead>
-                <tbody id="subAdminTableBody"></tbody>
-            </table>
-        </div>
-    </div>
-
     <div class="table-container">
         <table class="modern-table" id="accountTable">
             <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></tr></thead>
@@ -149,43 +135,35 @@
     </div>
     <div class="footer-note">
         <span>⚡ 数据实时同步至云端</span>
-        <span id="currentTeamDisplay">🏷️ 主团队: 加载中...</span>
+        <span id="currentTeamDisplay">🏷️ 当前团队: 未设置</span>
     </div>
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div>⏳ 处理中...</div></div>
 </div>
 
 <script>
-    // ================== 主密码验证 ==================
-    const ENCODED_PASSWORD = "cWJ4MTIxNjQ4MTE="; // qbx12164811
-    const ADMIN_PASSWORD = atob(ENCODED_PASSWORD);
+    const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
+    const BASE_ID = "appKUCGZCrZIH51dG";
+    const ADMINS_TABLE = "admins";
+    const ACCOUNTS_TABLE = "accounts";
+
     const loginOverlay = document.getElementById('loginOverlay');
     const mainContent = document.getElementById('mainContent');
     const loginBtn = document.getElementById('loginBtn');
-    const passwordInput = document.getElementById('adminPasswordInput');
+    const usernameInput = document.getElementById('subUsername');
+    const passwordInput = document.getElementById('subPassword');
     const loginError = document.getElementById('loginError');
 
-    function showLogin() { loginOverlay.style.display = 'flex'; mainContent.style.display = 'none'; }
-    function hideLogin() { loginOverlay.style.display = 'none'; mainContent.style.display = 'block'; }
-    loginBtn.addEventListener('click', () => {
-        if (passwordInput.value === ADMIN_PASSWORD) { hideLogin(); initApp(); }
-        else loginError.textContent = '密码错误，请重试';
-    });
-    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginBtn.click(); });
-
-    // ================== Airtable 配置 ==================
-    const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
-    const BASE_ID = "appKUCGZCrZIH51dG";
-    const TABLE_NAME = "accounts";
-    const ADMINS_TABLE = "admins";
-
     let accounts = [];
-    let subAdmins = [];
-    let currentTeam = "Art Grid Dynamics Garcia Miami";
-    const TEAM_KEY = "MainTeamName";
+    let currentUserTeam = "";
+    let currentAdminRecordId = "";
+    let currentTeamDisplaySpan = document.getElementById('currentTeamDisplay');
+    let teamSetupArea = document.getElementById('teamSetupArea');
+    let userTeamNameInput = document.getElementById('userTeamNameInput');
+    let saveTeamNameBtn = document.getElementById('saveTeamNameBtn');
     let dateSyncTimeout = null;
 
-    // 日期工具函数
+    // 日期工具函数（与主后台相同，简略）
     function parseToStandardDate(input) {
         if (!input || typeof input !== 'string') return null;
         let str = input.trim();
@@ -246,7 +224,6 @@
         return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
     }
 
-    // Airtable 操作
     async function fetchAllRecords(table) {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${table}`;
         let allRecords = [];
@@ -265,27 +242,23 @@
 
     async function loadFromCloud() {
         try {
-            const records = await fetchAllRecords(TABLE_NAME);
-            accounts = records.map(rec => ({
+            const records = await fetchAllRecords(ACCOUNTS_TABLE);
+            let allAccounts = records.map(rec => ({
                 id: rec.id,
                 email: rec.fields.Email,
                 joinedTeam: rec.fields.joinedTeam === true,
                 isGenuine: rec.fields.isGenuine === true,
                 subscriptionStart: rec.fields.subscriptionStart || getDefaultSubscription().subscriptionStart,
                 subscriptionEnd: rec.fields.subscriptionEnd || getDefaultSubscription().subscriptionEnd,
-                teamName: rec.fields.teamName || currentTeam
+                teamName: rec.fields.teamName || ''
             }));
-            for (let acc of accounts) {
-                if (!isValidDateString(acc.subscriptionStart)) acc.subscriptionStart = getDefaultSubscription().subscriptionStart;
-                if (!isValidDateString(acc.subscriptionEnd)) acc.subscriptionEnd = addOneYearToDateStr(acc.subscriptionStart);
-                if (!acc.teamName) acc.teamName = currentTeam;
-            }
+            accounts = allAccounts.filter(acc => acc.teamName === currentUserTeam);
             renderTable();
         } catch(e) { console.error(e); showToast("加载云端数据失败"); }
     }
 
     async function updateSingleRecord(account, showSuccessToast = true) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${account.id}`;
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${ACCOUNTS_TABLE}/${account.id}`;
         const resp = await fetch(url, {
             method: 'PATCH',
             headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
@@ -306,7 +279,7 @@
     }
 
     async function createRecord(fields) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${ACCOUNTS_TABLE}`;
         const resp = await fetch(url, {
             method: 'POST',
             headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
@@ -317,7 +290,7 @@
     }
 
     async function deleteRecord(recordId) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${recordId}`;
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${ACCOUNTS_TABLE}/${recordId}`;
         const resp = await fetch(url, { method: 'DELETE', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
         if (!resp.ok) throw new Error(`删除失败 ${resp.status}`);
     }
@@ -330,97 +303,20 @@
         }
     }
 
-    // 子账号管理
-    async function loadSubAdmins() {
-        try {
-            const records = await fetchAllRecords(ADMINS_TABLE);
-            subAdmins = records.map(rec => ({ id: rec.id, username: rec.fields.username, password: rec.fields.password }));
-            renderSubAdminTable();
-        } catch(e) { console.error(e); }
-    }
-
-    async function createSubAdmin(username, password) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}`;
-        const resp = await fetch(url, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fields: { username, password, role: 'sub', teamName: "" } })
-        });
-        if (!resp.ok) throw new Error();
-        await loadSubAdmins();
-        showToast(`子账号 ${username} 添加成功`);
-    }
-
-    async function updateSubAdminPassword(recordId, newPassword) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${recordId}`;
+    async function updateOwnTeamName(newTeamName) {
+        const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
         const resp = await fetch(url, {
             method: 'PATCH',
             headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fields: { password: newPassword } })
+            body: JSON.stringify({ fields: { teamName: newTeamName } })
         });
-        if (!resp.ok) throw new Error();
-        await loadSubAdmins();
-        showToast("密码已更新");
+        if (!resp.ok) throw new Error(`更新团队名称失败 ${resp.status}`);
+        currentUserTeam = newTeamName;
+        if (currentTeamDisplaySpan) currentTeamDisplaySpan.innerText = `🏷️ 当前团队: ${currentUserTeam}`;
+        showToast("团队名称已更新，请刷新数据查看您的客户");
+        await loadFromCloud();
     }
 
-    async function deleteSubAdmin(recordId) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${recordId}`;
-        const resp = await fetch(url, { method: 'DELETE', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
-        if (!resp.ok) throw new Error();
-        await loadSubAdmins();
-        showToast("子账号已删除");
-    }
-
-    function renderSubAdminTable() {
-        const tbody = document.getElementById('subAdminTableBody');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-        for (let sub of subAdmins) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${escapeHtml(sub.username)}</td>
-                <td><input type="text" value="${escapeHtml(sub.password)}" data-id="${sub.id}" class="sub-password-input" style="width:100px;"></td>
-                <td><button class="btn-sm update-pwd-btn" data-id="${sub.id}">更新密码</button> <button class="btn-sm delete-sub-btn" data-id="${sub.id}">删除</button></td>
-            `;
-            tbody.appendChild(tr);
-        }
-        document.querySelectorAll('.update-pwd-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const id = btn.dataset.id;
-                const input = document.querySelector(`.sub-password-input[data-id="${id}"]`);
-                if (input) await updateSubAdminPassword(id, input.value);
-            });
-        });
-        document.querySelectorAll('.delete-sub-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                if (confirm('确定删除该子账号？')) await deleteSubAdmin(btn.dataset.id);
-            });
-        });
-    }
-
-    // 团队名称管理
-    function saveTeamToLocal() { localStorage.setItem(TEAM_KEY, currentTeam); }
-    function loadTeamFromLocal() {
-        const saved = localStorage.getItem(TEAM_KEY);
-        if (saved && saved.trim()) currentTeam = saved;
-        else currentTeam = "Art Grid Dynamics Garcia Miami";
-        document.getElementById('teamNameInput').value = currentTeam;
-        updateTeamDisplay();
-    }
-    function updateTeamDisplay() {
-        const span = document.getElementById('currentTeamDisplay');
-        if (span) span.innerText = `🏷️ 主团队: ${currentTeam}`;
-    }
-    function setNewTeam(newTeam) {
-        if (!newTeam.trim()) { showToast("团队名称不能为空"); return false; }
-        currentTeam = newTeam.trim();
-        saveTeamToLocal();
-        updateTeamDisplay();
-        showToast(`主团队已更改为: ${currentTeam}`);
-        return true;
-    }
-
-    // 渲染表格
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
@@ -443,9 +339,9 @@
             const teamChk = document.createElement('input');
             teamChk.type = 'checkbox'; teamChk.checked = acc.joinedTeam;
             teamChk.className = 'team-checkbox'; teamChk.dataset.index = idx;
-            const teamSpan = document.createElement('span'); teamSpan.textContent = acc.joinedTeam ? `已加入 ${currentTeam}` : '未加入';
+            const teamSpan = document.createElement('span'); teamSpan.textContent = acc.joinedTeam ? `已加入 ${currentUserTeam}` : '未加入';
             teamLabel.appendChild(teamChk); teamLabel.appendChild(teamSpan);
-            if (acc.joinedTeam) { const badge = document.createElement('span'); badge.className = 'badge-team'; badge.textContent = currentTeam.length > 10 ? currentTeam.slice(0,8)+'..' : currentTeam; teamLabel.appendChild(badge); }
+            if (acc.joinedTeam) { const badge = document.createElement('span'); badge.className = 'badge-team'; badge.textContent = currentUserTeam.length > 10 ? currentUserTeam.slice(0,8)+'..' : currentUserTeam; teamLabel.appendChild(badge); }
             tdTeam.appendChild(teamLabel);
             tr.appendChild(tdTeam);
             const tdGenuine = document.createElement('td');
@@ -478,7 +374,7 @@
             tdEnd.appendChild(endInput);
             tr.appendChild(tdEnd);
             const tdTeamName = document.createElement('td');
-            tdTeamName.textContent = acc.teamName || currentTeam;
+            tdTeamName.textContent = acc.teamName;
             tr.appendChild(tdTeamName);
             const tdAction = document.createElement('td');
             const delBtn = document.createElement('button'); delBtn.textContent = '🗑️'; delBtn.className = 'delete-icon'; delBtn.dataset.index = idx;
@@ -499,7 +395,6 @@
         }
     }
 
-    // 日期修改
     function handleDateChange(e) {
         if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
             const idx = parseInt(e.target.dataset.index);
@@ -590,7 +485,7 @@
             isGenuine: false,
             subscriptionStart: sub.subscriptionStart,
             subscriptionEnd: sub.subscriptionEnd,
-            teamName: currentTeam
+            teamName: currentUserTeam
         };
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
@@ -628,7 +523,7 @@
     }
 
     async function resetToDefault() {
-        if (!confirm('重置将删除所有现有账号，并恢复初始邮箱列表')) return;
+        if (!confirm('重置将删除当前子账号团队的所有账号，并恢复初始邮箱列表？')) return;
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
         try {
@@ -655,7 +550,7 @@
                     isGenuine: false,
                     subscriptionStart: sub.subscriptionStart,
                     subscriptionEnd: sub.subscriptionEnd,
-                    teamName: currentTeam
+                    teamName: currentUserTeam
                 });
                 newAccounts.push({
                     id: created.id,
@@ -704,7 +599,7 @@
                             isGenuine: item.isGenuine === true,
                             subscriptionStart: item.subscriptionStart || getDefaultSubscription().subscriptionStart,
                             subscriptionEnd: item.subscriptionEnd || addOneYearToDateStr(item.subscriptionStart || todayStandard()),
-                            teamName: item.teamName || currentTeam
+                            teamName: currentUserTeam
                         };
                         const created = await createRecord(fields);
                         accounts.push({
@@ -754,7 +649,7 @@
                             isGenuine: false,
                             subscriptionStart: sub.subscriptionStart,
                             subscriptionEnd: sub.subscriptionEnd,
-                            teamName: currentTeam
+                            teamName: currentUserTeam
                         };
                         const created = await createRecord(fields);
                         accounts.push({
@@ -831,7 +726,6 @@
         document.getElementById('resetDefaultBtn')?.addEventListener('click', resetToDefault);
         document.getElementById('exportJsonBtn')?.addEventListener('click', exportToJson);
         document.getElementById('refreshFromCloud')?.addEventListener('click', async () => { showToast("刷新中..."); await loadFromCloud(); showToast("刷新完成"); });
-        document.getElementById('updateTeamBtn')?.addEventListener('click', () => { const newTeam = document.getElementById('teamNameInput').value; setNewTeam(newTeam); renderTable(); });
         const importJson = document.getElementById('importJsonInput'); importJson?.addEventListener('change', (e) => { if (e.target.files[0]) importFromJson(e.target.files[0]); importJson.value = ''; });
         const txtImport = document.getElementById('txtImportInput');
         txtImport?.addEventListener('change', (e) => {
@@ -842,24 +736,52 @@
             txtImport.value = '';
         });
         document.getElementById('newEmailInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { const inp = e.target; if (inp.value && addAccount(inp.value)) inp.value = ''; } });
-        document.getElementById('addSubAccountBtn')?.addEventListener('click', async () => {
-            const username = document.getElementById('newSubUsername').value.trim();
-            const password = document.getElementById('newSubPassword').value.trim();
-            if (!username || !password) { showToast("用户名和密码都不能为空"); return; }
-            await createSubAdmin(username, password);
-            document.getElementById('newSubUsername').value = '';
-            document.getElementById('newSubPassword').value = '';
-        });
     }
 
-    async function initApp() {
-        loadTeamFromLocal();
-        await loadFromCloud();
-        await loadSubAdmins();
-        bindEvents();
+    async function verifySubAdmin() {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        if (!username || !password) { loginError.textContent = "请输入用户名和密码"; return false; }
+        try {
+            const records = await fetchAllRecords(ADMINS_TABLE);
+            const found = records.find(rec => rec.fields.username === username && rec.fields.password === password);
+            if (found) {
+                currentAdminRecordId = found.id;
+                currentUserTeam = found.fields.teamName || "";
+                loginOverlay.style.display = 'none';
+                mainContent.style.display = 'block';
+                if (currentUserTeam) {
+                    currentTeamDisplaySpan.innerText = `🏷️ 当前团队: ${currentUserTeam}`;
+                    teamSetupArea.style.display = 'none';
+                    await loadFromCloud();
+                    bindEvents();
+                } else {
+                    teamSetupArea.style.display = 'flex';
+                    currentTeamDisplaySpan.innerText = `🏷️ 当前团队: 未设置，请先设置团队名称`;
+                    userTeamNameInput.value = "";
+                    saveTeamNameBtn.onclick = async () => {
+                        const newTeam = userTeamNameInput.value.trim();
+                        if (!newTeam) { showToast("团队名称不能为空"); return; }
+                        await updateOwnTeamName(newTeam);
+                        teamSetupArea.style.display = 'none';
+                        await loadFromCloud();
+                        bindEvents();
+                    };
+                }
+                return true;
+            } else {
+                loginError.textContent = "用户名或密码错误";
+                return false;
+            }
+        } catch(e) {
+            loginError.textContent = "验证失败，请重试";
+            return false;
+        }
     }
 
-    showLogin();
+    loginBtn.addEventListener('click', verifySubAdmin);
+    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifySubAdmin(); });
+    usernameInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') verifySubAdmin(); });
 </script>
 </body>
 </html>

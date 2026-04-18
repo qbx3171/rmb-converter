@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <!-- 适配百度PC/移动抓取 -->
-    <meta name="applicable-device" content="pc,mobile">
     <title>Adobe 订阅状态查询 | Creative Cloud 助手</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
@@ -13,9 +11,6 @@
         .header { background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%); padding: 1.8rem; color: white; text-align: center; }
         .header h1 { font-size: 1.8rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .team-badge { background: rgba(255,255,255,0.2); backdrop-filter: blur(4px); display: inline-block; padding: 5px 16px; border-radius: 60px; font-size: 0.75rem; margin-top: 12px; }
-        .back-home { margin-top: 12px; }
-        .back-home a { color: white; text-decoration: none; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 30px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; }
-        .back-home a:hover { background: rgba(255,255,255,0.3); }
         .query-area { padding: 2rem 1.8rem; background: white; }
         .input-group { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
         .input-group input { flex: 1; padding: 14px 18px; border-radius: 60px; border: 1px solid #cbdde9; font-size: 1rem; }
@@ -45,10 +40,7 @@
     <div class="header">
         <h1>🔍 Adobe 订阅状态查询</h1>
         <p>输入您的邮箱，验证团队授权、订阅起止时间</p>
-        <div class="team-badge" id="dynamicTeamBadge">🎯 当前团队: 加载中...</div>
-        <div class="back-home">
-            <a href="index.html">← 返回首页</a>
-        </div>
+        <div class="team-badge">🎯 数据实时同步</div>
     </div>
     <div class="query-area">
         <div class="input-group">
@@ -63,7 +55,7 @@
                 <li>2️⃣ 重新使用您的 Adobe 账号和密码<strong>登录</strong>。</li>
                 <li>3️⃣ 登录过程中，当出现<strong>“加入团队”</strong>提示时，点击加入。</li>
                 <li>4️⃣ 移动文件选择：<strong>移入个人云存储中</strong>（保留个人云储存）。</li>
-                <li>5️⃣ 随后<strong>配置文件</strong>选择 <strong id="guideTeamName" class="team-name-highlight">英文团队名称</strong> 即可正常使用。</li>
+                <li>5️⃣ 随后<strong>配置文件</strong>选择您的团队名称即可正常使用。</li>
             </ul>
             <p style="margin-top: 12px; font-size: 0.7rem; color:#b45a2e;">⚠️ 若未出现“加入团队”，请确认您的账号已被管理员添加到团队中，且订阅未过期。</p>
         </div>
@@ -71,14 +63,11 @@
     <div class="footer-note">⚡ 数据与后台实时同步，团队名称由管理员动态配置。<br>订阅到期前30天会显示提醒，请联系管理员续期。</div>
 </div>
 <script>
-    // Airtable 配置（只读 Token）
     const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
     const BASE_ID = "appKUCGZCrZIH51dG";
     const TABLE_NAME = "accounts";
-    const TEAM_KEY = "AdobeCurrentTeamCloud";
 
     let accountsData = [];
-    let currentTeamName = "Art Grid Dynamics Garcia Miami";
     let loading = false;
 
     function parseToStandardDate(input) {
@@ -105,6 +94,7 @@
         }
         return null;
     }
+
     function daysRemaining(endDateStr) {
         let stdEnd = parseToStandardDate(endDateStr);
         if (!stdEnd) return Infinity;
@@ -113,6 +103,7 @@
         if (isNaN(end.getTime())) return Infinity;
         return Math.ceil((end - today) / (1000 * 60 * 60 * 24));
     }
+
     function formatDateForDisplay(dateStr) {
         if (!dateStr) return '未设置';
         let std = parseToStandardDate(dateStr);
@@ -120,18 +111,13 @@
         let parts = std.split('-');
         return `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
     }
+
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
 
-    async function fetchAccountsAndTeam() {
-        const storedTeam = localStorage.getItem(TEAM_KEY);
-        if (storedTeam && storedTeam.trim()) currentTeamName = storedTeam;
-        else currentTeamName = "Art Grid Dynamics Garcia Miami";
-        document.getElementById("dynamicTeamBadge").innerHTML = `🎯 当前团队: ${currentTeamName}`;
-        document.getElementById("guideTeamName").innerText = currentTeamName;
-
+    async function fetchAccounts() {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         try {
             const resp = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
@@ -142,7 +128,8 @@
                 joinedTeam: rec.fields.joinedTeam === true,
                 isGenuine: rec.fields.isGenuine === true,
                 subscriptionStart: rec.fields.subscriptionStart || '',
-                subscriptionEnd: rec.fields.subscriptionEnd || ''
+                subscriptionEnd: rec.fields.subscriptionEnd || '',
+                teamName: rec.fields.teamName || ''
             }));
             return true;
         } catch(e) {
@@ -199,13 +186,13 @@
             <div class="result-card ${isExpiring || isExpired ? 'expiring-soon' : ''}" style="border-left-color: ${isExpired ? '#c2412c' : (isExpiring ? '#e67e22' : '#1b6b5e')};">
                 <div class="status"><span class="status-badge ${statusClass}">${statusText}</span></div>
                 <div class="info-line"><span class="info-label">📧 邮箱：</span><span>${escapeHtml(account.email)}</span></div>
-                <div class="info-line"><span class="info-label">🏷️ 所属团队：</span><span><strong>${escapeHtml(currentTeamName)}</strong> ${account.joinedTeam ? '✓ 已加入' : '✗ 未加入'}</span></div>
+                <div class="info-line"><span class="info-label">🏷️ 所属团队：</span><span><strong>${escapeHtml(account.teamName)}</strong> ${account.joinedTeam ? '✓ 已加入' : '✗ 未加入'}</span></div>
                 <div class="info-line"><span class="info-label">⭐ Adobe正版：</span><span>${account.isGenuine ? '✅ 认证正版客户' : '⭕ 未认证'}</span></div>
                 <div class="info-line"><span class="info-label">📅 订阅起始：</span><span>${startDisplay}</span></div>
                 <div class="info-line"><span class="info-label">⏳ 到期时间：</span><span>${endDisplay} &nbsp; (${daysText})</span></div>
                 ${(isExpiring && !isExpired) ? `<div class="info-line" style="background:#fff1e0; margin-top:8px; padding:6px 10px; border-radius:12px;"><span style="color:#b45a2e;">⚠️ 您的订阅将在 ${Math.abs(remainingDays)} 天后到期，请及时联系管理员续期。</span></div>` : ''}
                 ${isExpired ? `<div class="info-line" style="background:#ffe8e8; margin-top:8px; padding:6px 10px; border-radius:12px;"><span style="color:#c2412c;">❌ 订阅已过期，无法继续使用团队服务，请联系管理员续费。</span></div>` : ''}
-                ${!account.joinedTeam && !isExpired ? `<div class="info-line" style="background:#eef2ff; margin-top:8px; padding:6px 10px; border-radius:12px;"><span style="color:#2c5f8a;">📢 您尚未加入团队，请按照下方指引加入 “${escapeHtml(currentTeamName)}” 团队。</span></div>` : ''}
+                ${!account.joinedTeam && !isExpired ? `<div class="info-line" style="background:#eef2ff; margin-top:8px; padding:6px 10px; border-radius:12px;"><span style="color:#2c5f8a;">📢 您尚未加入团队，请按照下方指引加入 “${escapeHtml(account.teamName)}” 团队。</span></div>` : ''}
             </div>
         `;
     }
@@ -214,7 +201,6 @@
         const emailInput = document.getElementById('emailInput');
         const email = emailInput.value.trim();
         const resultDiv = document.getElementById("resultArea");
-        
         if (!email) {
             resultDiv.innerHTML = `<div class="result-card" style="border-left-color:#e67e22;"><div class="status"><span class="status-badge status-warning">⚠️ 请输入邮箱地址</span></div></div>`;
             return;
@@ -230,7 +216,7 @@
         btn.innerHTML = '<span class="loading-spinner"></span> 查询中...';
         btn.disabled = true;
         try {
-            const success = await fetchAccountsAndTeam();
+            const success = await fetchAccounts();
             if (!success) return;
             const account = findAccountByEmail(email);
             renderResult(account, email);
@@ -245,7 +231,7 @@
     }
 
     async function init() {
-        await fetchAccountsAndTeam();
+        await fetchAccounts();
         const queryBtn = document.getElementById('queryBtn');
         const emailInput = document.getElementById('emailInput');
         queryBtn.addEventListener('click', handleQuery);
