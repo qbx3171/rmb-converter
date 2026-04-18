@@ -63,6 +63,7 @@
     <div class="footer-note">⚡ 数据与后台实时同步，团队名称由管理员动态配置。<br>订阅到期前30天会显示提醒，请联系管理员续期。</div>
 </div>
 <script>
+    // ================== Airtable 配置（与主后台完全相同） ==================
     const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
     const BASE_ID = "appKUCGZCrZIH51dG";
     const TABLE_NAME = "accounts";
@@ -70,6 +71,7 @@
     let accountsData = [];
     let loading = false;
 
+    // 日期工具函数（与主后台一致）
     function parseToStandardDate(input) {
         if (!input || typeof input !== 'string') return null;
         let str = input.trim();
@@ -117,11 +119,17 @@
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
 
+    // 从 Airtable 获取所有账号数据
     async function fetchAccounts() {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`;
         try {
-            const resp = await fetch(url, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
-            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const resp = await fetch(url, {
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
+            });
+            if (!resp.ok) {
+                const errorText = await resp.text();
+                throw new Error(`HTTP ${resp.status}: ${errorText}`);
+            }
             const data = await resp.json();
             accountsData = data.records.map(rec => ({
                 email: rec.fields.Email,
@@ -139,6 +147,7 @@
             resultDiv.innerHTML = `<div class="result-card" style="border-left-color: #c2412c;">
                 <div class="status"><span class="status-badge status-error">❌ 网络错误</span></div>
                 <div class="info-line">无法连接云端数据，请稍后重试或联系管理员。</div>
+                <div class="info-line">错误详情：${escapeHtml(e.message)}</div>
             </div>`;
             return false;
         }
@@ -230,8 +239,13 @@
         }
     }
 
-    async function init() {
+    // 页面加载时预拉取一次数据，让用户点击时更快
+    async function preloadData() {
         await fetchAccounts();
+    }
+
+    function init() {
+        preloadData();
         const queryBtn = document.getElementById('queryBtn');
         const emailInput = document.getElementById('emailInput');
         queryBtn.addEventListener('click', handleQuery);
