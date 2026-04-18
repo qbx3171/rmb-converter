@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Adobe 团队管家 · 子管理员（同步版）</title>
+    <title>Adobe 团队管家 · 子管理员（完整日志版）</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body { background: radial-gradient(circle at 10% 20%, rgba(15,35,55,0.05) 0%, rgba(10,25,40,0.08) 100%); padding: 20px 16px; min-height: 100vh; }
@@ -96,7 +96,7 @@
     <div class="hero">
         <div class="hero-left">
             <h1>📋 Adobe 团队管家 · 子管理员</h1>
-            <p>数据实时写入Airtable · 主管理员刷新即见</p>
+            <p>所有操作自动记录日志 · 主管理员实时可见</p>
         </div>
         <div class="team-edit-area" style="visibility: hidden; display: none;"></div>
     </div>
@@ -144,11 +144,11 @@
     <div class="table-container">
         <table class="modern-table" id="accountTable">
             <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th>}</thead>
-            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...―</td></tr></tbody>
+            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...―</tbody>
         </table>
     </div>
     <div class="footer-note">
-        <span>⚡ 所有操作实时写入Airtable · 主管理员同步可见</span>
+        <span>⚡ 所有操作实时写入Airtable · 主管理员同步可见 · 操作日志自动记录</span>
         <span id="currentTeamDisplay"></span>
     </div>
 </div>
@@ -161,6 +161,7 @@
     const BASE_ID = "appKUCGZCrZIH51dG";
     const ADMINS_TABLE = "admins";
     const ACCOUNTS_TABLE = "accounts";
+    const LOGS_TABLE = "logs";   // 操作日志表
 
     const loginOverlay = document.getElementById('loginOverlay');
     const mainContent = document.getElementById('mainContent');
@@ -172,9 +173,10 @@
     let accounts = [];               // 当前团队下的账号列表
     let currentUserTeam = "";       // 当前子管理员所属团队名称
     let currentAdminRecordId = "";  // admins表中的记录ID
+    let currentUsername = "";       // 当前登录的子管理员用户名
     let dateSyncTimeout = null;
 
-    // ================= 日期工具函数（与主管理员保持一致） =================
+    // ================= 日期工具函数 =================
     function parseToStandardDate(input) {
         if (!input || typeof input !== 'string') return null;
         let str = input.trim();
@@ -199,7 +201,6 @@
         }
         return null;
     }
-    function isValidDateString(dateStr) { return parseToStandardDate(dateStr) !== null; }
     function addOneYearToDateStr(dateStr) {
         let std = parseToStandardDate(dateStr);
         if (!std) return "";
@@ -230,6 +231,22 @@
         let end = new Date(stdEnd);
         if (isNaN(end.getTime())) return Infinity;
         return Math.ceil((end - today) / (1000*60*60*24));
+    }
+
+    // ================= 操作日志（写入 logs 表） =================
+    async function addAccountLog(operation, targetEmail, extraInfo = '') {
+        const timestamp = new Date().toISOString();
+        const operator = currentUsername || '子管理员';
+        try {
+            const url = `https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`;
+            await fetch(url, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fields: { operation, targetUsername: targetEmail, extraInfo, timestamp, operator } })
+            });
+        } catch(e) {
+            console.warn("记录操作日志失败（不影响主流程）", e);
+        }
     }
 
     // ================= Airtable 通用请求 =================
@@ -285,7 +302,6 @@
         if (!resp.ok) throw new Error(`删除失败 ${resp.status}`);
     }
 
-    // 批量更新（逐条，保证可靠）
     async function batchUpdateRecords(accountsToUpdate) {
         const batchSize = 5;
         for (let i = 0; i < accountsToUpdate.length; i += batchSize) {
@@ -295,7 +311,6 @@
         }
     }
 
-    // 批量更新团队名称（使用PATCH /records 接口）
     async function batchUpdateTeamName(recordsToUpdate, newTeamName) {
         const batchSize = 10;
         for (let i = 0; i < recordsToUpdate.length; i += batchSize) {
@@ -312,8 +327,7 @@
         }
     }
 
-    // ================= 子管理员业务逻辑 =================
-    // 加载当前团队的所有账号
+    // ================= 子管理员业务逻辑（带日志） =================
     async function loadFromCloud() {
         try {
             const records = await fetchAllRecords(ACCOUNTS_TABLE);
@@ -331,13 +345,11 @@
         } catch(e) { console.error(e); showToast("加载云端数据失败"); }
     }
 
-    // 修改团队名称（同步更新admins表 + 当前团队所有账号的teamName）
     async function updateOwnTeamName(newTeamName) {
         if (!newTeamName.trim()) { showToast("团队名称不能为空"); return false; }
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
         try {
-            // 1. 更新 admins 表中的团队名
             const urlAdmin = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
             const respAdmin = await fetch(urlAdmin, {
                 method: 'PATCH',
@@ -346,16 +358,16 @@
             });
             if (!respAdmin.ok) throw new Error(`更新管理员记录失败`);
             
-            // 2. 更新当前团队所有账号的 teamName
             const recordsToUpdate = accounts.filter(acc => acc.teamName === currentUserTeam);
             if (recordsToUpdate.length > 0) {
                 await batchUpdateTeamName(recordsToUpdate, newTeamName);
             }
-            // 3. 更新本地变量和界面
             currentUserTeam = newTeamName;
             document.getElementById('currentTeamNameDisplay').innerText = currentUserTeam;
             document.getElementById('currentTeamDisplay').innerHTML = `🏷️ 当前团队: ${currentUserTeam}`;
-            await loadFromCloud();  // 重新加载以刷新所有账号的teamName
+            await loadFromCloud();
+            // 记录日志：修改团队名称
+            await addAccountLog('✏️ 修改团队名称', '系统', `团队名称变更为“${newTeamName}”，影响 ${recordsToUpdate.length} 个账号`);
             showToast(`团队名称已更新为“${newTeamName}”，共更新 ${recordsToUpdate.length} 个客户`);
             return true;
         } catch (err) {
@@ -367,7 +379,6 @@
         }
     }
 
-    // 修改登录密码
     async function updateOwnPassword(newPassword) {
         if (!newPassword.trim()) { showToast("密码不能为空"); return false; }
         const overlay = document.getElementById('loadingOverlay');
@@ -380,6 +391,8 @@
                 body: JSON.stringify({ fields: { password: newPassword } })
             });
             if (!resp.ok) throw new Error(`更新密码失败`);
+            // 记录日志（可选，不强制）
+            await addAccountLog('🔑 修改登录密码', currentUsername, '密码已变更');
             showToast("密码已更新，下次登录请使用新密码");
             return true;
         } catch (err) {
@@ -391,7 +404,6 @@
         }
     }
 
-    // 添加单个账号
     async function addAccount(emailRaw) {
         const email = emailRaw.trim();
         if (!email) { showToast('邮箱不能为空'); return false; }
@@ -420,13 +432,13 @@
                 teamName: created.fields.teamName
             });
             renderTable();
+            await addAccountLog('➕ 添加邮箱账号', email, `所属团队: ${currentUserTeam}`);
             showToast(`添加成功: ${email}`);
             return true;
         } catch(e) { showToast("添加失败，请重试"); return false; }
         finally { overlay.style.display = 'none'; }
     }
 
-    // 删除选中账号
     async function deleteSelected() {
         const indices = getSelectedIndices();
         if (indices.length === 0) { showToast('没有选中任何账号'); return; }
@@ -440,14 +452,15 @@
                 const batch = toDelete.slice(i, i + batchSize);
                 await Promise.all(batch.map(acc => deleteRecord(acc.id)));
             }
+            const deletedEmails = toDelete.map(acc => acc.email).join(', ');
             accounts = accounts.filter((_, idx) => !indices.includes(idx));
             renderTable();
+            await addAccountLog('🗑️ 批量删除邮箱账号', `${toDelete.length} 个账号`, `邮箱列表: ${deletedEmails.substring(0, 200)}`);
             showToast(`已删除 ${toDelete.length} 个账号`);
         } catch (err) { showToast("删除失败，请重试"); }
         finally { overlay.style.display = 'none'; }
     }
 
-    // 批量更新字段（joinedTeam 或 isGenuine）
     async function batchUpdate(property, newValue) {
         const indices = getSelectedIndices();
         if (indices.length === 0) { showToast('请至少勾选一个账号'); return; }
@@ -464,12 +477,14 @@
         overlay.style.display = 'flex';
         try {
             await batchUpdateRecords(toUpdate);
+            const opName = property === 'joinedTeam' ? (newValue ? '批量加入团队' : '批量移出团队') : (newValue ? '批量标记正版' : '批量取消正版');
+            const targetInfo = toUpdate.map(acc => acc.email).join(', ');
+            await addAccountLog(opName, `${toUpdate.length} 个账号`, `操作对象: ${targetInfo.substring(0, 200)}`);
             showToast(`已更新 ${toUpdate.length} 个账号的${property === 'joinedTeam' ? '团队状态' : '正版状态'}`);
         } catch (err) { showToast("同步失败，请重试"); }
         finally { overlay.style.display = 'none'; }
     }
 
-    // 重置为默认账号列表（仅当前团队）
     async function resetToDefault() {
         if (!confirm('重置将删除当前团队的所有账号，并恢复初始邮箱列表')) return;
         const overlay = document.getElementById('loadingOverlay');
@@ -512,12 +527,12 @@
             }
             accounts = newAccounts;
             renderTable();
+            await addAccountLog('⟳ 重置为默认账号列表', `${defaultEmails.length} 个账号`, `团队: ${currentUserTeam}`);
             showToast('已重置为默认账号列表');
         } catch (err) { showToast("重置失败，请重试"); }
         finally { overlay.style.display = 'none'; }
     }
 
-    // 导出JSON（仅当前团队账号）
     function exportToJson() {
         const exportData = accounts.map(({ id, ...rest }) => rest);
         const dataStr = JSON.stringify(exportData, null, 2);
@@ -527,7 +542,6 @@
         showToast('导出JSON成功');
     }
 
-    // 导入JSON（覆盖当前团队账号）
     async function importFromJson(file) {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -564,6 +578,7 @@
                     }));
                 }
                 renderTable();
+                await addAccountLog('📂 导入JSON', `${imported.length} 个账号`, `来源文件: ${file.name}`);
                 showToast(`导入 ${accounts.length} 个账号`);
             } catch(err) { showToast('JSON文件无效'); }
             finally { overlay.style.display = 'none'; }
@@ -571,7 +586,6 @@
         reader.readAsText(file);
     }
 
-    // 从TXT导入（批量添加）
     async function importFromTxt(file, autoJoinTeam = true) {
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -615,6 +629,7 @@
                     }));
                 }
                 renderTable();
+                await addAccountLog('📄 从TXT导入', `${emailsToAdd.length} 个账号`, `自动加入团队: ${autoJoinTeam ? '是' : '否'}`);
                 showToast(`TXT导入完成: 新增 ${emailsToAdd.length} 个账号`);
             } catch(err) { showToast("导入失败，请重试"); }
             finally { overlay.style.display = 'none'; }
@@ -688,6 +703,7 @@
             dateSyncTimeout = setTimeout(async () => {
                 try {
                     await updateSingleRecord(acc, false);
+                    await addAccountLog('📅 修改订阅日期', acc.email, `${field}: ${stdDate}`);
                     showToast("日期已同步");
                 } catch (err) { showToast("同步失败，请重试"); }
             }, 500);
@@ -703,6 +719,7 @@
                 await deleteRecord(acc.id);
                 accounts.splice(index, 1);
                 renderTable();
+                await addAccountLog('🗑️ 删除邮箱账号', acc.email, '单个删除');
                 showToast('已删除');
             } catch (err) { showToast("删除失败"); }
             finally { overlay.style.display = 'none'; }
@@ -715,11 +732,13 @@
             if (e.target.classList.contains('team-checkbox')) {
                 const idx = parseInt(e.target.dataset.index);
                 if (!isNaN(idx) && accounts[idx]) {
+                    const oldVal = accounts[idx].joinedTeam;
                     accounts[idx].joinedTeam = e.target.checked;
                     renderTable();
                     showToast("保存中...");
                     try {
                         await updateSingleRecord(accounts[idx], false);
+                        await addAccountLog(e.target.checked ? '✅ 加入团队' : '❌ 移出团队', accounts[idx].email, `团队: ${currentUserTeam}`);
                         showToast("团队状态已同步");
                     } catch(err) { showToast("同步失败"); }
                 }
@@ -732,6 +751,7 @@
                     showToast("保存中...");
                     try {
                         await updateSingleRecord(accounts[idx], false);
+                        await addAccountLog(e.target.checked ? '⭐ 标记正版' : '🔄 取消正版', accounts[idx].email, '状态变更');
                         showToast("正版状态已同步");
                     } catch(err) { showToast("同步失败"); }
                 }
@@ -780,6 +800,7 @@
             if (found) {
                 currentAdminRecordId = found.id;
                 currentUserTeam = found.fields.teamName || "";
+                currentUsername = username;
                 loginOverlay.style.display = 'none';
                 mainContent.style.display = 'block';
                 const teamInfoBar = document.getElementById('teamInfoBar');
