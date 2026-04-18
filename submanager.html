@@ -143,8 +143,8 @@
 
     <div class="table-container">
         <table class="modern-table" id="accountTable">
-            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th>}</thead>
-            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...―</tbody>
+            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></thead>
+            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
         </table>
     </div>
     <div class="footer-note">
@@ -156,12 +156,12 @@
 </div>
 
 <script>
-    // ================= 配置与全局变量 =================
+    // ================= 配置 =================
     const AIRTABLE_TOKEN = "patlLxSFx112EGSkC.eb05637ecfaa9c618deb159bbb5ce78c82680898975ed3cd6da73e72f316c586";
     const BASE_ID = "appKUCGZCrZIH51dG";
     const ADMINS_TABLE = "admins";
     const ACCOUNTS_TABLE = "accounts";
-    const LOGS_TABLE = "logs";   // 操作日志表
+    const LOGS_TABLE = "logs";
 
     const loginOverlay = document.getElementById('loginOverlay');
     const mainContent = document.getElementById('mainContent');
@@ -170,13 +170,13 @@
     const passwordInput = document.getElementById('subPassword');
     const loginError = document.getElementById('loginError');
 
-    let accounts = [];               // 当前团队下的账号列表
-    let currentUserTeam = "";       // 当前子管理员所属团队名称
-    let currentAdminRecordId = "";  // admins表中的记录ID
-    let currentUsername = "";       // 当前登录的子管理员用户名
+    let accounts = [];
+    let currentUserTeam = "";
+    let currentAdminRecordId = "";
+    let currentUsername = "";
     let dateSyncTimeout = null;
 
-    // ================= 日期工具函数 =================
+    // ================= 日期工具 =================
     function parseToStandardDate(input) {
         if (!input || typeof input !== 'string') return null;
         let str = input.trim();
@@ -187,18 +187,11 @@
             let day = parseInt(parts[2], 10);
             if (!isNaN(year) && !isNaN(month) && !isNaN(day)) {
                 let date = new Date(year, month, day);
-                if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) {
-                    return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-                }
+                if (date.getFullYear() === year && date.getMonth() === month && date.getDate() === day) return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
             }
         }
         let d = new Date(str);
-        if (!isNaN(d.getTime())) {
-            let y = d.getFullYear();
-            let m = String(d.getMonth()+1).padStart(2,'0');
-            let day = String(d.getDate()).padStart(2,'0');
-            return `${y}-${m}-${day}`;
-        }
+        if (!isNaN(d.getTime())) { let y = d.getFullYear(); let m = String(d.getMonth()+1).padStart(2,'0'); let day = String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
         return null;
     }
     function addOneYearToDateStr(dateStr) {
@@ -207,23 +200,10 @@
         let [year, month, day] = std.split('-').map(Number);
         let newDate = new Date(year, month-1, day);
         newDate.setFullYear(newDate.getFullYear() + 1);
-        let y = newDate.getFullYear();
-        let m = String(newDate.getMonth()+1).padStart(2,'0');
-        let d = String(newDate.getDate()).padStart(2,'0');
-        return `${y}-${m}-${d}`;
+        return `${newDate.getFullYear()}-${String(newDate.getMonth()+1).padStart(2,'0')}-${String(newDate.getDate()).padStart(2,'0')}`;
     }
-    function todayStandard() {
-        let d = new Date();
-        let y = d.getFullYear();
-        let m = String(d.getMonth()+1).padStart(2,'0');
-        let day = String(d.getDate()).padStart(2,'0');
-        return `${y}-${m}-${day}`;
-    }
-    function getDefaultSubscription() {
-        let start = todayStandard();
-        let end = addOneYearToDateStr(start);
-        return { subscriptionStart: start, subscriptionEnd: end };
-    }
+    function todayStandard() { let d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    function getDefaultSubscription() { let start = todayStandard(); return { subscriptionStart: start, subscriptionEnd: addOneYearToDateStr(start) }; }
     function daysRemaining(endDateStr) {
         let stdEnd = parseToStandardDate(endDateStr);
         if (!stdEnd) return Infinity;
@@ -232,36 +212,56 @@
         if (isNaN(end.getTime())) return Infinity;
         return Math.ceil((end - today) / (1000*60*60*24));
     }
+    function showToast(msg, duration=2500) { let existing = document.querySelector('.toast-message'); if(existing) existing.remove(); let toast = document.createElement('div'); toast.className='toast-message'; toast.textContent=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(), duration); }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-    // ================= 操作日志（写入 logs 表） =================
+    // ================= 日志写入（增强错误诊断）=================
     async function addAccountLog(operation, targetEmail, extraInfo = '') {
         const timestamp = new Date().toISOString();
         const operator = currentUsername || '子管理员';
         try {
             const url = `https://api.airtable.com/v0/${BASE_ID}/${LOGS_TABLE}`;
-            await fetch(url, {
+            const payload = {
+                fields: {
+                    operation: operation,
+                    targetUsername: targetEmail,
+                    extraInfo: extraInfo,
+                    timestamp: timestamp,
+                    operator: operator
+                }
+            };
+            console.log('[LOG] 准备写入:', payload);
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fields: { operation, targetUsername: targetEmail, extraInfo, timestamp, operator } })
+                body: JSON.stringify(payload)
             });
+            const responseData = await response.json();
+            if (!response.ok) {
+                console.error('[LOG] 写入失败:', response.status, responseData);
+                showToast(`⚠️ 日志记录失败: ${responseData.error?.message || '未知错误'}，请检查logs表字段`, 4000);
+            } else {
+                console.log('[LOG] 写入成功:', responseData);
+            }
         } catch(e) {
-            console.warn("记录操作日志失败（不影响主流程）", e);
+            console.error('[LOG] 网络错误:', e);
+            showToast(`⚠️ 日志记录网络错误: ${e.message}`, 4000);
         }
     }
 
     // ================= Airtable 通用请求 =================
     async function fetchAllRecords(table) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${table}`;
-        let allRecords = [], offset = null;
+        let url = `https://api.airtable.com/v0/${BASE_ID}/${table}?pageSize=100`;
+        let all=[], offset=null;
         do {
-            let fetchUrl = url + (offset ? `?offset=${offset}` : '');
+            let fetchUrl = url + (offset ? `&offset=${offset}` : '');
             const resp = await fetch(fetchUrl, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const data = await resp.json();
-            allRecords = allRecords.concat(data.records);
+            all = all.concat(data.records);
             offset = data.offset;
         } while (offset);
-        return allRecords;
+        return all;
     }
 
     async function updateSingleRecord(account, showSuccessToast = true) {
@@ -269,16 +269,7 @@
         const resp = await fetch(url, {
             method: 'PATCH',
             headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                fields: {
-                    Email: account.email,
-                    joinedTeam: account.joinedTeam,
-                    isGenuine: account.isGenuine,
-                    subscriptionStart: account.subscriptionStart,
-                    subscriptionEnd: account.subscriptionEnd,
-                    teamName: account.teamName
-                }
-            })
+            body: JSON.stringify({ fields: { Email: account.email, joinedTeam: account.joinedTeam, isGenuine: account.isGenuine, subscriptionStart: account.subscriptionStart, subscriptionEnd: account.subscriptionEnd, teamName: account.teamName } })
         });
         if (!resp.ok) throw new Error(`更新失败 ${resp.status}`);
         if (showSuccessToast) showToast("已保存");
@@ -287,11 +278,7 @@
 
     async function createRecord(fields) {
         const url = `https://api.airtable.com/v0/${BASE_ID}/${ACCOUNTS_TABLE}`;
-        const resp = await fetch(url, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fields })
-        });
+        const resp = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ fields }) });
         if (!resp.ok) throw new Error(`创建失败 ${resp.status}`);
         return await resp.json();
     }
@@ -317,23 +304,18 @@
             const batch = recordsToUpdate.slice(i, i + batchSize);
             const updates = batch.map(rec => ({ id: rec.id, fields: { teamName: newTeamName } }));
             const url = `https://api.airtable.com/v0/${BASE_ID}/${ACCOUNTS_TABLE}`;
-            const resp = await fetch(url, {
-                method: 'PATCH',
-                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ records: updates })
-            });
+            const resp = await fetch(url, { method: 'PATCH', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ records: updates }) });
             if (!resp.ok) throw new Error(`批量更新失败: ${resp.status}`);
             await new Promise(r => setTimeout(r, 50));
         }
     }
 
-    // ================= 子管理员业务逻辑（带日志） =================
+    // ================= 业务逻辑 =================
     async function loadFromCloud() {
         try {
             const records = await fetchAllRecords(ACCOUNTS_TABLE);
             let allAccounts = records.map(rec => ({
-                id: rec.id,
-                email: rec.fields.Email,
+                id: rec.id, email: rec.fields.Email,
                 joinedTeam: rec.fields.joinedTeam === true,
                 isGenuine: rec.fields.isGenuine === true,
                 subscriptionStart: rec.fields.subscriptionStart || getDefaultSubscription().subscriptionStart,
@@ -351,32 +333,19 @@
         overlay.style.display = 'flex';
         try {
             const urlAdmin = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
-            const respAdmin = await fetch(urlAdmin, {
-                method: 'PATCH',
-                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fields: { teamName: newTeamName } })
-            });
+            const respAdmin = await fetch(urlAdmin, { method: 'PATCH', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: { teamName: newTeamName } }) });
             if (!respAdmin.ok) throw new Error(`更新管理员记录失败`);
-            
             const recordsToUpdate = accounts.filter(acc => acc.teamName === currentUserTeam);
-            if (recordsToUpdate.length > 0) {
-                await batchUpdateTeamName(recordsToUpdate, newTeamName);
-            }
+            if (recordsToUpdate.length > 0) await batchUpdateTeamName(recordsToUpdate, newTeamName);
             currentUserTeam = newTeamName;
             document.getElementById('currentTeamNameDisplay').innerText = currentUserTeam;
             document.getElementById('currentTeamDisplay').innerHTML = `🏷️ 当前团队: ${currentUserTeam}`;
             await loadFromCloud();
-            // 记录日志：修改团队名称
             await addAccountLog('✏️ 修改团队名称', '系统', `团队名称变更为“${newTeamName}”，影响 ${recordsToUpdate.length} 个账号`);
             showToast(`团队名称已更新为“${newTeamName}”，共更新 ${recordsToUpdate.length} 个客户`);
             return true;
-        } catch (err) {
-            console.error(err);
-            showToast("更新失败，请重试");
-            return false;
-        } finally {
-            overlay.style.display = 'none';
-        }
+        } catch (err) { console.error(err); showToast("更新失败，请重试"); return false; }
+        finally { overlay.style.display = 'none'; }
     }
 
     async function updateOwnPassword(newPassword) {
@@ -385,23 +354,13 @@
         overlay.style.display = 'flex';
         try {
             const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
-            const resp = await fetch(url, {
-                method: 'PATCH',
-                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fields: { password: newPassword } })
-            });
+            const resp = await fetch(url, { method: 'PATCH', headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: { password: newPassword } }) });
             if (!resp.ok) throw new Error(`更新密码失败`);
-            // 记录日志（可选，不强制）
             await addAccountLog('🔑 修改登录密码', currentUsername, '密码已变更');
             showToast("密码已更新，下次登录请使用新密码");
             return true;
-        } catch (err) {
-            console.error(err);
-            showToast("更新密码失败，请重试");
-            return false;
-        } finally {
-            overlay.style.display = 'none';
-        }
+        } catch (err) { console.error(err); showToast("更新密码失败，请重试"); return false; }
+        finally { overlay.style.display = 'none'; }
     }
 
     async function addAccount(emailRaw) {
@@ -410,27 +369,12 @@
         if (!/^\S+@\S+\.\S+$/.test(email)) { showToast('邮箱格式无效'); return false; }
         if (accounts.some(acc => acc.email.toLowerCase() === email.toLowerCase())) { showToast('账号已存在'); return false; }
         let sub = getDefaultSubscription();
-        const newFields = {
-            Email: email,
-            joinedTeam: false,
-            isGenuine: false,
-            subscriptionStart: sub.subscriptionStart,
-            subscriptionEnd: sub.subscriptionEnd,
-            teamName: currentUserTeam
-        };
+        const newFields = { Email: email, joinedTeam: false, isGenuine: false, subscriptionStart: sub.subscriptionStart, subscriptionEnd: sub.subscriptionEnd, teamName: currentUserTeam };
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
         try {
             const created = await createRecord(newFields);
-            accounts.push({
-                id: created.id,
-                email: created.fields.Email,
-                joinedTeam: created.fields.joinedTeam,
-                isGenuine: created.fields.isGenuine,
-                subscriptionStart: created.fields.subscriptionStart,
-                subscriptionEnd: created.fields.subscriptionEnd,
-                teamName: created.fields.teamName
-            });
+            accounts.push({ id: created.id, email: created.fields.Email, joinedTeam: created.fields.joinedTeam, isGenuine: created.fields.isGenuine, subscriptionStart: created.fields.subscriptionStart, subscriptionEnd: created.fields.subscriptionEnd, teamName: created.fields.teamName });
             renderTable();
             await addAccountLog('➕ 添加邮箱账号', email, `所属团队: ${currentUserTeam}`);
             showToast(`添加成功: ${email}`);
@@ -447,9 +391,8 @@
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
         try {
-            const batchSize = 5;
-            for (let i = 0; i < toDelete.length; i += batchSize) {
-                const batch = toDelete.slice(i, i + batchSize);
+            for (let i = 0; i < toDelete.length; i += 5) {
+                const batch = toDelete.slice(i, i+5);
                 await Promise.all(batch.map(acc => deleteRecord(acc.id)));
             }
             const deletedEmails = toDelete.map(acc => acc.email).join(', ');
@@ -491,39 +434,12 @@
         overlay.style.display = 'flex';
         try {
             for (let acc of accounts) await deleteRecord(acc.id);
-            const defaultEmails = [
-                "chenshe2007@outlook.com", "ChenGorGor@outlook.com", "AdobeCloud999@outlook.com",
-                "AdobeCloud1888@outlook.com", "qzkm68e4@outlook.com", "jantek1000@gmail.com",
-                "hello@tanlineproject.biz", "wuyiping315@outlook.com", "dibox.diego@gmail.com",
-                "2571138584@qq.com", "Adoblife8888@outlook.com", "panjingru0210@outlook.com",
-                "3168551@qq.com", "molanjunfeng@outlook.com", "liubabya@outlook.com",
-                "wudie881031@gmail.com", "llllynn076@gmail.com", "sharkmoment2018@outlook.com",
-                "Gscf7890@outlook.com", "wangjian@liangzao.wang", "imwangyeah@gmail.com",
-                "ezaiezaixse@gmail.com", "xiaoxuelian121@outlook.com", "libaozeng038@gmail.com",
-                "t15651116661@gmail.com", "threefinger520@outlook.com", "qiangqiangx2@gmail.com",
-                "zhshy0506@gmail.com", "DAFAWW124@outlook.com", "1468890279@qq.com",
-                "jun6hao0719@gmail.com"
-            ];
+            const defaultEmails = ["chenshe2007@outlook.com","ChenGorGor@outlook.com","AdobeCloud999@outlook.com","AdobeCloud1888@outlook.com","qzkm68e4@outlook.com","jantek1000@gmail.com","hello@tanlineproject.biz","wuyiping315@outlook.com","dibox.diego@gmail.com","2571138584@qq.com","Adoblife8888@outlook.com","panjingru0210@outlook.com","3168551@qq.com","molanjunfeng@outlook.com","liubabya@outlook.com","wudie881031@gmail.com","llllynn076@gmail.com","sharkmoment2018@outlook.com","Gscf7890@outlook.com","wangjian@liangzao.wang","imwangyeah@gmail.com","ezaiezaixse@gmail.com","xiaoxuelian121@outlook.com","libaozeng038@gmail.com","t15651116661@gmail.com","threefinger520@outlook.com","qiangqiangx2@gmail.com","zhshy0506@gmail.com","DAFAWW124@outlook.com","1468890279@qq.com","jun6hao0719@gmail.com"];
             let newAccounts = [];
             for (let email of defaultEmails) {
                 let sub = getDefaultSubscription();
-                const created = await createRecord({
-                    Email: email,
-                    joinedTeam: false,
-                    isGenuine: false,
-                    subscriptionStart: sub.subscriptionStart,
-                    subscriptionEnd: sub.subscriptionEnd,
-                    teamName: currentUserTeam
-                });
-                newAccounts.push({
-                    id: created.id,
-                    email: created.fields.Email,
-                    joinedTeam: created.fields.joinedTeam,
-                    isGenuine: created.fields.isGenuine,
-                    subscriptionStart: created.fields.subscriptionStart,
-                    subscriptionEnd: created.fields.subscriptionEnd,
-                    teamName: created.fields.teamName
-                });
+                const created = await createRecord({ Email: email, joinedTeam: false, isGenuine: false, subscriptionStart: sub.subscriptionStart, subscriptionEnd: sub.subscriptionEnd, teamName: currentUserTeam });
+                newAccounts.push({ id: created.id, email: created.fields.Email, joinedTeam: created.fields.joinedTeam, isGenuine: created.fields.isGenuine, subscriptionStart: created.fields.subscriptionStart, subscriptionEnd: created.fields.subscriptionEnd, teamName: created.fields.teamName });
             }
             accounts = newAccounts;
             renderTable();
@@ -535,10 +451,8 @@
 
     function exportToJson() {
         const exportData = accounts.map(({ id, ...rest }) => rest);
-        const dataStr = JSON.stringify(exportData, null, 2);
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `adobe_team_${todayStandard()}.json`; a.click(); URL.revokeObjectURL(url);
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `adobe_team_${todayStandard()}.json`; a.click(); URL.revokeObjectURL(a.href);
         showToast('导出JSON成功');
     }
 
@@ -552,29 +466,13 @@
                 overlay.style.display = 'flex';
                 for (let acc of accounts) await deleteRecord(acc.id);
                 accounts = [];
-                const batchSize = 5;
-                for (let i = 0; i < imported.length; i += batchSize) {
-                    const batch = imported.slice(i, i + batchSize);
+                for (let i = 0; i < imported.length; i += 5) {
+                    const batch = imported.slice(i, i+5);
                     await Promise.all(batch.map(async (item) => {
                         if (!item.email) return;
-                        const fields = {
-                            Email: item.email,
-                            joinedTeam: item.joinedTeam === true,
-                            isGenuine: item.isGenuine === true,
-                            subscriptionStart: item.subscriptionStart || getDefaultSubscription().subscriptionStart,
-                            subscriptionEnd: item.subscriptionEnd || addOneYearToDateStr(item.subscriptionStart || todayStandard()),
-                            teamName: currentUserTeam
-                        };
+                        const fields = { Email: item.email, joinedTeam: !!item.joinedTeam, isGenuine: !!item.isGenuine, subscriptionStart: item.subscriptionStart || getDefaultSubscription().subscriptionStart, subscriptionEnd: item.subscriptionEnd || addOneYearToDateStr(item.subscriptionStart || todayStandard()), teamName: currentUserTeam };
                         const created = await createRecord(fields);
-                        accounts.push({
-                            id: created.id,
-                            email: created.fields.Email,
-                            joinedTeam: created.fields.joinedTeam,
-                            isGenuine: created.fields.isGenuine,
-                            subscriptionStart: created.fields.subscriptionStart,
-                            subscriptionEnd: created.fields.subscriptionEnd,
-                            teamName: created.fields.teamName
-                        });
+                        accounts.push({ id: created.id, email: created.fields.Email, joinedTeam: created.fields.joinedTeam, isGenuine: created.fields.isGenuine, subscriptionStart: created.fields.subscriptionStart, subscriptionEnd: created.fields.subscriptionEnd, teamName: created.fields.teamName });
                     }));
                 }
                 renderTable();
@@ -586,11 +484,10 @@
         reader.readAsText(file);
     }
 
-    async function importFromTxt(file, autoJoinTeam = true) {
+    async function importFromTxt(file, autoJoinTeam) {
         const reader = new FileReader();
         reader.onload = async (e) => {
-            const content = e.target.result;
-            const lines = content.split(/\r?\n/);
+            const lines = e.target.result.split(/\r?\n/);
             const emailsToAdd = [];
             for (let line of lines) {
                 let email = line.trim();
@@ -603,29 +500,13 @@
             const overlay = document.getElementById('loadingOverlay');
             overlay.style.display = 'flex';
             try {
-                const batchSize = 5;
-                for (let i = 0; i < emailsToAdd.length; i += batchSize) {
-                    const batch = emailsToAdd.slice(i, i + batchSize);
+                for (let i = 0; i < emailsToAdd.length; i += 5) {
+                    const batch = emailsToAdd.slice(i, i+5);
                     await Promise.all(batch.map(async (email) => {
                         let sub = getDefaultSubscription();
-                        const fields = {
-                            Email: email,
-                            joinedTeam: autoJoinTeam,
-                            isGenuine: false,
-                            subscriptionStart: sub.subscriptionStart,
-                            subscriptionEnd: sub.subscriptionEnd,
-                            teamName: currentUserTeam
-                        };
+                        const fields = { Email: email, joinedTeam: autoJoinTeam, isGenuine: false, subscriptionStart: sub.subscriptionStart, subscriptionEnd: sub.subscriptionEnd, teamName: currentUserTeam };
                         const created = await createRecord(fields);
-                        accounts.push({
-                            id: created.id,
-                            email: created.fields.Email,
-                            joinedTeam: created.fields.joinedTeam,
-                            isGenuine: created.fields.isGenuine,
-                            subscriptionStart: created.fields.subscriptionStart,
-                            subscriptionEnd: created.fields.subscriptionEnd,
-                            teamName: created.fields.teamName
-                        });
+                        accounts.push({ id: created.id, email: created.fields.Email, joinedTeam: created.fields.joinedTeam, isGenuine: created.fields.isGenuine, subscriptionStart: created.fields.subscriptionStart, subscriptionEnd: created.fields.subscriptionEnd, teamName: created.fields.teamName });
                     }));
                 }
                 renderTable();
@@ -637,7 +518,7 @@
         reader.readAsText(file, 'UTF-8');
     }
 
-    // ================= UI 渲染与交互 =================
+    // ================= UI 渲染 =================
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
@@ -684,11 +565,7 @@
             let rawValue = e.target.value.trim();
             if (rawValue === "") { showToast("日期不能为空"); e.target.value = accounts[idx][field]; return; }
             let stdDate = parseToStandardDate(rawValue);
-            if (!stdDate) {
-                showToast(`日期格式无效，请使用 YYYY-MM-DD 格式`);
-                e.target.value = accounts[idx][field];
-                return;
-            }
+            if (!stdDate) { showToast(`日期格式无效，请使用 YYYY-MM-DD 格式`); e.target.value = accounts[idx][field]; return; }
             const acc = accounts[idx];
             if (field === 'subscriptionStart') {
                 acc.subscriptionStart = stdDate;
@@ -732,7 +609,6 @@
             if (e.target.classList.contains('team-checkbox')) {
                 const idx = parseInt(e.target.dataset.index);
                 if (!isNaN(idx) && accounts[idx]) {
-                    const oldVal = accounts[idx].joinedTeam;
                     accounts[idx].joinedTeam = e.target.checked;
                     renderTable();
                     showToast("保存中...");
@@ -831,18 +707,6 @@
             loginError.textContent = "验证失败，请重试";
             return false;
         }
-    }
-
-    function showToast(msg, duration = 2500) {
-        let existing = document.querySelector('.toast-message');
-        if (existing) existing.remove();
-        const toast = document.createElement('div'); toast.className = 'toast-message'; toast.textContent = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), duration);
-    }
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
 
     loginBtn.addEventListener('click', verifySubAdmin);
