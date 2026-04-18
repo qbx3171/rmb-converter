@@ -51,10 +51,37 @@
         .login-card button { background: linear-gradient(135deg, #1b6b5e, #0f5348); color: white; border: none; padding: 8px 16px; border-radius: 40px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 0.5rem; }
         .login-card button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .login-card .error { color: #c2412c; font-size: 0.65rem; margin-top: 0.5rem; }
-        /* 子账号团队设置区域 */
-        .team-setup { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 1rem; padding: 0.8rem; margin: 0.5rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-        .team-setup label { font-weight: 600; font-size: 0.7rem; }
-        .team-setup input { padding: 4px 8px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.7rem; width: 200px; }
+        /* 团队名称显示与修改区域 */
+        .team-info-bar {
+            background: #eef2ff;
+            border-radius: 0.8rem;
+            margin: 0.5rem 1rem;
+            padding: 0.6rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .team-info-bar .team-name {
+            color: #1e6bdf;
+            font-weight: 700;
+        }
+        .team-info-bar button {
+            background: #1b6b5e;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        body.night-mode .team-info-bar {
+            background: #1e293b;
+            color: #cbd5e1;
+        }
         @media (max-width: 600px) {
             body { padding: 12px; }
             .hero-left h1 { font-size: 1rem; }
@@ -89,10 +116,10 @@
         <div class="team-edit-area" style="visibility: hidden; display: none;"></div>
     </div>
 
-    <div id="teamSetupArea" class="team-setup" style="display: none;">
-        <span>🏷️ 当前团队名称：</span>
-        <input type="text" id="userTeamNameInput" placeholder="请输入您的团队名称" style="flex: 1;">
-        <button id="saveTeamNameBtn" class="primary btn-sm">保存团队名称</button>
+    <!-- 团队名称显示与修改栏 -->
+    <div id="teamInfoBar" class="team-info-bar" style="display: none;">
+        <span>🏷️ 当前团队名称：<span id="currentTeamNameDisplay" class="team-name"></span></span>
+        <button id="changeTeamNameBtn">✏️ 修改团队名称</button>
     </div>
 
     <div class="stats-grid">
@@ -130,12 +157,12 @@
     <div class="table-container">
         <table class="modern-table" id="accountTable">
             <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></tr></thead>
-            <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
+            <tbody id="tableBody"><td><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
         </table>
     </div>
     <div class="footer-note">
         <span>⚡ 数据实时同步至云端</span>
-        <span id="currentTeamDisplay">🏷️ 当前团队: 未设置</span>
+        <span id="currentTeamDisplay"></span>
     </div>
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div>⏳ 处理中...</div></div>
@@ -157,13 +184,9 @@
     let accounts = [];
     let currentUserTeam = "";
     let currentAdminRecordId = "";
-    let currentTeamDisplaySpan = document.getElementById('currentTeamDisplay');
-    let teamSetupArea = document.getElementById('teamSetupArea');
-    let userTeamNameInput = document.getElementById('userTeamNameInput');
-    let saveTeamNameBtn = document.getElementById('saveTeamNameBtn');
     let dateSyncTimeout = null;
 
-    // 日期工具函数（与主后台相同，简略）
+    // 日期工具函数
     function parseToStandardDate(input) {
         if (!input || typeof input !== 'string') return null;
         let str = input.trim();
@@ -303,20 +326,57 @@
         }
     }
 
+    // 修改团队名称：更新 admins 表 + 批量更新该子账号所有客户的 teamName
     async function updateOwnTeamName(newTeamName) {
-        const url = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
-        const resp = await fetch(url, {
-            method: 'PATCH',
-            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fields: { teamName: newTeamName } })
-        });
-        if (!resp.ok) throw new Error(`更新团队名称失败 ${resp.status}`);
-        currentUserTeam = newTeamName;
-        if (currentTeamDisplaySpan) currentTeamDisplaySpan.innerText = `🏷️ 当前团队: ${currentUserTeam}`;
-        showToast("团队名称已更新，请刷新数据查看您的客户");
-        await loadFromCloud();
+        if (!newTeamName.trim()) { showToast("团队名称不能为空"); return false; }
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
+        try {
+            // 1. 更新 admins 表中的团队名
+            const urlAdmin = `https://api.airtable.com/v0/${BASE_ID}/${ADMINS_TABLE}/${currentAdminRecordId}`;
+            const respAdmin = await fetch(urlAdmin, {
+                method: 'PATCH',
+                headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fields: { teamName: newTeamName } })
+            });
+            if (!respAdmin.ok) throw new Error(`更新管理员记录失败`);
+            
+            // 2. 获取当前子账号的所有客户（需要更新 teamName）
+            const recordsToUpdate = accounts.filter(acc => acc.teamName === currentUserTeam);
+            if (recordsToUpdate.length > 0) {
+                // 批量更新这些客户的 teamName
+                const batchSize = 5;
+                for (let i = 0; i < recordsToUpdate.length; i += batchSize) {
+                    const batch = recordsToUpdate.slice(i, i + batchSize);
+                    await Promise.all(batch.map(async (acc) => {
+                        const urlAcc = `https://api.airtable.com/v0/${BASE_ID}/${ACCOUNTS_TABLE}/${acc.id}`;
+                        await fetch(urlAcc, {
+                            method: 'PATCH',
+                            headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ fields: { teamName: newTeamName } })
+                        });
+                    }));
+                }
+            }
+            // 3. 更新本地变量
+            currentUserTeam = newTeamName;
+            // 更新界面显示
+            document.getElementById('currentTeamNameDisplay').innerText = currentUserTeam;
+            document.getElementById('currentTeamDisplay').innerHTML = `🏷️ 当前团队: ${currentUserTeam}`;
+            // 重新加载客户列表（刷新本地 accounts 数组）
+            await loadFromCloud();
+            showToast("团队名称已更新，所有客户团队信息已同步");
+            return true;
+        } catch (err) {
+            console.error(err);
+            showToast("更新失败，请重试");
+            return false;
+        } finally {
+            overlay.style.display = 'none';
+        }
     }
 
+    // 渲染表格
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         if (!tbody) return;
@@ -395,6 +455,7 @@
         }
     }
 
+    // 日期修改
     function handleDateChange(e) {
         if (e.target && e.target.classList && e.target.classList.contains('date-input')) {
             const idx = parseInt(e.target.dataset.index);
@@ -523,7 +584,7 @@
     }
 
     async function resetToDefault() {
-        if (!confirm('重置将删除当前子账号团队的所有账号，并恢复初始邮箱列表？')) return;
+        if (!confirm('重置将删除当前子账号团队的所有账号，并恢复初始邮箱列表')) return;
         const overlay = document.getElementById('loadingOverlay');
         overlay.style.display = 'flex';
         try {
@@ -736,6 +797,13 @@
             txtImport.value = '';
         });
         document.getElementById('newEmailInput')?.addEventListener('keypress', (e) => { if (e.key === 'Enter') { const inp = e.target; if (inp.value && addAccount(inp.value)) inp.value = ''; } });
+        // 修改团队名称按钮
+        document.getElementById('changeTeamNameBtn')?.addEventListener('click', async () => {
+            const newTeam = prompt("请输入新的团队名称：", currentUserTeam);
+            if (newTeam && newTeam.trim() !== currentUserTeam) {
+                await updateOwnTeamName(newTeam.trim());
+            }
+        });
     }
 
     async function verifySubAdmin() {
@@ -750,23 +818,27 @@
                 currentUserTeam = found.fields.teamName || "";
                 loginOverlay.style.display = 'none';
                 mainContent.style.display = 'block';
+                // 显示团队信息栏
+                const teamInfoBar = document.getElementById('teamInfoBar');
+                teamInfoBar.style.display = 'flex';
+                document.getElementById('currentTeamNameDisplay').innerText = currentUserTeam || "未设置";
+                document.getElementById('currentTeamDisplay').innerHTML = `🏷️ 当前团队: ${currentUserTeam || "未设置"}`;
                 if (currentUserTeam) {
-                    currentTeamDisplaySpan.innerText = `🏷️ 当前团队: ${currentUserTeam}`;
-                    teamSetupArea.style.display = 'none';
                     await loadFromCloud();
                     bindEvents();
                 } else {
-                    teamSetupArea.style.display = 'flex';
-                    currentTeamDisplaySpan.innerText = `🏷️ 当前团队: 未设置，请先设置团队名称`;
-                    userTeamNameInput.value = "";
-                    saveTeamNameBtn.onclick = async () => {
-                        const newTeam = userTeamNameInput.value.trim();
-                        if (!newTeam) { showToast("团队名称不能为空"); return; }
-                        await updateOwnTeamName(newTeam);
-                        teamSetupArea.style.display = 'none';
-                        await loadFromCloud();
-                        bindEvents();
-                    };
+                    // 如果团队名称为空，提示用户设置
+                    setTimeout(async () => {
+                        const newTeam = prompt("请设置您的团队名称：");
+                        if (newTeam && newTeam.trim()) {
+                            await updateOwnTeamName(newTeam.trim());
+                            await loadFromCloud();
+                            bindEvents();
+                        } else {
+                            showToast("必须设置团队名称才能继续使用");
+                            // 可考虑重新显示登录或退出
+                        }
+                    }, 100);
                 }
                 return true;
             } else {
