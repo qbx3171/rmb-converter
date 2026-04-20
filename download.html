@@ -276,7 +276,7 @@
             <div class="auth-input-group"><label>注册邮箱</label><input type="email" id="forgotEmail" class="auth-input"></div>
             <div class="auth-input-group"><label>验证码</label>
                 <div class="code-row">
-                    <input type="text" id="resetCode" class="auth-input" placeholder="6位验证码">
+                    <input type="text" id="resetCodeInput" class="auth-input" placeholder="6位验证码">
                     <button class="send-code-btn" id="sendResetCodeBtn">发送验证码</button>
                 </div>
             </div>
@@ -300,19 +300,18 @@
 
 <script>
     (function(){
-        // ========== 配置区（已使用最新有效凭证） ==========
+        // ========== 配置区（所有凭证已正确配置） ==========
         const CONFIG = {
             AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
             AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
             EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',
             EMAILJS_SERVICE_ID: 'service_0jwzfc8',
-            EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
+            EMAILJS_TEMPLATE_REG: 'template_pds6dsj',
+            EMAILJS_TEMPLATE_RESET: 'template_xcv0pdc'
         };
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
         
-        console.log('🚀 乐哲软件启动 - 配置正确');
-        console.log('📌 Base ID:', CONFIG.AIRTABLE_BASE_ID);
-        console.log('📌 Token 前缀:', CONFIG.AIRTABLE_TOKEN.substring(0, 15) + '...');
+        console.log('🚀 乐哲软件启动 - 所有凭证已配置');
         
         function showToast(msg, type='success') {
             const t = document.createElement('div'); t.className = `toast-message ${type}`;
@@ -325,20 +324,16 @@
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
         
+        // Airtable 请求（已修复 CreatedAt 字段问题）
         async function airtableRequest(method, path, body = null) {
             const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
-            const headers = {
-                'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`,
-                'Content-Type': 'application/json'
-            };
+            const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
             const resp = await fetch(url, options);
             if (!resp.ok) {
-                const errData = await resp.json().catch(() => ({}));
+                const errData = await resp.json().catch(()=>({}));
                 console.error('❌ Airtable 错误:', errData);
-                if (resp.status === 404) throw new Error('表不存在，请检查 Base ID 和表名');
-                if (resp.status === 401 || resp.status === 403) throw new Error('Token 无效或权限不足');
                 throw new Error(errData.error?.message || `请求失败 (${resp.status})`);
             }
             return await resp.json();
@@ -350,7 +345,8 @@
         }
         async function registerUser(email, password) {
             const hash = CryptoJS.SHA256(password).toString();
-            await airtableRequest('POST', 'Users', { fields: { Email: email, Password: hash, CreatedAt: new Date().toISOString() } });
+            // 不再手动写入 CreatedAt，让 Airtable 自动生成
+            await airtableRequest('POST', 'Users', { fields: { Email: email, Password: hash } });
         }
         async function loginUser(email, password) {
             const rec = await findUserByEmail(email);
@@ -364,11 +360,12 @@
             const hash = CryptoJS.SHA256(newPass).toString();
             await airtableRequest('PATCH', `Users/${rec.id}`, { fields: { Password: hash } });
         }
-        async function sendCode(email, type) {
+        
+        async function sendCode(email, type, templateId) {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
-                to_email: email, code: code, expires: '10分钟', type: type
-            });
+            const params = { email: email, code: code, expires: '10分钟' };
+            console.log(`📧 发送${type}邮件到 ${email}，模板：${templateId}`);
+            await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, templateId, params);
             return code;
         }
         
@@ -413,45 +410,32 @@
                 document.getElementById('loginForm').style.display='block';
             });
             
-            const sendRegBtn = document.getElementById('sendRegCodeBtn');
-            if (sendRegBtn) {
-                sendRegBtn.addEventListener('click', async function(e) {
-                    e.preventDefault();
-                    const email = document.getElementById('regEmail').value.trim();
-                    if (!email) return showToast('请输入邮箱', 'error');
-                    try {
-                        const exists = await findUserByEmail(email);
-                        if (exists) return showToast('该邮箱已被注册', 'error');
-                    } catch (err) {
-                        return showToast('验证邮箱失败: ' + err.message, 'error');
-                    }
-                    this.disabled = true;
-                    this.textContent = '发送中...';
-                    try {
-                        const code = await sendCode(email, '注册');
-                        regEmail = email; regCode = code; regCodeExpire = Date.now() + 600000;
-                        showToast('验证码已发送至邮箱');
-                        let sec = 60;
-                        const timer = setInterval(() => {
-                            sec--;
-                            this.textContent = `${sec}秒后重发`;
-                            if (sec <= 0) { clearInterval(timer); this.disabled = false; this.textContent = '发送验证码'; }
-                        }, 1000);
-                    } catch (err) {
-                        showToast('发送失败: ' + err.message, 'error');
-                        this.disabled = false;
-                        this.textContent = '发送验证码';
-                    }
-                });
-            }
+            // 注册发送验证码
+            document.getElementById('sendRegCodeBtn').addEventListener('click', async function(e) {
+                e.preventDefault();
+                const email = document.getElementById('regEmail').value.trim();
+                if (!email) return showToast('请输入邮箱', 'error');
+                try {
+                    if (await findUserByEmail(email)) return showToast('该邮箱已被注册', 'error');
+                } catch (err) { return showToast('验证失败: ' + err.message, 'error'); }
+                this.disabled = true; this.textContent = '发送中...';
+                try {
+                    const code = await sendCode(email, '注册', CONFIG.EMAILJS_TEMPLATE_REG);
+                    regEmail = email; regCode = code; regCodeExpire = Date.now() + 600000;
+                    showToast('验证码已发送');
+                    let sec = 60;
+                    const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if (sec <= 0) { clearInterval(timer); this.disabled = false; this.textContent = '发送验证码'; } }, 1000);
+                } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled = false; this.textContent = '发送验证码'; }
+            });
             
+            // 注册
             document.getElementById('registerBtn').addEventListener('click', async function() {
                 const email = document.getElementById('regEmail').value.trim();
                 const code = document.getElementById('regCodeInput').value.trim();
                 const pwd = document.getElementById('regPassword').value;
                 const confirm = document.getElementById('regConfirm').value;
                 if (!regEmail || !regCode) return showToast('请先获取验证码', 'error');
-                if (email !== regEmail) return showToast('邮箱与验证码不匹配', 'error');
+                if (email !== regEmail) return showToast('邮箱不匹配', 'error');
                 if (code !== regCode || Date.now() > regCodeExpire) return showToast('验证码错误或已过期', 'error');
                 if (pwd !== confirm) return showToast('两次密码不一致', 'error');
                 if (pwd.length < 6) return showToast('密码至少6位', 'error');
@@ -464,11 +448,10 @@
                     document.getElementById('regCodeInput').value = '';
                     document.getElementById('regPassword').value = '';
                     document.getElementById('regConfirm').value = '';
-                } catch (err) {
-                    showToast('注册失败: ' + err.message, 'error');
-                }
+                } catch (err) { showToast('注册失败: ' + err.message, 'error'); }
             });
             
+            // 登录
             document.getElementById('loginBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('loginEmail').value.trim();
                 const pwd = document.getElementById('loginPassword').value;
@@ -480,16 +463,15 @@
                 } catch (e) { showToast(e.message, 'error'); }
             });
             
+            // 忘记密码发送验证码
             document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
-                try {
-                    const exists = await findUserByEmail(email);
-                    if (!exists) return showToast('邮箱未注册', 'error');
-                } catch (err) { return showToast('验证失败: ' + err.message, 'error'); }
+                try { if (!await findUserByEmail(email)) return showToast('邮箱未注册', 'error'); }
+                catch (err) { return showToast('验证失败: ' + err.message, 'error'); }
                 this.disabled = true; this.textContent = '发送中...';
                 try {
-                    const code = await sendCode(email, '重置密码');
+                    const code = await sendCode(email, '重置密码', CONFIG.EMAILJS_TEMPLATE_RESET);
                     resetEmail = email; resetCode = code; resetCodeExpire = Date.now() + 600000;
                     showToast('验证码已发送');
                     let sec = 60;
@@ -497,9 +479,10 @@
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled=false; this.textContent='发送验证码'; }
             });
             
+            // 重置密码
             document.getElementById('resetPasswordBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('forgotEmail').value.trim();
-                const code = document.getElementById('resetCode').value.trim();
+                const code = document.getElementById('resetCodeInput').value.trim();
                 const newPwd = document.getElementById('newPassword').value;
                 const confirm = document.getElementById('confirmNewPassword').value;
                 if (!resetEmail || !resetCode) return showToast('请先获取验证码', 'error');
