@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整样式（保留原版所有细节） ========== */
+        /* ========== 完整样式（完全保留原版所有细节） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -300,25 +300,20 @@
 
 <script>
     (function(){
-        // ==================== 最终修复版配置 ====================
+        // ========== 配置区（已使用最新有效凭证） ==========
         const CONFIG = {
-            // 已使用最新有效 Token（请勿修改）
-            AIRTABLE_TOKEN: 'pateNj4jaBIr3DgzK.788ffbd505a36b36c4fcb437d85cd9451912a0b56b9cea45c3f09ab5ef2f5810',
-            // 已硬编码确保正确的 Base ID（注意字母 l、O、l，不是数字）
+            AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
             AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
             EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',
             EMAILJS_SERVICE_ID: 'service_0jwzfc8',
             EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
         };
-        
-        console.log('%c🚀 乐哲软件启动 (最终修复版)', 'font-weight: bold; color: #1e6bdf');
-        console.log('%c📌 当前 Base ID:', 'font-weight: bold', CONFIG.AIRTABLE_BASE_ID);
-        console.log('%c📌 正确 Base ID 应为: appM4Ty76lOlslpU9 (字母 l、O、l)', 'color: #10b981');
-        console.log('%c📌 Token 前8位:', 'font-weight: bold', CONFIG.AIRTABLE_TOKEN.substring(0, 8) + '...');
-        
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
         
-        // ---------- 全局工具函数 ----------
+        console.log('🚀 乐哲软件启动 - 配置正确');
+        console.log('📌 Base ID:', CONFIG.AIRTABLE_BASE_ID);
+        console.log('📌 Token 前缀:', CONFIG.AIRTABLE_TOKEN.substring(0, 15) + '...');
+        
         function showToast(msg, type='success') {
             const t = document.createElement('div'); t.className = `toast-message ${type}`;
             t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-triangle'}"></i> ${msg}`;
@@ -326,40 +321,27 @@
         }
         function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
         
-        // ---------- 用户状态 ----------
         let currentUser = null, pendingDownload = null;
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
         
-        // ---------- Airtable 请求（硬编码 Base ID 以防万一） ----------
         async function airtableRequest(method, path, body = null) {
-            const baseId = 'appM4Ty76lOlslpU9';  // 强制使用正确值
-            const url = `https://api.airtable.com/v0/${baseId}/${path}`;
-            console.log(`📡 Airtable ${method} ${url}`);
+            const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
             const headers = {
                 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`,
                 'Content-Type': 'application/json'
             };
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
-            try {
-                const resp = await fetch(url, options);
-                if (!resp.ok) {
-                    const errData = await resp.json().catch(() => ({}));
-                    console.error('❌ Airtable 错误响应:', errData);
-                    if (resp.status === 401 || resp.status === 403) {
-                        throw new Error('认证失败：Airtable Token 无效。请重新生成 Token 并确保勾选 data.records:read 和 write 权限，且选择了正确的 Base。');
-                    } else if (resp.status === 404) {
-                        throw new Error('表或 Base 不存在。请确认 Airtable 中存在 "Users" 表，且 Base ID 完全正确。');
-                    } else {
-                        throw new Error(errData.error?.message || `请求失败 (${resp.status})`);
-                    }
-                }
-                return await resp.json();
-            } catch (error) {
-                console.error('❌ Airtable 请求异常:', error);
-                throw error;
+            const resp = await fetch(url, options);
+            if (!resp.ok) {
+                const errData = await resp.json().catch(() => ({}));
+                console.error('❌ Airtable 错误:', errData);
+                if (resp.status === 404) throw new Error('表不存在，请检查 Base ID 和表名');
+                if (resp.status === 401 || resp.status === 403) throw new Error('Token 无效或权限不足');
+                throw new Error(errData.error?.message || `请求失败 (${resp.status})`);
             }
+            return await resp.json();
         }
         
         async function findUserByEmail(email) {
@@ -384,14 +366,12 @@
         }
         async function sendCode(email, type) {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            console.log(`📧 发送验证码到 ${email}`);
             await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
                 to_email: email, code: code, expires: '10分钟', type: type
             });
             return code;
         }
         
-        // ---------- UI 更新 ----------
         function updateUserUI() {
             const area = document.getElementById('userArea');
             if (currentUser) {
@@ -413,7 +393,6 @@
         }
         function requireLogin(cb) { if(currentUser) { cb(); return true; } pendingDownload = cb; openAuthModal('login'); showToast('请先登录','error'); return false; }
         
-        // ---------- 认证事件绑定 ----------
         function initAuthEvents() {
             const modal = document.getElementById('authModal');
             document.getElementById('closeAuthModal').addEventListener('click', ()=> modal.classList.remove('active'));
@@ -434,7 +413,6 @@
                 document.getElementById('loginForm').style.display='block';
             });
             
-            // 发送注册验证码
             const sendRegBtn = document.getElementById('sendRegCodeBtn');
             if (sendRegBtn) {
                 sendRegBtn.addEventListener('click', async function(e) {
@@ -467,7 +445,6 @@
                 });
             }
             
-            // 注册提交
             document.getElementById('registerBtn').addEventListener('click', async function() {
                 const email = document.getElementById('regEmail').value.trim();
                 const code = document.getElementById('regCodeInput').value.trim();
@@ -492,7 +469,6 @@
                 }
             });
             
-            // 登录
             document.getElementById('loginBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('loginEmail').value.trim();
                 const pwd = document.getElementById('loginPassword').value;
@@ -504,7 +480,6 @@
                 } catch (e) { showToast(e.message, 'error'); }
             });
             
-            // 忘记密码验证码
             document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
@@ -522,7 +497,6 @@
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled=false; this.textContent='发送验证码'; }
             });
             
-            // 重置密码
             document.getElementById('resetPasswordBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('forgotEmail').value.trim();
                 const code = document.getElementById('resetCode').value.trim();
@@ -546,7 +520,7 @@
             updateUserUI();
         }
         
-        // ---------- 完整软件数据 (18款) ----------
+        // 完整软件数据 (18款)
         const DEFAULT_SOFTWARES = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
             { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
@@ -652,7 +626,6 @@
         }
         document.getElementById('chatToggleBtn').addEventListener('click', initChat, { once: true });
         
-        // 启动一切
         initSoftware();
         initAuthEvents();
         initTheme();
