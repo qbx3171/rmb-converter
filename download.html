@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整原始样式 ========== */
+        /* ========== 完整原始样式（保持不变） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -40,7 +40,7 @@
         body.bg-night .search-bar input { color: white; }
         body.bg-night .search-bar input::placeholder { color: #94a3b8; }
         body.bg-night .feedback-submit-btn { background: #a855f7; }
-        .top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.03); transition: transform 0.35s cubic-bezier(0.2,0.9,0.4,1); transform: translateY(0); }
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.03); transition: transform 0.35s; transform: translateY(0); }
         body.bg-night .top-nav { background: rgba(15,23,42,0.6); border-bottom-color: rgba(255,255,255,0.03); }
         .top-nav.hidden { transform: translateY(-100%); }
         .nav-inner { max-width: 1200px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -300,11 +300,11 @@
 
 <script>
     (function(){
-        // ========== 配置 (已使用您的真实凭证) ==========
+        // ========== 配置（已修正 Public Key） ==========
         const CONFIG = {
             AIRTABLE_TOKEN: 'patMrr1mluuDVy8qD.c514af9127ff500926d5f12e8a42903488786677bdc8488f5eaae20a5a751ecc',
             AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
-            EMAILJS_PUBLIC_KEY: '_nkchu',
+            EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',   // ✅ 已修正为正确值
             EMAILJS_SERVICE_ID: 'service_izp6amd',
             EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
         };
@@ -382,7 +382,6 @@
         }
         function requireLogin(cb) { if(currentUser) { cb(); return true; } pendingDownload = cb; openAuthModal('login'); showToast('请先登录','error'); return false; }
         
-        // ========== 修复后的认证事件绑定 ==========
         function initAuthEvents() {
             const modal = document.getElementById('authModal');
             document.getElementById('closeAuthModal').addEventListener('click', ()=> modal.classList.remove('active'));
@@ -403,7 +402,7 @@
                 document.getElementById('loginForm').style.display='block';
             });
             
-            // 注册发送验证码 (修复重点)
+            // 注册发送验证码
             const sendRegBtn = document.getElementById('sendRegCodeBtn');
             if (sendRegBtn) {
                 sendRegBtn.addEventListener('click', async function(e) {
@@ -515,7 +514,7 @@
             updateUserUI();
         }
         
-        // 软件数据与渲染 (完整18款)
+        // 软件数据与渲染（完整18款）
         const DEFAULT_SOFTWARES = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
             { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
@@ -621,7 +620,6 @@
         }
         document.getElementById('chatToggleBtn').addEventListener('click', initChat, { once: true });
         
-        // 启动
         initSoftware();
         initAuthEvents();
         initTheme();
