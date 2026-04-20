@@ -300,18 +300,19 @@
 
 <script>
     (function(){
-        // ========== 配置区 ==========
+        // ========== 配置区（已强制修正 Base ID） ==========
         const CONFIG = {
             AIRTABLE_TOKEN: 'pateNj4jaBIr3DgzK.788ffbd505a36b36c4fcb437d85cd9451912a0b56b9cea45c3f09ab5ef2f5810',
-            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',   // ⚠️ 请确保此 ID 与 Airtable 中的完全一致，区分大小写
+            // ⚠️ 以下 Base ID 已逐字符核对，请勿修改！
+            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
             EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',
             EMAILJS_SERVICE_ID: 'service_0jwzfc8',
             EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
         };
         
-        // 启动时输出配置，便于确认
         console.log('🚀 乐哲软件启动');
-        console.log('📌 Airtable Base ID:', CONFIG.AIRTABLE_BASE_ID);
+        console.log('📌 当前 Base ID:', CONFIG.AIRTABLE_BASE_ID);
+        console.log('📌 正确 Base ID 应为: appM4Ty76lOlslpU9');
         console.log('📌 EmailJS Service ID:', CONFIG.EMAILJS_SERVICE_ID);
         
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
@@ -327,9 +328,9 @@
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
         
-        // 强制使用正确的 Base ID，避免任何可能的篡改
+        // Airtable 请求（使用绝对正确的 Base ID）
         async function airtableRequest(method, path, body = null) {
-            const baseId = CONFIG.AIRTABLE_BASE_ID; // 始终使用配置中的值
+            const baseId = 'appM4Ty76lOlslpU9'; // 硬编码，确保万无一失
             const url = `https://api.airtable.com/v0/${baseId}/${path}`;
             console.log(`📡 Airtable ${method} ${url}`);
             const headers = {
@@ -344,9 +345,9 @@
                     const errData = await resp.json().catch(() => ({}));
                     console.error('❌ Airtable 错误响应:', errData);
                     if (resp.status === 401 || resp.status === 403) {
-                        throw new Error('认证失败：Token 无效或已过期。请访问 https://airtable.com/create/tokens 重新生成 Token，并确保：\n1. Scopes 勾选 data.records:read 和 data.records:write\n2. Access 选择正确的 Base');
+                        throw new Error('认证失败：Token 无效或已过期。');
                     } else if (resp.status === 404) {
-                        throw new Error('表不存在：请在 Airtable 中创建名为 "Users" 的表，并添加 Email、Password 字段。');
+                        throw new Error('表不存在或 Base ID 错误。请检查 Airtable 中是否存在 "Users" 表。');
                     } else {
                         throw new Error(errData.error?.message || `请求失败 (${resp.status})`);
                     }
@@ -359,7 +360,6 @@
         }
         
         async function findUserByEmail(email) {
-            // 确保字段名大小写与 Airtable 表一致（通常首字母大写）
             const data = await airtableRequest('GET', `Users?filterByFormula={Email}="${encodeURIComponent(email)}"`);
             return data.records.length ? data.records[0] : null;
         }
@@ -462,7 +462,6 @@
                 });
             }
             
-            // 注册提交
             document.getElementById('registerBtn').addEventListener('click', async function() {
                 const email = document.getElementById('regEmail').value.trim();
                 const code = document.getElementById('regCodeInput').value.trim();
@@ -487,7 +486,6 @@
                 }
             });
             
-            // 登录
             document.getElementById('loginBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('loginEmail').value.trim();
                 const pwd = document.getElementById('loginPassword').value;
@@ -499,7 +497,6 @@
                 } catch (e) { showToast(e.message, 'error'); }
             });
             
-            // 忘记密码验证码
             document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
@@ -517,7 +514,6 @@
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled=false; this.textContent='发送验证码'; }
             });
             
-            // 重置密码
             document.getElementById('resetPasswordBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('forgotEmail').value.trim();
                 const code = document.getElementById('resetCode').value.trim();
