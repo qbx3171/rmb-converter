@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整样式 ========== */
+        /* ========== 完整样式（完全保留原版） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -300,14 +300,20 @@
 
 <script>
     (function(){
-        // ========== 配置（已更新为最新 Token） ==========
+        // ========== 配置区 ==========
         const CONFIG = {
-            AIRTABLE_TOKEN: 'patFHvEpnWkAMqWp9.395b34566922da67b6d9ff6d63a0b20835cd88b3f19da6196ec1b569f0c8f7b2',   // ✅ 最新 Token
-            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
+            AIRTABLE_TOKEN: 'pateNj4jaBIr3DgzK.788ffbd505a36b36c4fcb437d85cd9451912a0b56b9cea45c3f09ab5ef2f5810',
+            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',   // ⚠️ 请确保此 ID 与 Airtable 中的完全一致，区分大小写
             EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',
             EMAILJS_SERVICE_ID: 'service_0jwzfc8',
             EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
         };
+        
+        // 启动时输出配置，便于确认
+        console.log('🚀 乐哲软件启动');
+        console.log('📌 Airtable Base ID:', CONFIG.AIRTABLE_BASE_ID);
+        console.log('📌 EmailJS Service ID:', CONFIG.EMAILJS_SERVICE_ID);
+        
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
         
         function showToast(msg, type='success') {
@@ -321,24 +327,24 @@
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
         
-        // 增强的 Airtable 请求函数（带详细错误处理）
+        // 强制使用正确的 Base ID，避免任何可能的篡改
         async function airtableRequest(method, path, body = null) {
-            const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
+            const baseId = CONFIG.AIRTABLE_BASE_ID; // 始终使用配置中的值
+            const url = `https://api.airtable.com/v0/${baseId}/${path}`;
+            console.log(`📡 Airtable ${method} ${url}`);
             const headers = {
                 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`,
                 'Content-Type': 'application/json'
             };
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
-            
-            console.log(`📡 Airtable ${method} ${url}`);
             try {
                 const resp = await fetch(url, options);
                 if (!resp.ok) {
                     const errData = await resp.json().catch(() => ({}));
                     console.error('❌ Airtable 错误响应:', errData);
                     if (resp.status === 401 || resp.status === 403) {
-                        throw new Error('认证失败：Token 无效或已过期，请重新生成 Airtable Token。');
+                        throw new Error('认证失败：Token 无效或已过期。请访问 https://airtable.com/create/tokens 重新生成 Token，并确保：\n1. Scopes 勾选 data.records:read 和 data.records:write\n2. Access 选择正确的 Base');
                     } else if (resp.status === 404) {
                         throw new Error('表不存在：请在 Airtable 中创建名为 "Users" 的表，并添加 Email、Password 字段。');
                     } else {
@@ -353,6 +359,7 @@
         }
         
         async function findUserByEmail(email) {
+            // 确保字段名大小写与 Airtable 表一致（通常首字母大写）
             const data = await airtableRequest('GET', `Users?filterByFormula={Email}="${encodeURIComponent(email)}"`);
             return data.records.length ? data.records[0] : null;
         }
@@ -374,7 +381,7 @@
         }
         async function sendCode(email, type) {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            console.log(`📧 发送验证码到 ${email}，Service ID: ${CONFIG.EMAILJS_SERVICE_ID}`);
+            console.log(`📧 发送验证码到 ${email}`);
             await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
                 to_email: email, code: code, expires: '10分钟', type: type
             });
@@ -422,7 +429,7 @@
                 document.getElementById('loginForm').style.display='block';
             });
             
-            // 注册发送验证码
+            // 注册验证码
             const sendRegBtn = document.getElementById('sendRegCodeBtn');
             if (sendRegBtn) {
                 sendRegBtn.addEventListener('click', async function(e) {
