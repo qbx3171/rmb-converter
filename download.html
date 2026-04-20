@@ -300,13 +300,13 @@
 
 <script>
     (function(){
-        // ========== 配置（已更新正确的 Service ID） ==========
+        // ========== 配置（已更新为最新 Token） ==========
         const CONFIG = {
-            AIRTABLE_TOKEN: 'patMrr1mluuDVy8qD.c514af9127ff500926d5f12e8a42903488786677bdc8488f5eaae20a5a751ecc',
-            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
+            AIRTABLE_TOKEN: 'patDBwm8sEkPzImcW.98da4c2b4c89754fad39c2fe1a63ceb60a84549fd4d0c3b310f356d72bcf9cc5',   // ✅ 新 Token
+            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',                                                         // ✅ 正确的 Base ID
             EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',
-            EMAILJS_SERVICE_ID: 'service_0jwzfc8',       // ✅ 已更新
-            EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'       // ✅ 保持不变
+            EMAILJS_SERVICE_ID: 'service_0jwzfc8',
+            EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
         };
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
         
@@ -402,7 +402,6 @@
                 document.getElementById('loginForm').style.display='block';
             });
             
-            // 注册发送验证码
             const sendRegBtn = document.getElementById('sendRegCodeBtn');
             if (sendRegBtn) {
                 sendRegBtn.addEventListener('click', async function(e) {
@@ -435,7 +434,6 @@
                 });
             }
             
-            // 注册提交
             document.getElementById('registerBtn').addEventListener('click', async function() {
                 const email = document.getElementById('regEmail').value.trim();
                 const code = document.getElementById('regCodeInput').value.trim();
@@ -460,7 +458,6 @@
                 }
             });
             
-            // 登录
             document.getElementById('loginBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('loginEmail').value.trim();
                 const pwd = document.getElementById('loginPassword').value;
@@ -472,7 +469,6 @@
                 } catch (e) { showToast(e.message, 'error'); }
             });
             
-            // 忘记密码验证码
             document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
@@ -490,7 +486,6 @@
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled=false; this.textContent='发送验证码'; }
             });
             
-            // 重置密码
             document.getElementById('resetPasswordBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('forgotEmail').value.trim();
                 const code = document.getElementById('resetCode').value.trim();
@@ -514,7 +509,6 @@
             updateUserUI();
         }
         
-        // 软件数据与渲染（完整18款）
         const DEFAULT_SOFTWARES = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
             { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
