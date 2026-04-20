@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整样式（完全保留原版所有细节） ========== */
+        /* ========== 完整样式（保留原版所有细节） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -136,14 +136,6 @@
         .chat-input-area { display: flex; padding: 10px; background: white; border-top: 1px solid #eef2fc; gap: 8px; }
         .chat-input-area input { flex: 1; border: 1px solid #e2e8f0; border-radius: 40px; padding: 8px 14px; font-size: 12px; outline: none; }
         .chat-input-area button { background: #1e6bdf; border: none; border-radius: 40px; padding: 0 16px; color: white; font-weight: 600; cursor: pointer; }
-        .verify-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
-        .verify-modal.active { display: flex; }
-        .verify-content { background: white; border-radius: 40px; padding: 28px 24px; max-width: 360px; text-align: center; }
-        .verify-input { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 60px; margin: 18px 0; }
-        .verify-buttons { display: flex; gap: 12px; justify-content: center; }
-        .verify-btn { padding: 10px 20px; border-radius: 40px; font-weight: 600; cursor: pointer; border: none; }
-        .verify-btn.confirm { background: #1e6bdf; color: white; }
-        .verify-btn.cancel { background: #f1f5f9; }
         .auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; }
         .auth-modal.active { display: flex; }
         .auth-card { width: 100%; max-width: 420px; background: rgba(255,255,255,0.9); backdrop-filter: blur(24px); border-radius: 40px; padding: 32px 28px; box-shadow: 0 40px 60px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.5); }
@@ -163,6 +155,10 @@
         .code-row .auth-input { flex: 1; }
         .send-code-btn { background: #eef2ff; border: none; border-radius: 30px; padding: 0 18px; font-weight: 600; color: #1e6bdf; cursor: pointer; white-space: nowrap; }
         .send-code-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .profile-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); backdrop-filter: blur(12px); z-index: 2000; justify-content: center; align-items: center; }
+        .profile-modal.active { display: flex; }
+        .profile-card { width: 100%; max-width: 420px; background: rgba(255,255,255,0.9); backdrop-filter: blur(24px); border-radius: 40px; padding: 32px 28px; }
+        body.bg-night .profile-card { background: rgba(20,30,44,0.9); border-color: #334155; }
         @media (max-width:720px){ .main { padding:100px 20px 50px; } .hero h1 { font-size:36px; } }
     </style>
 </head>
@@ -232,22 +228,11 @@
     </footer>
 </div>
 
-<div id="verifyModal" class="verify-modal">
-    <div class="verify-content">
-        <h3><i class="fab fa-weixin"></i> 添加微信获取口令</h3>
-        <p>请添加微信 <strong>Win_Mac_123</strong><br>我们会在微信上发送给您下载口令。</p>
-        <input type="text" id="verifyCode" class="verify-input" placeholder="请输入收到的口令">
-        <div class="verify-buttons">
-            <button class="verify-btn cancel" id="cancelVerify">取消</button>
-            <button class="verify-btn confirm" id="confirmVerify">验证并下载</button>
-        </div>
-    </div>
-</div>
-
+<!-- 登录/注册模态框 -->
 <div id="authModal" class="auth-modal">
     <div class="auth-card">
         <div class="auth-header">
-            <span class="auth-title">登录</span>
+            <span class="auth-title" id="authModalTitle">登录</span>
             <button class="auth-close" id="closeAuthModal"><i class="fas fa-times"></i></button>
         </div>
         <div class="auth-tabs">
@@ -261,6 +246,7 @@
             <button class="auth-submit" id="loginBtn">登录</button>
         </div>
         <div id="registerForm" style="display:none;">
+            <div class="auth-input-group"><label>用户名</label><input type="text" id="regUsername" class="auth-input" placeholder="昵称"></div>
             <div class="auth-input-group"><label>邮箱</label><input type="email" id="regEmail" class="auth-input" placeholder="用于接收验证码"></div>
             <div class="auth-input-group"><label>验证码</label>
                 <div class="code-row">
@@ -288,6 +274,31 @@
     </div>
 </div>
 
+<!-- 个人中心模态框 -->
+<div id="profileModal" class="profile-modal">
+    <div class="profile-card">
+        <div class="auth-header">
+            <span class="auth-title">个人中心</span>
+            <button class="auth-close" id="closeProfileModal"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="auth-input-group">
+            <label>用户名</label>
+            <input type="text" id="profileUsername" class="auth-input" placeholder="昵称">
+        </div>
+        <div class="auth-input-group">
+            <label>新密码（留空则不修改）</label>
+            <input type="password" id="profileNewPassword" class="auth-input" placeholder="至少6位">
+        </div>
+        <div class="auth-input-group">
+            <label>确认新密码</label>
+            <input type="password" id="profileConfirmPassword" class="auth-input">
+        </div>
+        <button class="auth-submit" id="saveProfileBtn">保存修改</button>
+        <button class="auth-link" id="cancelProfileBtn" style="margin-top:12px;">取消</button>
+    </div>
+</div>
+
+<!-- 聊天机器人 -->
 <div class="chatbot-container" id="chatbotContainer">
     <div class="chat-toggle" id="chatToggleBtn"><i class="fas fa-comment-dots"></i></div>
     <div class="chat-window" id="chatWindow" style="display:none;">
@@ -300,7 +311,7 @@
 
 <script>
     (function(){
-        // ========== 配置区（所有凭证已正确配置） ==========
+        // ========== 配置 ==========
         const CONFIG = {
             AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
             AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
@@ -311,8 +322,6 @@
         };
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
         
-        console.log('🚀 乐哲软件启动 - 所有凭证已配置');
-        
         function showToast(msg, type='success') {
             const t = document.createElement('div'); t.className = `toast-message ${type}`;
             t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-triangle'}"></i> ${msg}`;
@@ -320,22 +329,17 @@
         }
         function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
         
-        let currentUser = null, pendingDownload = null;
+        let currentUser = null;
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
         
-        // Airtable 请求（已修复 CreatedAt 字段问题）
         async function airtableRequest(method, path, body = null) {
             const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
             const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
             const options = { method, headers };
             if (body) options.body = JSON.stringify(body);
             const resp = await fetch(url, options);
-            if (!resp.ok) {
-                const errData = await resp.json().catch(()=>({}));
-                console.error('❌ Airtable 错误:', errData);
-                throw new Error(errData.error?.message || `请求失败 (${resp.status})`);
-            }
+            if (!resp.ok) throw new Error((await resp.json()).error?.message || `HTTP ${resp.status}`);
             return await resp.json();
         }
         
@@ -343,16 +347,15 @@
             const data = await airtableRequest('GET', `Users?filterByFormula={Email}="${encodeURIComponent(email)}"`);
             return data.records.length ? data.records[0] : null;
         }
-        async function registerUser(email, password) {
+        async function registerUser(email, password, username) {
             const hash = CryptoJS.SHA256(password).toString();
-            // 不再手动写入 CreatedAt，让 Airtable 自动生成
-            await airtableRequest('POST', 'Users', { fields: { Email: email, Password: hash } });
+            await airtableRequest('POST', 'Users', { fields: { Email: email, Password: hash, Username: username } });
         }
         async function loginUser(email, password) {
             const rec = await findUserByEmail(email);
             if (!rec) throw new Error('邮箱未注册');
             if (rec.fields.Password !== CryptoJS.SHA256(password).toString()) throw new Error('密码错误');
-            return { id: rec.id, email: rec.fields.Email };
+            return { id: rec.id, email: rec.fields.Email, username: rec.fields.Username || email.split('@')[0] };
         }
         async function updatePassword(email, newPass) {
             const rec = await findUserByEmail(email);
@@ -360,22 +363,24 @@
             const hash = CryptoJS.SHA256(newPass).toString();
             await airtableRequest('PATCH', `Users/${rec.id}`, { fields: { Password: hash } });
         }
-        
+        async function updateUserProfile(userId, username, newPassword) {
+            const fields = { Username: username };
+            if (newPassword) fields.Password = CryptoJS.SHA256(newPassword).toString();
+            await airtableRequest('PATCH', `Users/${userId}`, { fields });
+        }
         async function sendCode(email, type, templateId) {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            const params = { email: email, code: code, expires: '10分钟' };
-            console.log(`📧 发送${type}邮件到 ${email}，模板：${templateId}`);
-            await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, templateId, params);
+            await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, templateId, { email: email, code: code, expires: '10分钟' });
             return code;
         }
         
         function updateUserUI() {
             const area = document.getElementById('userArea');
             if (currentUser) {
-                const short = currentUser.email.split('@')[0];
-                area.innerHTML = `<div class="user-dropdown"><button class="user-name-btn" id="userMenuBtn"><i class="fas fa-user-circle"></i> ${escapeHtml(short)} <i class="fas fa-chevron-down"></i></button><div class="dropdown-content" id="userDropdown"><button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button></div></div>`;
+                area.innerHTML = `<div class="user-dropdown"><button class="user-name-btn" id="userMenuBtn"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.username)} <i class="fas fa-chevron-down"></i></button><div class="dropdown-content" id="userDropdown"><button id="profileBtn"><i class="fas fa-user"></i> 个人中心</button><button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button></div></div>`;
                 document.getElementById('userMenuBtn').addEventListener('click', e=>{ e.stopPropagation(); document.getElementById('userDropdown').classList.toggle('show'); });
                 document.getElementById('logoutBtn').addEventListener('click', ()=>{ currentUser=null; localStorage.removeItem('lezhe_user'); updateUserUI(); showToast('已退出'); });
+                document.getElementById('profileBtn').addEventListener('click', openProfileModal);
             } else {
                 area.innerHTML = `<button class="auth-btn" id="showAuthBtn"><i class="fas fa-user-lock"></i> 登录 / 注册</button>`;
                 document.getElementById('showAuthBtn').addEventListener('click', ()=> openAuthModal('login'));
@@ -388,7 +393,12 @@
             document.querySelectorAll('.auth-tab').forEach(t=> t.classList.toggle('active', t.dataset.tab===tab));
             document.getElementById('authModal').classList.add('active');
         }
-        function requireLogin(cb) { if(currentUser) { cb(); return true; } pendingDownload = cb; openAuthModal('login'); showToast('请先登录','error'); return false; }
+        function openProfileModal() {
+            document.getElementById('profileUsername').value = currentUser.username || '';
+            document.getElementById('profileNewPassword').value = '';
+            document.getElementById('profileConfirmPassword').value = '';
+            document.getElementById('profileModal').classList.add('active');
+        }
         
         function initAuthEvents() {
             const modal = document.getElementById('authModal');
@@ -410,14 +420,13 @@
                 document.getElementById('loginForm').style.display='block';
             });
             
-            // 注册发送验证码
+            // 注册验证码
             document.getElementById('sendRegCodeBtn').addEventListener('click', async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('regEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
-                try {
-                    if (await findUserByEmail(email)) return showToast('该邮箱已被注册', 'error');
-                } catch (err) { return showToast('验证失败: ' + err.message, 'error'); }
+                try { if (await findUserByEmail(email)) return showToast('该邮箱已被注册', 'error'); }
+                catch (err) { return showToast('验证失败: ' + err.message, 'error'); }
                 this.disabled = true; this.textContent = '发送中...';
                 try {
                     const code = await sendCode(email, '注册', CONFIG.EMAILJS_TEMPLATE_REG);
@@ -430,20 +439,23 @@
             
             // 注册
             document.getElementById('registerBtn').addEventListener('click', async function() {
+                const username = document.getElementById('regUsername').value.trim();
                 const email = document.getElementById('regEmail').value.trim();
                 const code = document.getElementById('regCodeInput').value.trim();
                 const pwd = document.getElementById('regPassword').value;
                 const confirm = document.getElementById('regConfirm').value;
+                if (!username) return showToast('请输入用户名', 'error');
                 if (!regEmail || !regCode) return showToast('请先获取验证码', 'error');
                 if (email !== regEmail) return showToast('邮箱不匹配', 'error');
                 if (code !== regCode || Date.now() > regCodeExpire) return showToast('验证码错误或已过期', 'error');
                 if (pwd !== confirm) return showToast('两次密码不一致', 'error');
                 if (pwd.length < 6) return showToast('密码至少6位', 'error');
                 try {
-                    await registerUser(email, pwd);
+                    await registerUser(email, pwd, username);
                     showToast('注册成功，请登录');
                     openAuthModal('login');
                     regEmail = ''; regCode = '';
+                    document.getElementById('regUsername').value = '';
                     document.getElementById('regEmail').value = '';
                     document.getElementById('regCodeInput').value = '';
                     document.getElementById('regPassword').value = '';
@@ -452,18 +464,17 @@
             });
             
             // 登录
-            document.getElementById('loginBtn').addEventListener('click', async ()=>{
+            document.getElementById('loginBtn').addEventListener('click', async function() {
                 const email = document.getElementById('loginEmail').value.trim();
                 const pwd = document.getElementById('loginPassword').value;
                 try {
-                    const user = await loginUser(email, pwd);
-                    currentUser = user; localStorage.setItem('lezhe_user', JSON.stringify(user));
+                    currentUser = await loginUser(email, pwd);
+                    localStorage.setItem('lezhe_user', JSON.stringify(currentUser));
                     updateUserUI(); modal.classList.remove('active'); showToast('登录成功');
-                    if (pendingDownload) { const cb = pendingDownload; pendingDownload = null; cb(); }
                 } catch (e) { showToast(e.message, 'error'); }
             });
             
-            // 忘记密码发送验证码
+            // 忘记密码验证码
             document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
@@ -480,7 +491,7 @@
             });
             
             // 重置密码
-            document.getElementById('resetPasswordBtn').addEventListener('click', async ()=>{
+            document.getElementById('resetPasswordBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 const code = document.getElementById('resetCodeInput').value.trim();
                 const newPwd = document.getElementById('newPassword').value;
@@ -503,7 +514,27 @@
             updateUserUI();
         }
         
-        // 完整软件数据 (18款)
+        // 个人中心事件
+        document.getElementById('closeProfileModal').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
+        document.getElementById('cancelProfileBtn').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
+        document.getElementById('saveProfileBtn').addEventListener('click', async function() {
+            const newUsername = document.getElementById('profileUsername').value.trim();
+            const newPwd = document.getElementById('profileNewPassword').value;
+            const confirmPwd = document.getElementById('profileConfirmPassword').value;
+            if (!newUsername) return showToast('用户名不能为空', 'error');
+            if (newPwd && newPwd !== confirmPwd) return showToast('两次密码不一致', 'error');
+            if (newPwd && newPwd.length < 6) return showToast('密码至少6位', 'error');
+            try {
+                await updateUserProfile(currentUser.id, newUsername, newPwd || null);
+                currentUser.username = newUsername;
+                localStorage.setItem('lezhe_user', JSON.stringify(currentUser));
+                updateUserUI();
+                showToast('资料更新成功');
+                document.getElementById('profileModal').classList.remove('active');
+            } catch (e) { showToast('更新失败: ' + e.message, 'error'); }
+        });
+        
+        // 软件数据
         const DEFAULT_SOFTWARES = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
             { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
@@ -525,7 +556,7 @@
             { name: "Adobe 插件全套", category: "plugin", os: ["Windows","Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true, addedDate: "2025-02-01" }
         ];
         const CATEGORY_DISPLAY = { 'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具' };
-        let softwares = [], currentCategory = "all", searchKeyword = "", pendingUrl = null, showAll = false;
+        let softwares = [], currentCategory = "all", searchKeyword = "", showAll = false;
         const DEFAULT_LIMIT = 12;
         function renderCategories() {
             const catMap = new Map(); softwares.forEach(s => catMap.set(s.categoryDisplay, s.category));
@@ -554,10 +585,8 @@
             document.querySelectorAll('.software-card').forEach(card => card.addEventListener('click', ()=>{
                 const sw = softwares.find(s => s.name === card.dataset.name);
                 if (!sw) return;
-                requireLogin(() => {
-                    if (sw.noVerify) window.open(sw.url, '_blank');
-                    else { pendingUrl = sw.url; document.getElementById('verifyModal').classList.add('active'); document.getElementById('verifyCode').value = ''; }
-                });
+                if (!currentUser) { openAuthModal('login'); showToast('请先登录', 'error'); return; }
+                window.open(sw.url, '_blank');  // 直接跳转，无需口令
             }));
         }
         function initSoftware() {
@@ -570,14 +599,6 @@
             update(); setInterval(update, 3600000);
         }
         function addBaiduPush() { const bp = document.createElement('script'); bp.async=true; bp.src='https://zz.bdstatic.com/linksubmit/push.js'; document.head.appendChild(bp); }
-        
-        document.getElementById('cancelVerify').addEventListener('click', ()=> document.getElementById('verifyModal').classList.remove('active'));
-        document.getElementById('confirmVerify').addEventListener('click', ()=>{
-            if(document.getElementById('verifyCode').value.trim()==='Win_Mac_123') {
-                if(pendingUrl) window.open(pendingUrl, '_blank');
-                document.getElementById('verifyModal').classList.remove('active');
-            } else showToast('口令错误，请确认后重试','error');
-        });
         
         document.getElementById('submitFeedbackBtn').addEventListener('click', ()=>{
             const msg = document.getElementById('feedbackMessage').value.trim();
