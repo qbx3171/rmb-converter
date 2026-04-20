@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整原始样式（保持不变） ========== */
+        /* ========== 完整样式 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -300,13 +300,13 @@
 
 <script>
     (function(){
-        // ========== 配置（已修正 Public Key） ==========
+        // ========== 配置（已更新正确的 Service ID） ==========
         const CONFIG = {
             AIRTABLE_TOKEN: 'patMrr1mluuDVy8qD.c514af9127ff500926d5f12e8a42903488786677bdc8488f5eaae20a5a751ecc',
             AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
-            EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',   // ✅ 已修正为正确值
-            EMAILJS_SERVICE_ID: 'service_izp6amd',
-            EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
+            EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',
+            EMAILJS_SERVICE_ID: 'service_0jwzfc8',       // ✅ 已更新
+            EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'       // ✅ 保持不变
         };
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
         
