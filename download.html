@@ -302,8 +302,8 @@
     (function(){
         // ========== 配置（已更新为最新 Token） ==========
         const CONFIG = {
-            AIRTABLE_TOKEN: 'patDBwm8sEkPzImcW.98da4c2b4c89754fad39c2fe1a63ceb60a84549fd4d0c3b310f356d72bcf9cc5',   // ✅ 新 Token
-            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',                                                         // ✅ 正确的 Base ID
+            AIRTABLE_TOKEN: 'patFHvEpnWkAMqWp9.395b34566922da67b6d9ff6d63a0b20835cd88b3f19da6196ec1b569f0c8f7b2',   // ✅ 最新 Token
+            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
             EMAILJS_PUBLIC_KEY: '9VF7tzRthx9_nkchu',
             EMAILJS_SERVICE_ID: 'service_0jwzfc8',
             EMAILJS_TEMPLATE_ID: 'template_xcv0pdc'
@@ -321,16 +321,35 @@
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
         
+        // 增强的 Airtable 请求函数（带详细错误处理）
         async function airtableRequest(method, path, body = null) {
             const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
-            const headers = { Authorization: `Bearer ${CONFIG.AIRTABLE_TOKEN}` };
-            if (body) headers['Content-Type'] = 'application/json';
-            const resp = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
-            if (!resp.ok) {
-                const err = await resp.json().catch(()=>({}));
-                throw new Error(err.error?.message || `HTTP ${resp.status}`);
+            const headers = {
+                'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`,
+                'Content-Type': 'application/json'
+            };
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+            
+            console.log(`📡 Airtable ${method} ${url}`);
+            try {
+                const resp = await fetch(url, options);
+                if (!resp.ok) {
+                    const errData = await resp.json().catch(() => ({}));
+                    console.error('❌ Airtable 错误响应:', errData);
+                    if (resp.status === 401 || resp.status === 403) {
+                        throw new Error('认证失败：Token 无效或已过期，请重新生成 Airtable Token。');
+                    } else if (resp.status === 404) {
+                        throw new Error('表不存在：请在 Airtable 中创建名为 "Users" 的表，并添加 Email、Password 字段。');
+                    } else {
+                        throw new Error(errData.error?.message || `请求失败 (${resp.status})`);
+                    }
+                }
+                return await resp.json();
+            } catch (error) {
+                console.error('❌ Airtable 请求异常:', error);
+                throw error;
             }
-            return await resp.json();
         }
         
         async function findUserByEmail(email) {
@@ -355,6 +374,7 @@
         }
         async function sendCode(email, type) {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
+            console.log(`📧 发送验证码到 ${email}，Service ID: ${CONFIG.EMAILJS_SERVICE_ID}`);
             await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
                 to_email: email, code: code, expires: '10分钟', type: type
             });
@@ -402,6 +422,7 @@
                 document.getElementById('loginForm').style.display='block';
             });
             
+            // 注册发送验证码
             const sendRegBtn = document.getElementById('sendRegCodeBtn');
             if (sendRegBtn) {
                 sendRegBtn.addEventListener('click', async function(e) {
@@ -434,6 +455,7 @@
                 });
             }
             
+            // 注册提交
             document.getElementById('registerBtn').addEventListener('click', async function() {
                 const email = document.getElementById('regEmail').value.trim();
                 const code = document.getElementById('regCodeInput').value.trim();
@@ -458,6 +480,7 @@
                 }
             });
             
+            // 登录
             document.getElementById('loginBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('loginEmail').value.trim();
                 const pwd = document.getElementById('loginPassword').value;
@@ -469,6 +492,7 @@
                 } catch (e) { showToast(e.message, 'error'); }
             });
             
+            // 忘记密码验证码
             document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
@@ -486,6 +510,7 @@
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled=false; this.textContent='发送验证码'; }
             });
             
+            // 重置密码
             document.getElementById('resetPasswordBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('forgotEmail').value.trim();
                 const code = document.getElementById('resetCode').value.trim();
@@ -509,6 +534,7 @@
             updateUserUI();
         }
         
+        // 完整软件数据 (18款)
         const DEFAULT_SOFTWARES = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
             { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
