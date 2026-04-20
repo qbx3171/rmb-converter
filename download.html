@@ -162,6 +162,7 @@
         .code-row { display: flex; gap: 10px; }
         .code-row .auth-input { flex: 1; }
         .send-code-btn { background: #eef2ff; border: none; border-radius: 30px; padding: 0 18px; font-weight: 600; color: #1e6bdf; cursor: pointer; white-space: nowrap; }
+        .send-code-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         @media (max-width:720px){ .main { padding:100px 20px 50px; } .hero h1 { font-size:36px; } }
     </style>
 </head>
@@ -254,20 +255,20 @@
             <button class="auth-tab" data-tab="register">注册</button>
         </div>
         <div id="loginForm">
-            <div class="auth-input-group"><label>邮箱</label><input type="email" id="loginEmail" class="auth-input"></div>
-            <div class="auth-input-group"><label>密码</label><input type="password" id="loginPassword" class="auth-input"></div>
+            <div class="auth-input-group"><label>邮箱</label><input type="email" id="loginEmail" class="auth-input" placeholder="your@email.com"></div>
+            <div class="auth-input-group"><label>密码</label><input type="password" id="loginPassword" class="auth-input" placeholder="••••••••"></div>
             <button class="auth-link forgot-link" id="showForgotBtn">忘记密码？</button>
             <button class="auth-submit" id="loginBtn">登录</button>
         </div>
         <div id="registerForm" style="display:none;">
-            <div class="auth-input-group"><label>邮箱</label><input type="email" id="regEmail" class="auth-input"></div>
+            <div class="auth-input-group"><label>邮箱</label><input type="email" id="regEmail" class="auth-input" placeholder="用于接收验证码"></div>
             <div class="auth-input-group"><label>验证码</label>
                 <div class="code-row">
                     <input type="text" id="regCodeInput" class="auth-input" placeholder="6位验证码">
                     <button class="send-code-btn" id="sendRegCodeBtn">发送验证码</button>
                 </div>
             </div>
-            <div class="auth-input-group"><label>密码</label><input type="password" id="regPassword" class="auth-input"></div>
+            <div class="auth-input-group"><label>密码</label><input type="password" id="regPassword" class="auth-input" placeholder="至少6位"></div>
             <div class="auth-input-group"><label>确认密码</label><input type="password" id="regConfirm" class="auth-input"></div>
             <button class="auth-submit" id="registerBtn">注册</button>
         </div>
@@ -299,7 +300,7 @@
 
 <script>
     (function(){
-        // 配置 (已使用真实凭证)
+        // ========== 配置 (已使用您的真实凭证) ==========
         const CONFIG = {
             AIRTABLE_TOKEN: 'patMrr1mluuDVy8qD.c514af9127ff500926d5f12e8a42903488786677bdc8488f5eaae20a5a751ecc',
             AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
@@ -316,12 +317,10 @@
         }
         function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
         
-        // 状态
         let currentUser = null, pendingDownload = null;
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
         
-        // Airtable请求
         async function airtableRequest(method, path, body = null) {
             const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
             const headers = { Authorization: `Bearer ${CONFIG.AIRTABLE_TOKEN}` };
@@ -356,11 +355,12 @@
         }
         async function sendCode(email, type) {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
-            await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, { to_email: email, code: code, expires: '10分钟' });
+            await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, CONFIG.EMAILJS_TEMPLATE_ID, {
+                to_email: email, code: code, expires: '10分钟', type: type
+            });
             return code;
         }
         
-        // UI更新
         function updateUserUI() {
             const area = document.getElementById('userArea');
             if (currentUser) {
@@ -382,8 +382,8 @@
         }
         function requireLogin(cb) { if(currentUser) { cb(); return true; } pendingDownload = cb; openAuthModal('login'); showToast('请先登录','error'); return false; }
         
-        // 认证模态事件
-        function initAuth() {
+        // ========== 修复后的认证事件绑定 ==========
+        function initAuthEvents() {
             const modal = document.getElementById('authModal');
             document.getElementById('closeAuthModal').addEventListener('click', ()=> modal.classList.remove('active'));
             document.querySelectorAll('.auth-tab').forEach(t=> t.addEventListener('click', ()=>{
@@ -394,40 +394,71 @@
                 document.getElementById('forgotForm').style.display = 'none';
             }));
             document.getElementById('showForgotBtn').addEventListener('click', ()=>{
-                document.getElementById('loginForm').style.display='none'; document.getElementById('registerForm').style.display='none'; document.getElementById('forgotForm').style.display='block';
+                document.getElementById('loginForm').style.display='none';
+                document.getElementById('registerForm').style.display='none';
+                document.getElementById('forgotForm').style.display='block';
             });
             document.getElementById('backToLogin').addEventListener('click', ()=>{
-                document.getElementById('forgotForm').style.display='none'; document.getElementById('loginForm').style.display='block';
+                document.getElementById('forgotForm').style.display='none';
+                document.getElementById('loginForm').style.display='block';
             });
             
-            // 注册验证码
-            document.getElementById('sendRegCodeBtn').addEventListener('click', async function(){
-                const email = document.getElementById('regEmail').value.trim();
-                if(!email) return showToast('请输入邮箱','error');
-                if(await findUserByEmail(email)) return showToast('邮箱已注册','error');
-                this.disabled = true; this.textContent = '发送中...';
-                try {
-                    const code = await sendCode(email, '注册');
-                    regEmail = email; regCode = code; regCodeExpire = Date.now() + 600000;
-                    showToast('验证码已发送');
-                    let sec=60; const timer=setInterval(()=>{ sec--; this.textContent=`${sec}秒后重发`; if(sec<=0){ clearInterval(timer); this.disabled=false; this.textContent='发送验证码'; } }, 1000);
-                } catch(e) { showToast('发送失败: '+e.message,'error'); this.disabled=false; this.textContent='发送验证码'; }
-            });
+            // 注册发送验证码 (修复重点)
+            const sendRegBtn = document.getElementById('sendRegCodeBtn');
+            if (sendRegBtn) {
+                sendRegBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const email = document.getElementById('regEmail').value.trim();
+                    if (!email) return showToast('请输入邮箱', 'error');
+                    try {
+                        const exists = await findUserByEmail(email);
+                        if (exists) return showToast('该邮箱已被注册', 'error');
+                    } catch (err) {
+                        return showToast('验证邮箱失败: ' + err.message, 'error');
+                    }
+                    this.disabled = true;
+                    this.textContent = '发送中...';
+                    try {
+                        const code = await sendCode(email, '注册');
+                        regEmail = email; regCode = code; regCodeExpire = Date.now() + 600000;
+                        showToast('验证码已发送至邮箱');
+                        let sec = 60;
+                        const timer = setInterval(() => {
+                            sec--;
+                            this.textContent = `${sec}秒后重发`;
+                            if (sec <= 0) { clearInterval(timer); this.disabled = false; this.textContent = '发送验证码'; }
+                        }, 1000);
+                    } catch (err) {
+                        showToast('发送失败: ' + err.message, 'error');
+                        this.disabled = false;
+                        this.textContent = '发送验证码';
+                    }
+                });
+            }
             
-            document.getElementById('registerBtn').addEventListener('click', async ()=>{
+            // 注册提交
+            document.getElementById('registerBtn').addEventListener('click', async function() {
                 const email = document.getElementById('regEmail').value.trim();
                 const code = document.getElementById('regCodeInput').value.trim();
                 const pwd = document.getElementById('regPassword').value;
                 const confirm = document.getElementById('regConfirm').value;
-                if(!regEmail || !regCode) return showToast('请先获取验证码','error');
-                if(email !== regEmail) return showToast('邮箱与验证码不匹配','error');
-                if(code !== regCode || Date.now() > regCodeExpire) return showToast('验证码错误或已过期','error');
-                if(pwd !== confirm) return showToast('两次密码不一致','error');
-                if(pwd.length<6) return showToast('密码至少6位','error');
+                if (!regEmail || !regCode) return showToast('请先获取验证码', 'error');
+                if (email !== regEmail) return showToast('邮箱与验证码不匹配', 'error');
+                if (code !== regCode || Date.now() > regCodeExpire) return showToast('验证码错误或已过期', 'error');
+                if (pwd !== confirm) return showToast('两次密码不一致', 'error');
+                if (pwd.length < 6) return showToast('密码至少6位', 'error');
                 try {
                     await registerUser(email, pwd);
-                    showToast('注册成功，请登录'); openAuthModal('login'); regEmail=''; regCode='';
-                } catch(e) { showToast('注册失败: '+e.message,'error'); }
+                    showToast('注册成功，请登录');
+                    openAuthModal('login');
+                    regEmail = ''; regCode = '';
+                    document.getElementById('regEmail').value = '';
+                    document.getElementById('regCodeInput').value = '';
+                    document.getElementById('regPassword').value = '';
+                    document.getElementById('regConfirm').value = '';
+                } catch (err) {
+                    showToast('注册失败: ' + err.message, 'error');
+                }
             });
             
             // 登录
@@ -438,38 +469,45 @@
                     const user = await loginUser(email, pwd);
                     currentUser = user; localStorage.setItem('lezhe_user', JSON.stringify(user));
                     updateUserUI(); modal.classList.remove('active'); showToast('登录成功');
-                    if(pendingDownload) { const cb = pendingDownload; pendingDownload = null; cb(); }
-                } catch(e) { showToast(e.message,'error'); }
+                    if (pendingDownload) { const cb = pendingDownload; pendingDownload = null; cb(); }
+                } catch (e) { showToast(e.message, 'error'); }
             });
             
-            // 忘记密码
-            document.getElementById('sendResetCodeBtn').addEventListener('click', async function(){
+            // 忘记密码验证码
+            document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
-                if(!email) return showToast('请输入邮箱','error');
-                if(!(await findUserByEmail(email))) return showToast('邮箱未注册','error');
+                if (!email) return showToast('请输入邮箱', 'error');
+                try {
+                    const exists = await findUserByEmail(email);
+                    if (!exists) return showToast('邮箱未注册', 'error');
+                } catch (err) { return showToast('验证失败: ' + err.message, 'error'); }
                 this.disabled = true; this.textContent = '发送中...';
                 try {
                     const code = await sendCode(email, '重置密码');
                     resetEmail = email; resetCode = code; resetCodeExpire = Date.now() + 600000;
                     showToast('验证码已发送');
-                    let sec=60; const timer=setInterval(()=>{ sec--; this.textContent=`${sec}秒后重发`; if(sec<=0){ clearInterval(timer); this.disabled=false; this.textContent='发送验证码'; } }, 1000);
-                } catch(e) { showToast('发送失败: '+e.message,'error'); this.disabled=false; this.textContent='发送验证码'; }
+                    let sec = 60;
+                    const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if(sec<=0){ clearInterval(timer); this.disabled=false; this.textContent='发送验证码'; } }, 1000);
+                } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled=false; this.textContent='发送验证码'; }
             });
             
+            // 重置密码
             document.getElementById('resetPasswordBtn').addEventListener('click', async ()=>{
                 const email = document.getElementById('forgotEmail').value.trim();
                 const code = document.getElementById('resetCode').value.trim();
                 const newPwd = document.getElementById('newPassword').value;
-                const confirmPwd = document.getElementById('confirmNewPassword').value;
-                if(!resetEmail || !resetCode) return showToast('请先获取验证码','error');
-                if(email !== resetEmail) return showToast('邮箱不匹配','error');
-                if(code !== resetCode || Date.now() > resetCodeExpire) return showToast('验证码错误或已过期','error');
-                if(newPwd !== confirmPwd) return showToast('两次密码不一致','error');
-                if(newPwd.length<6) return showToast('密码至少6位','error');
+                const confirm = document.getElementById('confirmNewPassword').value;
+                if (!resetEmail || !resetCode) return showToast('请先获取验证码', 'error');
+                if (email !== resetEmail) return showToast('邮箱不匹配', 'error');
+                if (code !== resetCode || Date.now() > resetCodeExpire) return showToast('验证码错误或已过期', 'error');
+                if (newPwd !== confirm) return showToast('两次密码不一致', 'error');
+                if (newPwd.length < 6) return showToast('密码至少6位', 'error');
                 try {
                     await updatePassword(email, newPwd);
-                    showToast('密码重置成功，请登录'); openAuthModal('login'); resetEmail=''; resetCode='';
-                } catch(e) { showToast('重置失败: '+e.message,'error'); }
+                    showToast('密码重置成功，请登录');
+                    openAuthModal('login');
+                    resetEmail = ''; resetCode = '';
+                } catch (e) { showToast('重置失败: ' + e.message, 'error'); }
             });
             
             const saved = localStorage.getItem('lezhe_user');
@@ -488,7 +526,7 @@
             { name: "Bridge", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "fa-images", url: "https://www.yuque.com/example/bridge", noVerify: false, addedDate: "2024-11-05" },
             { name: "InDesign", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false, addedDate: "2024-11-12" },
             { name: "Acrobat DC", category: "adobe", os: ["Windows","Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "fa-file-pdf", url: "https://www.yuque.com/example/acrobat", noVerify: false, addedDate: "2024-11-20" },
-            { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe 官方清理工具，用于彻底删除残留文件和清理旧版本，解决安装冲突。", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false, addedDate: "2025-01-10" },
+            { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe 官方清理工具", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false, addedDate: "2025-01-10" },
             { name: "AutoCAD", category: "autodesk", os: ["Windows","Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false, addedDate: "2024-09-18" },
             { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false, addedDate: "2024-10-05" },
             { name: "Maya", category: "autodesk", os: ["Windows","Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false, addedDate: "2024-11-01" },
@@ -511,7 +549,7 @@
             }));
         }
         function renderGrid() {
-            const filtered = softwares.filter(s => (currentCategory==='all' || s.category===currentCategory) && s.name.toLowerCase().includes(searchKeyword.toLowerCase()));
+            const filtered = softwares.filter(s => (currentCategory==='all'||s.category===currentCategory) && s.name.toLowerCase().includes(searchKeyword.toLowerCase()));
             const items = showAll ? filtered : filtered.slice(0, DEFAULT_LIMIT);
             if (!items.length) { document.getElementById('softwareGridContainer').innerHTML = '<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件，试试其他关键词～</div>'; document.getElementById('loadMoreContainer').style.display='none'; return; }
             let cards = '';
@@ -539,14 +577,12 @@
             renderCategories(); renderGrid();
         }
         
-        // 主题、聊天等
         function initTheme() {
             function update() { const h = new Date().getHours(); let bg='', g=''; if(h>=5&&h<8){bg='bg-dawn';g='🌅 晨曦 · 一日之计';} else if(h>=8&&h<12){bg='bg-morning';g='☀️ 上午 · 高效时光';} else if(h>=12&&h<17){bg='bg-afternoon';g='🌤️ 午后 · 灵感漫游';} else if(h>=17&&h<20){bg='bg-evening';g='🌇 黄昏 · 创意余晖';} else{bg='bg-night';g='🌙 夜晚 · 静心探索';} document.body.className = bg; document.getElementById('greetingText').innerText = g; }
             update(); setInterval(update, 3600000);
         }
         function addBaiduPush() { const bp = document.createElement('script'); bp.async=true; bp.src='https://zz.bdstatic.com/linksubmit/push.js'; document.head.appendChild(bp); }
         
-        // 验证弹窗
         document.getElementById('cancelVerify').addEventListener('click', ()=> document.getElementById('verifyModal').classList.remove('active'));
         document.getElementById('confirmVerify').addEventListener('click', ()=>{
             if(document.getElementById('verifyCode').value.trim()==='Win_Mac_123') {
@@ -555,15 +591,12 @@
             } else showToast('口令错误，请确认后重试','error');
         });
         
-        // 留言板 (简化不自动刷新)
         document.getElementById('submitFeedbackBtn').addEventListener('click', ()=>{
             const msg = document.getElementById('feedbackMessage').value.trim();
             if(!msg) return showToast('请填写留言内容','error');
             showToast('留言提交成功！'); document.getElementById('feedbackMessage').value = '';
-            // 可添加提交到Airtable的逻辑
         });
         
-        // 聊天机器人
         let chatInitialized = false;
         function initChat() {
             if(chatInitialized) return; chatInitialized = true;
@@ -590,7 +623,7 @@
         
         // 启动
         initSoftware();
-        initAuth();
+        initAuthEvents();
         initTheme();
         addBaiduPush();
         document.getElementById('searchInput').addEventListener('input', e=>{ searchKeyword = e.target.value; renderGrid(); });
