@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整原始样式 + 微信安全区及按钮优化 ========== */
+        /* ========== 完整原始样式 + 微信安全区适配 ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; -webkit-text-size-adjust: 100%; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -42,34 +42,8 @@
         body.bg-night .search-bar input { color: white; }
         body.bg-night .search-bar input::placeholder { color: #94a3b8; }
         body.bg-night .feedback-submit-btn { background: #a855f7; }
-        
-        /* 顶部导航强化适配 */
-        .top-nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(0,0,0,0.03);
-            transition: transform 0.35s cubic-bezier(0.2,0.9,0.4,1);
-            transform: translateY(0);
-            padding-top: constant(safe-area-inset-top);
-            padding-top: env(safe-area-inset-top);
-        }
-        /* 安全区背景填充（消除割裂感） */
-        .top-nav::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: env(safe-area-inset-top);
-            background: inherit;
-            backdrop-filter: inherit;
-            z-index: -1;
-        }
+        .top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(255,255,255,0.6); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(0,0,0,0.03); transition: transform 0.35s cubic-bezier(0.2,0.9,0.4,1); transform: translateY(0); padding-top: constant(safe-area-inset-top); padding-top: env(safe-area-inset-top); }
+        .top-nav::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0); background: inherit; backdrop-filter: inherit; border-bottom: inherit; z-index: -1; }
         body.bg-night .top-nav { background: rgba(15,23,42,0.6); border-bottom-color: rgba(255,255,255,0.03); }
         .top-nav.hidden { transform: translateY(-100%); }
         .nav-inner { max-width: 1200px; margin: 0 auto; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
@@ -82,33 +56,11 @@
         .nav-links a.active, .nav-links a:hover { color: #1e6bdf; }
         body.bg-night .nav-links a.active, body.bg-night .nav-links a:hover { color: #c084fc; }
         .user-area { margin-left: 10px; }
-        
-        /* 登录/注册按钮移动端优化 */
-        .auth-btn {
-            background: rgba(30,107,223,0.1);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 14px;
-            color: #1e6bdf;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
+        .auth-btn { background: rgba(30,107,223,0.1); border: none; padding: 10px 20px; border-radius: 40px; font-weight: 600; font-size: 14px; color: #1e6bdf; cursor: pointer; backdrop-filter: blur(4px); transition: 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
         .auth-btn:hover { background: #1e6bdf; color: white; }
         body.bg-night .auth-btn { background: rgba(168,85,247,0.2); color: #c084fc; }
         body.bg-night .auth-btn:hover { background: #a855f7; color: white; }
-        @media (max-width: 720px) {
-            .auth-btn { padding: 10px 18px; font-size: 14px; }
-            .nav-links { gap: 16px; }
-            .nav-links a { font-size: 13px; }
-        }
-
+        @media (max-width: 720px) { .auth-btn { padding: 10px 18px; font-size: 14px; } .nav-links { gap: 16px; } .nav-links a { font-size: 13px; } }
         .user-dropdown { position: relative; display: inline-block; }
         .user-name-btn { background: rgba(255,255,255,0.5); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.05); padding: 6px 16px; border-radius: 40px; font-weight: 500; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
         body.bg-night .user-name-btn { background: rgba(30,41,59,0.7); color: #e2e8f0; }
@@ -243,6 +195,7 @@
         .admin-add-form input, .admin-add-form select { flex: 1; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 30px; font-size: 13px; }
         .admin-add-form button { padding: 10px 20px; background: #1e6bdf; color: white; border: none; border-radius: 30px; cursor: pointer; }
     </style>
+
 </head>
 <body>
 <div class="top-nav" id="topNav">
@@ -360,7 +313,7 @@
     </div>
 </div>
 
-<!-- 个人中心模态框 -->
+<!-- 个人中心模态框（基础资料修改） -->
 <div id="profileModal" class="profile-modal">
     <div class="profile-card">
         <div class="auth-header">
@@ -433,7 +386,7 @@
 </div>
 
 <script>
-    // ========== 完整 JavaScript（修复响应慢、留言持久化、管理后台、直接下载、微信适配） ==========
+    // ========== 完整 JavaScript（修复软件列表 + 无积分系统） ==========
     (function(){
         const CONFIG = {
             AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
@@ -575,7 +528,7 @@
             } catch(e) { container.innerHTML = '<div class="feedback-empty">加载留言失败，请稍后重试</div>'; }
         }
         
-        // 软件数据（18款完整保留）
+        // ========== 完整软件数据（修复逗号错误） ==========
         const DEFAULT_SOFTWARES = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
             { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
@@ -584,7 +537,8 @@
             { name: "After Effects", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false, addedDate: "2024-10-15" },
             { name: "Premiere Pro", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false, addedDate: "2024-10-20" },
             { name: "Bridge", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "fa-images", url: "https://www.yuque.com/example/bridge", noVerify: false, addedDate: "2024-11-05" },
-            { name: "InDesign", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false, addedDate: "2024-11-12" }
+            { name: "InDesign", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false, addedDate: "2024-11-12" },
+            { name: "Acrobat DC", category: "adobe", os: ["Windows","Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "fa-file-pdf", url: "https://www.yuque.com/example/acrobat", noVerify: false, addedDate: "2024-11-20" },
             { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe 官方清理工具", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false, addedDate: "2025-01-10" },
             { name: "AutoCAD", category: "autodesk", os: ["Windows","Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false, addedDate: "2024-09-18" },
             { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false, addedDate: "2024-10-05" },
@@ -626,7 +580,7 @@
                 const sw = softwares.find(s => s.name === card.dataset.name);
                 if (!sw) return;
                 if (!currentUser) { openAuthModal('login'); showToast('请先登录', 'error'); return; }
-                window.open(sw.url, '_blank');  // 直接跳转，无需口令
+                window.open(sw.url, '_blank');
             }));
         }
         function initSoftware() {
@@ -671,8 +625,7 @@
                     const code = await sendCode(email, '注册', CONFIG.EMAILJS_TEMPLATE_REG);
                     regEmail = email; regCode = code; regCodeExpire = Date.now() + 600000;
                     showToast('验证码已发送');
-                    let sec = 60;
-                    const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if (sec <= 0) { clearInterval(timer); this.disabled = false; this.textContent = '发送验证码'; } }, 1000);
+                    let sec = 60; const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if (sec <= 0) { clearInterval(timer); this.disabled = false; this.textContent = '发送验证码'; } }, 1000);
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled = false; this.textContent = '发送验证码'; }
             });
             
@@ -725,8 +678,7 @@
                     const code = await sendCode(email, '重置密码', CONFIG.EMAILJS_TEMPLATE_RESET);
                     resetEmail = email; resetCode = code; resetCodeExpire = Date.now() + 600000;
                     showToast('验证码已发送');
-                    let sec = 60;
-                    const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if(sec<=0){ clearInterval(timer); this.disabled=false; this.textContent='发送验证码'; } }, 1000);
+                    let sec = 60; const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if(sec<=0){ clearInterval(timer); this.disabled=false; this.textContent='发送验证码'; } }, 1000);
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled = false; this.textContent = '发送验证码'; }
             });
             
@@ -755,7 +707,7 @@
             updateUserUI();
         }
         
-        // 个人中心、管理后台、留言板、聊天等事件绑定（完整保留）
+        // 个人中心、管理后台、留言板、聊天等事件绑定
         document.getElementById('closeProfileModal').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
         document.getElementById('cancelProfileBtn').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
         document.getElementById('saveProfileBtn').addEventListener('click', async function() {
@@ -836,7 +788,7 @@
         }
         document.getElementById('chatToggleBtn').addEventListener('click', initChat, { once: true });
         
-        // 启动
+        // 启动一切
         initSoftware();
         initAuthEvents();
         initTheme();
