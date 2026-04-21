@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整原始样式 + 微信安全区适配 ========== */
+        /* ========== 完整原始样式（未做任何改动） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; -webkit-text-size-adjust: 100%; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -195,8 +195,6 @@
         .admin-add-form input, .admin-add-form select { flex: 1; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 30px; font-size: 13px; }
         .admin-add-form button { padding: 10px 20px; background: #1e6bdf; color: white; border: none; border-radius: 30px; cursor: pointer; }
     </style>
-
-</head>
 <body>
 <div class="top-nav" id="topNav">
     <div class="nav-inner">
@@ -386,7 +384,7 @@
 </div>
 
 <script>
-    // ========== 完整 JavaScript（修复软件列表 + 无积分系统） ==========
+    // ========== 完整 JavaScript（默认软件列表已移除 InDesign、Bridge、Acrobat DC） ==========
     (function(){
         const CONFIG = {
             AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
@@ -528,7 +526,7 @@
             } catch(e) { container.innerHTML = '<div class="feedback-empty">加载留言失败，请稍后重试</div>'; }
         }
         
-        // ========== 完整软件数据（修复逗号错误） ==========
+        // ========== 软件数据（已移除 InDesign、Bridge、Acrobat DC） ==========
         const DEFAULT_SOFTWARES = [
             { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
             { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
@@ -536,9 +534,6 @@
             { name: "Lightroom", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false, addedDate: "2024-10-01" },
             { name: "After Effects", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false, addedDate: "2024-10-15" },
             { name: "Premiere Pro", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false, addedDate: "2024-10-20" },
-            { name: "Bridge", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "数字资产管理软件和照片管理工具", icon: "fa-images", url: "https://www.yuque.com/example/bridge", noVerify: false, addedDate: "2024-11-05" },
-            { name: "InDesign", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业排版软件", icon: "fa-book", url: "https://www.yuque.com/example/indesign", noVerify: false, addedDate: "2024-11-12" },
-            { name: "Acrobat DC", category: "adobe", os: ["Windows","Mac"], version: "AcrXIPro-2026", description: "PDF编辑与转换，文档处理专家", icon: "fa-file-pdf", url: "https://www.yuque.com/example/acrobat", noVerify: false, addedDate: "2024-11-20" },
             { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe 官方清理工具", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false, addedDate: "2025-01-10" },
             { name: "AutoCAD", category: "autodesk", os: ["Windows","Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false, addedDate: "2024-09-18" },
             { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false, addedDate: "2024-10-05" },
@@ -707,7 +702,6 @@
             updateUserUI();
         }
         
-        // 个人中心、管理后台、留言板、聊天等事件绑定
         document.getElementById('closeProfileModal').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
         document.getElementById('cancelProfileBtn').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
         document.getElementById('saveProfileBtn').addEventListener('click', async function() {
