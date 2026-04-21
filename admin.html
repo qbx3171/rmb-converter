@@ -9,7 +9,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         body { background: #f5f7fb; padding: 24px; color: #1e293b; }
         .admin-container { max-width: 1400px; margin: 0 auto; }
-        /* 登录界面 */
         .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f5f7fb; display: flex; align-items: center; justify-content: center; z-index: 10000; }
         .login-card { background: white; border-radius: 32px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
         .login-card h2 { font-size: 24px; margin-bottom: 8px; }
@@ -18,7 +17,6 @@
         .login-card input:focus { border-color: #1e6bdf; }
         .login-card button { width: 100%; padding: 16px; background: #1e6bdf; color: white; border: none; border-radius: 60px; font-weight: 600; font-size: 16px; cursor: pointer; }
         .login-error { color: #ef4444; margin-top: 12px; font-size: 14px; }
-        /* 主界面默认隐藏 */
         #mainContent { display: none; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
         h1 i { color: #a855f7; }
@@ -88,7 +86,6 @@
     </style>
 </head>
 <body>
-<!-- 登录界面 -->
 <div id="loginOverlay" class="login-overlay">
     <div class="login-card">
         <h2><i class="fas fa-lock" style="color:#1e6bdf;"></i> 管理后台</h2>
@@ -99,7 +96,6 @@
     </div>
 </div>
 
-<!-- 主界面内容（登录后显示） -->
 <div id="mainContent">
 <div class="admin-container">
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -113,7 +109,6 @@
         <button class="tab-btn" data-tab="messages">💬 留言管理</button>
     </div>
 
-    <!-- 仪表盘面板 -->
     <div id="dashboardPanel" class="panel">
         <h2 style="margin-bottom: 24px;"><i class="fas fa-chart-pie"></i> 数据概览</h2>
         <div class="stats-grid">
@@ -150,7 +145,6 @@
             </table>
         </div>
     </div>
-    <!-- 软件管理面板 -->
     <div id="softwaresPanel" class="panel" style="display:none;">
         <h2 style="margin-bottom: 20px;"><i class="fas fa-cubes"></i> 添加 / 编辑软件</h2>
         <div class="form-grid">
@@ -247,7 +241,6 @@
         </table>
     </div>
 
-    <!-- 用户管理面板 -->
     <div id="usersPanel" class="panel" style="display:none;">
         <h2><i class="fas fa-users"></i> 用户管理</h2>
         <div class="form-grid" style="margin-top:20px;">
@@ -263,7 +256,6 @@
         </table>
     </div>
 
-    <!-- 留言管理面板 -->
     <div id="messagesPanel" class="panel" style="display:none;">
         <h2><i class="fas fa-comments"></i> 留言管理</h2>
         <table class="table">
@@ -276,74 +268,12 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <script>
-    // ========== 配置 ==========
     const CONFIG = {
         AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
         AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9'
     };
-    // 密码 Base64 编码 (原密码: qbx12164811)
-    const ENCODED_PASSWORD = 'cWJ4MTIxNjQ4MTE=';
+    const ENCODED_PASSWORD = 'cWJ4MTIxNjQ4MTE='; // Base64 of qbx12164811
 
-    // ========== 登录验证 ==========
-    const loginOverlay = document.getElementById('loginOverlay');
-    const mainContent = document.getElementById('mainContent');
-    const loginBtn = document.getElementById('loginBtn');
-    const loginPasswordInput = document.getElementById('loginPasswordInput');
-    const loginError = document.getElementById('loginError');
-
-    function checkLogin() {
-        const inputPwd = loginPasswordInput.value;
-        const decoded = atob(ENCODED_PASSWORD);
-        if (inputPwd === decoded) {
-            loginOverlay.style.display = 'none';
-            mainContent.style.display = 'block';
-            // 初始化主界面
-            initIconPanel();
-            loadDashboard();
-            refreshIconPreview();
-        } else {
-            loginError.textContent = '密码错误';
-        }
-    }
-
-    loginBtn.addEventListener('click', checkLogin);
-    // 检查是否已登录（sessionStorage）
-    if (sessionStorage.getItem('admin_logged') === 'true') {
-        loginOverlay.style.display = 'none';
-        mainContent.style.display = 'block';
-        initIconPanel();
-        loadDashboard();
-        refreshIconPreview();
-    } else {
-        // 未登录，显示登录框
-        loginOverlay.style.display = 'flex';
-        mainContent.style.display = 'none';
-    }
-    // 登录成功后设置标记
-    const originalCheck = checkLogin;
-    checkLogin = function() {
-        const inputPwd = loginPasswordInput.value;
-        const decoded = atob(ENCODED_PASSWORD);
-        if (inputPwd === decoded) {
-            sessionStorage.setItem('admin_logged', 'true');
-            loginOverlay.style.display = 'none';
-            mainContent.style.display = 'block';
-            initIconPanel();
-            loadDashboard();
-            refreshIconPreview();
-        } else {
-            loginError.textContent = '密码错误';
-        }
-    };
-    loginBtn.addEventListener('click', checkLogin);
-
-    // 退出登录
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        sessionStorage.removeItem('admin_logged');
-        window.location.reload();
-    });
-
-    // ========== 图标库 ==========
     const iconCategories = {
         '常用': ['fa-cube', 'fa-image', 'fa-paint-brush', 'fa-video', 'fa-film', 'fa-camera', 'fa-cloud-download-alt', 'fa-puzzle-piece', 'fa-drafting-compass', 'fa-ruler-combined', 'fa-shapes', 'fa-cubes', 'fa-file-pdf', 'fa-file-alt', 'fa-file'],
         '品牌': ['fa-adobe', 'fa-apple', 'fa-windows', 'fa-linux'],
@@ -354,6 +284,41 @@
     let allIcons = [];
     let currentIconCat = '常用';
 
+    const loginOverlay = document.getElementById('loginOverlay');
+    const mainContent = document.getElementById('mainContent');
+    const loginBtn = document.getElementById('loginBtn');
+    const loginPasswordInput = document.getElementById('loginPasswordInput');
+    const loginError = document.getElementById('loginError');
+
+    function checkLogin() {
+        if (loginPasswordInput.value === atob(ENCODED_PASSWORD)) {
+            sessionStorage.setItem('admin_logged', 'true');
+            loginOverlay.style.display = 'none';
+            mainContent.style.display = 'block';
+            initIconPanel();
+            loadDashboard();
+            refreshIconPreview();
+        } else {
+            loginError.textContent = '密码错误';
+        }
+    }
+    loginBtn.addEventListener('click', checkLogin);
+    if (sessionStorage.getItem('admin_logged') === 'true') {
+        loginOverlay.style.display = 'none';
+        mainContent.style.display = 'block';
+        initIconPanel();
+        loadDashboard();
+        refreshIconPreview();
+    } else {
+        loginOverlay.style.display = 'flex';
+        mainContent.style.display = 'none';
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        sessionStorage.removeItem('admin_logged');
+        window.location.reload();
+    });
+
     function showToast(msg, isError = false) {
         const t = document.createElement('div'); t.className = 'toast';
         t.style.background = isError ? '#ef4444' : '#1e293b';
@@ -363,35 +328,33 @@
     async function airtableRequest(method, path, body = null) {
         const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
         const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
-        const opts = { method, headers }; if (body) opts.body = JSON.stringify(body);
-        const resp = await fetch(url, opts); if (!resp.ok) throw new Error((await resp.json()).error.message);
+        const opts = { method, headers };
+        if (body) opts.body = JSON.stringify(body);
+        const resp = await fetch(url, opts);
+        if (!resp.ok) throw new Error((await resp.json()).error?.message || `HTTP ${resp.status}`);
         return resp.json();
     }
 
     function getSmartAbbreviation(name) {
         if (!name) return '软';
-        const chineseMatch = name.match(/[\u4e00-\u9fa5]/);
-        if (chineseMatch) return chineseMatch[0];
-        const lowerName = name.toLowerCase();
-        if (lowerName.includes('photoshop')) return 'PS';
-        if (lowerName.includes('illustrator')) return 'AI';
-        if (lowerName.includes('after effects')) return 'AE';
-        if (lowerName.includes('premiere')) return 'PR';
-        if (lowerName.includes('lightroom')) return 'LR';
-        if (lowerName.includes('audition')) return 'AU';
-        if (lowerName.includes('indesign')) return 'ID';
-        if (lowerName.includes('acrobat')) return 'AC';
-        if (lowerName.includes('autocad')) return 'AC';
-        if (lowerName.includes('3ds max')) return '3D';
-        if (lowerName.includes('maya')) return 'MA';
-        if (lowerName.includes('cinema 4d')) return 'C4';
-        if (lowerName.includes('sketchup')) return 'SU';
-        if (lowerName.includes('rhino')) return 'RH';
-        if (lowerName.includes('达芬奇') || lowerName.includes('resolve')) return 'DV';
-        const words = name.split(/[\s\-_]+/).filter(w => w.length);
-        if (words.length >= 2) return words.map(w => w.charAt(0).toUpperCase()).slice(0, 3).join('');
+        if (/[\u4e00-\u9fa5]/.test(name)) return name.match(/[\u4e00-\u9fa5]/)[0];
+        const lower = name.toLowerCase();
+        if (lower.includes('photoshop')) return 'PS';
+        if (lower.includes('illustrator')) return 'AI';
+        if (lower.includes('after effects')) return 'AE';
+        if (lower.includes('premiere')) return 'PR';
+        if (lower.includes('lightroom')) return 'LR';
+        if (lower.includes('indesign')) return 'ID';
+        if (lower.includes('acrobat')) return 'AC';
+        if (lower.includes('autocad')) return 'AC';
+        if (lower.includes('cinema 4d')) return 'C4';
+        if (lower.includes('sketchup')) return 'SU';
+        if (lower.includes('rhino')) return 'RH';
+        if (lower.includes('resolve') || lower.includes('达芬奇')) return 'DV';
+        const words = name.split(/[\s\-_]+/);
+        if (words.length >= 2) return words.map(w => w.charAt(0).toUpperCase()).slice(0,3).join('');
         const letters = name.replace(/[^a-zA-Z]/g, '');
-        return letters.slice(0, 2).toUpperCase() || name.charAt(0).toUpperCase();
+        return letters.slice(0,2).toUpperCase() || name.charAt(0).toUpperCase();
     }
 
     function getColorFromName(name) {
@@ -402,103 +365,88 @@
 
     function renderIconForTable(record) {
         const name = record.Name || '软件';
-        const iconField = record.Icon;
-        if (Array.isArray(iconField) && iconField.length > 0 && iconField[0].url) {
-            return `<img src="${iconField[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
-        }
-        if (typeof iconField === 'string' && (iconField.startsWith('http') || iconField.startsWith('data:'))) {
-            return `<img src="${iconField}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
-        }
-        if (typeof iconField === 'string' && iconField.startsWith('fa-')) {
-            return `<i class="fas ${iconField}"></i>`;
-        }
+        const icon = record.Icon;
+        if (Array.isArray(icon) && icon[0]?.url) return `<img src="${icon[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
+        if (typeof icon === 'string' && (icon.startsWith('http') || icon.startsWith('data:'))) return `<img src="${icon}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
+        if (typeof icon === 'string' && icon.startsWith('fa-')) return `<i class="fas ${icon}"></i>`;
         const abbr = getSmartAbbreviation(name);
-        const bgColor = getColorFromName(name);
-        return `<div class="icon-text-badge" style="background: ${bgColor};">${abbr}</div>`;
+        return `<div class="icon-text-badge" style="background: ${getColorFromName(name)};">${abbr}</div>`;
     }
 
     function refreshIconPreview() {
-        const iconValue = document.getElementById('swIcon').value;
-        const customVal = document.getElementById('swIconCustom')?.value.trim() || '';
         const name = document.getElementById('swName').value.trim() || '软件';
+        const custom = document.getElementById('swIconCustom')?.value.trim() || '';
+        const iconVal = document.getElementById('swIcon').value;
+        const effective = custom || iconVal;
         const previewIcon = document.getElementById('iconPreview');
         const previewImg = document.getElementById('iconPreviewImg');
         const previewText = document.getElementById('iconPreviewText');
-        if (!previewIcon || !previewImg || !previewText) return;
         previewIcon.style.display = 'none';
         previewImg.style.display = 'none';
         previewText.style.display = 'none';
-        const effectiveIcon = customVal || iconValue;
-        if (effectiveIcon) {
-            if (effectiveIcon.startsWith('http') || effectiveIcon.startsWith('data:')) {
-                previewImg.src = effectiveIcon;
+        if (effective) {
+            if (effective.startsWith('http') || effective.startsWith('data:')) {
+                previewImg.src = effective;
                 previewImg.style.display = 'block';
             } else {
-                previewIcon.className = effectiveIcon;
+                previewIcon.className = effective;
                 previewIcon.style.display = 'flex';
             }
         } else {
-            const abbr = getSmartAbbreviation(name);
-            previewText.textContent = abbr;
+            previewText.textContent = getSmartAbbreviation(name);
             previewText.style.background = getColorFromName(name);
             previewText.style.display = 'flex';
         }
     }
-
     window.refreshIconPreview = refreshIconPreview;
-    window.suggestIcon = function () {
+
+    window.suggestIcon = function() {
         const name = document.getElementById('swName').value.toLowerCase();
-        const suggestions = [];
-        if (name.includes('acrobat') || name.includes('pdf')) suggestions.push('fa-file-pdf');
-        if (name.includes('photoshop')) suggestions.push('fa-image');
-        if (name.includes('illustrator')) suggestions.push('fa-paint-brush');
-        if (name.includes('after effects')) suggestions.push('fa-video');
-        if (name.includes('premiere')) suggestions.push('fa-film');
-        if (name.includes('lightroom')) suggestions.push('fa-camera');
-        if (name.includes('audition')) suggestions.push('fa-headphones');
-        if (name.includes('indesign')) suggestions.push('fa-book');
-        if (name.includes('autocad')) suggestions.push('fa-cube');
-        if (name.includes('3ds max')) suggestions.push('fa-cubes');
-        if (name.includes('maya')) suggestions.push('fa-shapes');
-        if (name.includes('cinema 4d')) suggestions.push('fa-cube');
-        if (name.includes('sketchup')) suggestions.push('fa-drafting-compass');
-        if (name.includes('rhino')) suggestions.push('fa-ruler-combined');
-        if (name.includes('达芬奇') || name.includes('resolve')) suggestions.push('fa-video');
-        if (name.includes('blender')) suggestions.push('fa-cube');
-        if (name.includes('插件')) suggestions.push('fa-puzzle-piece');
-        if (name.includes('cleaner')) suggestions.push('fa-broom');
-        const sugDiv = document.getElementById('iconSuggestions');
-        if (suggestions.length) {
-            const unique = [...new Set(suggestions)];
-            sugDiv.innerHTML = '💡 推荐: ' + unique.map(s => `<span onclick="selectPresetIcon('${s}')"><i class="fas ${s}"></i> ${s.replace('fa-','')}</span>`).join('');
-        } else { sugDiv.innerHTML = ''; }
+        const sug = [];
+        if (name.includes('photoshop')) sug.push('fa-image');
+        if (name.includes('illustrator')) sug.push('fa-paint-brush');
+        if (name.includes('after effects')) sug.push('fa-video');
+        if (name.includes('premiere')) sug.push('fa-film');
+        if (name.includes('lightroom')) sug.push('fa-camera');
+        if (name.includes('indesign')) sug.push('fa-book');
+        if (name.includes('acrobat')||name.includes('pdf')) sug.push('fa-file-pdf');
+        if (name.includes('autocad')) sug.push('fa-cube');
+        if (name.includes('3ds max')) sug.push('fa-cubes');
+        if (name.includes('maya')) sug.push('fa-shapes');
+        if (name.includes('cinema 4d')) sug.push('fa-cube');
+        if (name.includes('sketchup')) sug.push('fa-drafting-compass');
+        if (name.includes('rhino')) sug.push('fa-ruler-combined');
+        if (name.includes('resolve')||name.includes('达芬奇')) sug.push('fa-video');
+        if (name.includes('插件')) sug.push('fa-puzzle-piece');
+        if (name.includes('cleaner')) sug.push('fa-broom');
+        const div = document.getElementById('iconSuggestions');
+        if (sug.length) {
+            const unique = [...new Set(sug)];
+            div.innerHTML = '💡 推荐: ' + unique.map(s => `<span onclick="selectPresetIcon('${s}')"><i class="fas ${s}"></i> ${s.replace('fa-','')}</span>`).join('');
+        } else { div.innerHTML = ''; }
     };
 
     async function loadDashboard() {
         try {
-            const [allUsers, allSoftwares, allMessages, visitsData] = await Promise.all([
+            const [users, sw, msgs, visits] = await Promise.all([
                 airtableRequest('GET', 'Users'),
                 airtableRequest('GET', 'Softwares'),
                 airtableRequest('GET', 'Messages'),
                 airtableRequest('GET', 'Visits?maxRecords=1')
             ]);
-            document.getElementById('statUsers').innerText = allUsers.records.length;
-            document.getElementById('statSoftwares').innerText = allSoftwares.records.length;
-            document.getElementById('statMessages').innerText = allMessages.records.length;
-            let visitCount = 0;
-            if (visitsData.records.length > 0) visitCount = visitsData.records[0].fields.Count || 0;
+            document.getElementById('statUsers').innerText = users.records.length;
+            document.getElementById('statSoftwares').innerText = sw.records.length;
+            document.getElementById('statMessages').innerText = msgs.records.length;
+            const visitCount = visits.records[0]?.fields?.Count || 0;
             document.getElementById('statVisits').innerText = visitCount;
             try {
-                const recentUsers = await airtableRequest('GET', 'Users?maxRecords=5&sort[0][field]=CreatedAt&sort[0][direction]=desc');
+                const recent = await airtableRequest('GET', 'Users?maxRecords=5&sort[0][field]=CreatedAt&sort[0][direction]=desc');
                 const tbody = document.getElementById('recentUsersTbody');
-                tbody.innerHTML = recentUsers.records.map(r => {
+                tbody.innerHTML = recent.records.map(r => {
                     const f = r.fields;
-                    const created = f.CreatedAt ? new Date(f.CreatedAt).toLocaleString('zh-CN') : '未知时间';
-                    return `<tr><td>${f.Email || ''}</td><td>${f.Username || ''}</td><td>${created}</td></tr>`;
+                    return `<tr><td>${f.Email||''}</td><td>${f.Username||''}</td><td>${f.CreatedAt ? new Date(f.CreatedAt).toLocaleString('zh-CN') : '未知'}</td></tr>`;
                 }).join('');
-            } catch (e) {
-                document.getElementById('recentUsersTbody').innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无最近用户数据</td></tr>';
-            }
+            } catch { document.getElementById('recentUsersTbody').innerHTML = '<tr><td colspan="3">暂无数据</td></tr>'; }
         } catch (e) { showToast('加载仪表盘失败', true); }
     }
 
@@ -508,39 +456,36 @@
             const tbody = document.getElementById('softwaresTbody');
             tbody.innerHTML = data.records.map(r => {
                 const f = r.fields;
-                const iconHtml = renderIconForTable(f);
-                return `<tr><td>${f.Name || ''}</td><td>${f.Category || ''}</td><td>${f.Version || ''}</td><td>${(f.OS || []).join(', ')}</td><td style="text-align:center;">${iconHtml}</td><td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                return `<tr><td>${f.Name||''}</td><td>${f.Category||''}</td><td>${f.Version||''}</td><td>${(f.OS||[]).join(', ')}</td><td>${renderIconForTable(f)}</td><td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             }).join('');
         } catch (e) { showToast('加载软件失败', true); }
     }
 
-    window.editSoftware = async function (id) {
+    window.editSoftware = async function(id) {
         try {
-            const data = await airtableRequest('GET', `Softwares/${id}`);
-            const f = data.fields;
-            document.getElementById('swName').value = f.Name || '';
-            document.getElementById('swCategory').value = f.Category || 'adobe';
-            document.getElementById('swVersion').value = f.Version || '';
-            const osArray = f.OS || ['Windows', 'Mac'];
-            document.getElementById('osWindows').checked = osArray.includes('Windows');
-            document.getElementById('osMac').checked = osArray.includes('Mac');
-            document.getElementById('swURL').value = f.URL || '';
-            document.getElementById('swDescription').value = f.Description || '';
-            document.getElementById('swAddedDate').value = f.AddedDate || '';
-            document.getElementById('swNoVerify').checked = !!f.NoVerify;
+            const { fields } = await airtableRequest('GET', `Softwares/${id}`);
+            document.getElementById('swName').value = fields.Name || '';
+            document.getElementById('swCategory').value = fields.Category || 'adobe';
+            document.getElementById('swVersion').value = fields.Version || '';
+            const os = fields.OS || ['Windows','Mac'];
+            document.getElementById('osWindows').checked = os.includes('Windows');
+            document.getElementById('osMac').checked = os.includes('Mac');
+            document.getElementById('swURL').value = fields.URL || '';
+            document.getElementById('swDescription').value = fields.Description || '';
+            document.getElementById('swAddedDate').value = fields.AddedDate || '';
+            document.getElementById('swNoVerify').checked = !!fields.NoVerify;
             document.getElementById('editingId').value = id;
-
-            const iconField = f.Icon;
+            const icon = fields.Icon;
             document.getElementById('swIconCustom').value = '';
-            if (Array.isArray(iconField) && iconField[0]?.url) {
+            if (Array.isArray(icon) && icon[0]?.url) {
                 document.getElementById('swIconType').value = 'image';
-                document.getElementById('swIcon').value = iconField[0].url;
-            } else if (typeof iconField === 'string' && (iconField.startsWith('http') || iconField.startsWith('data:'))) {
+                document.getElementById('swIcon').value = icon[0].url;
+            } else if (typeof icon === 'string' && (icon.startsWith('http')||icon.startsWith('data:'))) {
                 document.getElementById('swIconType').value = 'image';
-                document.getElementById('swIcon').value = iconField;
-            } else if (typeof iconField === 'string' && iconField.startsWith('fa-')) {
+                document.getElementById('swIcon').value = icon;
+            } else if (typeof icon === 'string' && icon.startsWith('fa-')) {
                 document.getElementById('swIconType').value = 'icon';
-                document.getElementById('swIcon').value = iconField;
+                document.getElementById('swIcon').value = icon;
             } else {
                 document.getElementById('swIconType').value = 'text';
                 document.getElementById('swIcon').value = '';
@@ -549,33 +494,28 @@
         } catch (e) { showToast('加载详情失败', true); }
     };
 
-    window.deleteSoftware = async function (id) {
+    window.deleteSoftware = async function(id) {
         if (!confirm('确定删除？')) return;
         try { await airtableRequest('DELETE', `Softwares/${id}`); showToast('已删除'); loadSoftwares(); loadDashboard(); }
         catch (e) { showToast('删除失败', true); }
     };
 
     function initIconPanel() {
-        const all = [];
-        Object.values(iconCategories).forEach(arr => arr.forEach(icon => all.push(icon)));
-        allIcons = [...new Set(all)];
+        allIcons = [...new Set(Object.values(iconCategories).flat())];
         renderIconCategories();
         renderIconGrid(currentIconCat);
     }
     function renderIconCategories() {
-        const catDiv = document.getElementById('iconCategories');
-        let html = '';
-        Object.keys(iconCategories).forEach(cat => { html += `<button class="icon-cat ${cat === currentIconCat ? 'active' : ''}" onclick="setIconCat('${cat}')">${cat}</button>`; });
-        catDiv.innerHTML = html;
+        const div = document.getElementById('iconCategories');
+        div.innerHTML = Object.keys(iconCategories).map(cat => `<button class="icon-cat ${cat===currentIconCat?'active':''}" onclick="setIconCat('${cat}')">${cat}</button>`).join('');
     }
-    window.setIconCat = function (cat) { currentIconCat = cat; renderIconCategories(); renderIconGrid(cat); };
+    window.setIconCat = function(cat) { currentIconCat = cat; renderIconCategories(); renderIconGrid(cat); };
     function renderIconGrid(cat, filter = '') {
         let icons = iconCategories[cat] || [];
         if (filter) icons = icons.filter(i => i.includes(filter.toLowerCase()));
-        const grid = document.getElementById('iconGrid');
-        grid.innerHTML = icons.map(icon => `<div class="icon-item" onclick="selectPresetIcon('${icon}')"><i class="fas ${icon}"></i><span>${icon.replace('fa-', '')}</span></div>`).join('');
+        document.getElementById('iconGrid').innerHTML = icons.map(icon => `<div class="icon-item" onclick="selectPresetIcon('${icon}')"><i class="fas ${icon}"></i><span>${icon.replace('fa-','')}</span></div>`).join('');
     }
-    window.selectPresetIcon = function (icon) {
+    window.selectPresetIcon = function(icon) {
         document.getElementById('swIconType').value = 'icon';
         document.getElementById('swIcon').value = icon;
         document.getElementById('swIconCustom').value = '';
@@ -583,59 +523,45 @@
         document.getElementById('iconPanel').classList.remove('show');
     };
 
-    // 事件绑定（确保元素存在后再绑定）
+    // 事件绑定
     setTimeout(() => {
-        const openIconPanel = document.getElementById('openIconPanel');
-        if (openIconPanel) {
-            openIconPanel.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
-        }
-        const iconSearchInput = document.getElementById('iconSearchInput');
-        if (iconSearchInput) {
-            iconSearchInput.addEventListener('input', (e) => {
-                const val = e.target.value.toLowerCase();
-                if (val) {
-                    const filtered = allIcons.filter(i => i.includes(val));
-                    const grid = document.getElementById('iconGrid');
-                    grid.innerHTML = filtered.map(icon => `<div class="icon-item" onclick="selectPresetIcon('${icon}')"><i class="fas ${icon}"></i><span>${icon.replace('fa-', '')}</span></div>`).join('');
-                } else { renderIconGrid(currentIconCat); }
-            });
-        }
-        window.addEventListener('click', () => { const p = document.getElementById('iconPanel'); if(p) p.classList.remove('show'); });
-
-        const iconFileInput = document.getElementById('iconFileInput');
-        if (iconFileInput) {
-            iconFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    showToast('请将图片上传到图床后，将 URL 粘贴到自定义输入框', false);
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        document.getElementById('swIconType').value = 'image';
-                        document.getElementById('swIcon').value = ev.target.result;
-                        document.getElementById('swIconCustom').value = ev.target.result;
-                        refreshIconPreview();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-
+        document.getElementById('openIconPanel').addEventListener('click', e => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
+        document.getElementById('iconSearchInput').addEventListener('input', e => {
+            const val = e.target.value.toLowerCase();
+            val ? document.getElementById('iconGrid').innerHTML = allIcons.filter(i => i.includes(val)).map(icon => `<div class="icon-item" onclick="selectPresetIcon('${icon}')"><i class="fas ${icon}"></i><span>${icon.replace('fa-','')}</span></div>`).join('')
+                : renderIconGrid(currentIconCat);
+        });
+        window.addEventListener('click', () => document.getElementById('iconPanel').classList.remove('show'));
+        document.getElementById('iconFileInput').addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                showToast('请将图片上传到图床后粘贴URL', false);
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    document.getElementById('swIconType').value = 'image';
+                    document.getElementById('swIcon').value = ev.target.result;
+                    document.getElementById('swIconCustom').value = ev.target.result;
+                    refreshIconPreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
         document.getElementById('saveSoftwareBtn').addEventListener('click', async () => {
             let finalIcon = document.getElementById('swIcon').value;
-            const customVal = document.getElementById('swIconCustom').value.trim();
-            if (customVal) finalIcon = customVal;
-            const osArray = [];
-            if (document.getElementById('osWindows').checked) osArray.push('Windows');
-            if (document.getElementById('osMac').checked) osArray.push('Mac');
-            if (osArray.length === 0) return showToast('请至少选择一个支持系统', true);
+            const custom = document.getElementById('swIconCustom').value.trim();
+            if (custom) finalIcon = custom;
+            const os = [];
+            if (document.getElementById('osWindows').checked) os.push('Windows');
+            if (document.getElementById('osMac').checked) os.push('Mac');
+            if (!os.length) return showToast('请至少选择一个系统', true);
             const fields = {
                 Name: document.getElementById('swName').value.trim(),
                 Category: document.getElementById('swCategory').value,
                 Version: document.getElementById('swVersion').value.trim(),
-                OS: osArray,
+                OS: os,
                 URL: document.getElementById('swURL').value.trim(),
                 Description: document.getElementById('swDescription').value.trim(),
-                Icon: finalIcon || null,
+                Icon: finalIcon || '', // 确保不为 null/undefined
                 AddedDate: document.getElementById('swAddedDate').value,
                 NoVerify: document.getElementById('swNoVerify').checked
             };
@@ -645,18 +571,11 @@
                 if (id) await airtableRequest('PATCH', `Softwares/${id}`, { fields });
                 else await airtableRequest('POST', 'Softwares', { fields });
                 showToast('保存成功'); loadSoftwares(); loadDashboard();
-                document.getElementById('editingId').value = '';
                 document.getElementById('cancelEditBtn').click();
-            } catch (e) { showToast('保存失败', true); }
+            } catch (e) { showToast('保存失败: ' + e.message, true); }
         });
-
         document.getElementById('cancelEditBtn').addEventListener('click', () => {
-            document.getElementById('swName').value = '';
-            document.getElementById('swVersion').value = '';
-            document.getElementById('swURL').value = '';
-            document.getElementById('swDescription').value = '';
-            document.getElementById('swIcon').value = '';
-            document.getElementById('swIconCustom').value = '';
+            ['swName','swVersion','swURL','swDescription','swIcon','swIconCustom'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('swIconType').value = 'text';
             document.getElementById('osWindows').checked = true;
             document.getElementById('osMac').checked = true;
@@ -664,50 +583,39 @@
             document.getElementById('swNoVerify').checked = false;
             refreshIconPreview();
         });
-
+        // 用户和留言管理 (略，与之前相同)
         async function loadUsers() {
             const data = await airtableRequest('GET', 'Users?maxRecords=100');
-            document.getElementById('usersTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Email}</td><td>${r.fields.Username}</td><td>${r.fields.Role || 'user'}</td><td><button onclick="deleteUser('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+            document.getElementById('usersTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Email}</td><td>${r.fields.Username}</td><td>${r.fields.Role||'user'}</td><td><button onclick="deleteUser('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
         }
-        window.deleteUser = async function (id) { if (!confirm('确定删除用户？')) return; await airtableRequest('DELETE', `Users/${id}`); showToast('已删除'); loadUsers(); loadDashboard(); };
+        window.deleteUser = async (id) => { if(confirm('删除用户？')) { await airtableRequest('DELETE', `Users/${id}`); loadUsers(); loadDashboard(); } };
         document.getElementById('addUserBtn').addEventListener('click', async () => {
             const email = document.getElementById('newUserEmail').value.trim();
             const username = document.getElementById('newUsername').value.trim();
-            const password = document.getElementById('newUserPassword').value.trim();
+            const pwd = document.getElementById('newUserPassword').value.trim();
             const role = document.getElementById('newUserRole').value;
-            if (!email || !username || !password) return showToast('请填写完整', true);
+            if(!email||!username||!pwd) return showToast('请填写完整', true);
             try {
-                await airtableRequest('POST', 'Users', { fields: { Email: email, Username: username, Password: CryptoJS.SHA256(password).toString(), Role: role } });
+                await airtableRequest('POST', 'Users', { fields: { Email:email, Username:username, Password:CryptoJS.SHA256(pwd).toString(), Role:role } });
                 showToast('用户添加成功'); loadUsers(); loadDashboard();
-                document.getElementById('newUserEmail').value = '';
-                document.getElementById('newUsername').value = '';
-                document.getElementById('newUserPassword').value = '';
-            } catch (e) { showToast('添加失败', true); }
+                ['newUserEmail','newUsername','newUserPassword'].forEach(id => document.getElementById(id).value = '');
+            } catch(e) { showToast('添加失败', true); }
         });
-
         async function loadMessages() {
             const data = await airtableRequest('GET', 'Messages?maxRecords=50');
-            document.getElementById('messagesTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Name || '网友'}</td><td>${r.fields.Message || ''}</td><td>${r.fields.CreatedAt || ''}</td><td><button onclick="deleteMessage('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
+            document.getElementById('messagesTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Name||'网友'}</td><td>${r.fields.Message||''}</td><td>${r.fields.CreatedAt||''}</td><td><button onclick="deleteMessage('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
         }
-        window.deleteMessage = async function (id) { if (!confirm('删除留言？')) return; await airtableRequest('DELETE', `Messages/${id}`); showToast('已删除'); loadMessages(); loadDashboard(); };
-
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const tab = btn.dataset.tab;
-                document.getElementById('dashboardPanel').style.display = tab === 'dashboard' ? 'block' : 'none';
-                document.getElementById('softwaresPanel').style.display = tab === 'softwares' ? 'block' : 'none';
-                document.getElementById('usersPanel').style.display = tab === 'users' ? 'block' : 'none';
-                document.getElementById('messagesPanel').style.display = tab === 'messages' ? 'block' : 'none';
-                if (tab === 'dashboard') loadDashboard();
-                if (tab === 'softwares') loadSoftwares();
-                if (tab === 'users') loadUsers();
-                if (tab === 'messages') loadMessages();
-            });
-        });
-
-        // 初始化加载
+        window.deleteMessage = async (id) => { if(confirm('删除留言？')) { await airtableRequest('DELETE', `Messages/${id}`); loadMessages(); loadDashboard(); } };
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.dataset.tab;
+            ['dashboard','softwares','users','messages'].forEach(t => document.getElementById(t+'Panel').style.display = t===tab?'block':'none');
+            if (tab==='dashboard') loadDashboard();
+            if (tab==='softwares') loadSoftwares();
+            if (tab==='users') loadUsers();
+            if (tab==='messages') loadMessages();
+        }));
         if (mainContent.style.display === 'block') {
             initIconPanel();
             loadDashboard();
