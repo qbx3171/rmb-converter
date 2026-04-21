@@ -228,9 +228,7 @@
     </div>
 
     <div id="softwareGridContainer" class="grid" style="min-height: 200px;">
-        <div style="grid-column:1/-1; text-align:center; padding:40px; color:#6c86a3;">
-            <i class="fas fa-spinner fa-pulse"></i> 正在加载软件库...
-        </div>
+        <!-- 初始加载时立即显示默认软件，后台异步更新 -->
     </div>
     <div id="loadMoreContainer" class="load-more-container" style="display: none;">
         <button class="load-more-btn" id="loadMoreBtn"><i class="fas fa-chevron-down"></i> 加载更多</button>
@@ -389,7 +387,7 @@
 </div>
 
 <script>
-    // ========== 完整 JavaScript（合并 Airtable 数据与默认软件，保留全部功能） ==========
+    // ========== 优化版 JavaScript（立即显示默认软件，后台更新Airtable数据） ==========
     (function(){
         const CONFIG = {
             AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
@@ -533,7 +531,7 @@
             } catch(e) { container.innerHTML = '<div class="feedback-empty">加载留言失败，请稍后重试</div>'; }
         }
 
-        // ========== 软件数据管理（合并 Airtable 与默认软件） ==========
+        // ========== 软件数据管理（先显示默认，后台更新） ==========
         const CATEGORY_DISPLAY = { 'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具' };
         
         const DEFAULT_SOFTWARES = [
@@ -554,7 +552,7 @@
             { name: "Adobe 插件全套", category: "plugin", os: ["Windows","Mac"], version: "2026 最新版", description: "支持2026最新版", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true, addedDate: "2025-02-01" }
         ];
 
-        let softwares = [];
+        let softwares = [...DEFAULT_SOFTWARES]; // 初始直接使用默认软件
         let currentCategory = "all";
         let searchKeyword = "";
         let showAll = false;
@@ -567,10 +565,10 @@
             return defaultValue;
         }
 
-        async function fetchSoftwares() {
+        async function fetchAirtableSoftwares() {
             try {
                 const data = await airtableRequest('GET', 'Softwares?maxRecords=100');
-                const airtableSoftwares = data.records.map(rec => {
+                return data.records.map(rec => {
                     const f = rec.fields;
                     const name = getField(f, ['Name', 'name', 'A name'], '未命名软件');
                     const category = getField(f, ['Category', 'category'], 'other');
@@ -588,18 +586,21 @@
                     }
                     return { id: rec.id, name, category, os: osArray, version, description, icon, url, noVerify: !!noVerify, addedDate };
                 });
-                
-                // 合并默认软件：以 Airtable 数据优先（同名覆盖），同时保留默认软件中未在 Airtable 出现的
-                const mergedMap = new Map();
-                // 先添加默认软件
-                DEFAULT_SOFTWARES.forEach(sw => mergedMap.set(sw.name.toLowerCase(), sw));
-                // Airtable 数据覆盖或新增
-                airtableSoftwares.forEach(sw => mergedMap.set(sw.name.toLowerCase(), sw));
-                
-                return Array.from(mergedMap.values());
             } catch (e) {
-                console.error('获取软件失败，使用默认数据', e);
-                return DEFAULT_SOFTWARES;
+                console.error('获取Airtable软件失败，继续使用默认数据', e);
+                return null;
+            }
+        }
+
+        async function updateSoftwaresFromAirtable() {
+            const airtableSoftwares = await fetchAirtableSoftwares();
+            if (airtableSoftwares) {
+                const mergedMap = new Map();
+                DEFAULT_SOFTWARES.forEach(sw => mergedMap.set(sw.name.toLowerCase(), sw));
+                airtableSoftwares.forEach(sw => mergedMap.set(sw.name.toLowerCase(), sw));
+                softwares = Array.from(mergedMap.values());
+                renderCategories();
+                renderGrid();
             }
         }
 
@@ -650,11 +651,12 @@
             }));
         }
 
-        async function initSoftware() {
-            document.getElementById('softwareGridContainer').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> 正在加载软件库...</div>';
-            softwares = await fetchSoftwares();
+        function initSoftware() {
+            // 立即使用默认软件渲染，不显示加载中
             renderCategories();
             renderGrid();
+            // 后台获取Airtable数据并更新
+            updateSoftwaresFromAirtable();
         }
 
         // 主题切换
@@ -681,7 +683,7 @@
             document.head.appendChild(bp);
         }
 
-        // 认证事件绑定
+        // 认证事件绑定（保持原样）
         function initAuthEvents() {
             const modal = document.getElementById('authModal');
             document.getElementById('closeAuthModal').addEventListener('click', ()=> modal.classList.remove('active'));
