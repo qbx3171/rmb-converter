@@ -43,7 +43,6 @@
         h1 { font-size:28px; margin-bottom:8px; color:#1a2c3e; font-weight:700; }
         .filter-bar { margin-bottom:20px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
         .filter-bar select, .filter-bar input { padding:8px 16px; border-radius:40px; border:1px solid #ddd; background:white; font-size:14px; }
-        .auto-badge { background:#eef3ff; border-radius:20px; padding:2px 8px; font-size:12px; color:#1E6DFF; margin-left:8px; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -65,6 +64,7 @@
                 <option value="草图大师">草图大师</option>
                 <option value="犀牛软件">犀牛软件</option>
                 <option value="插件工具">插件工具</option>
+                <option value="达芬奇">达芬奇</option>
             </select>
             <input type="text" id="searchFilter" placeholder="搜索软件名称" style="width:200px;">
         </div>
@@ -90,7 +90,7 @@
             <div class="preview-badge" id="iconPreviewBadge">📦</div>
             <div class="preview-info">
                 <p><i class="fas fa-magic"></i> 智能图标预览 (自动生成)</p>
-                <strong id="previewName">Photoshop</strong> → 图标显示为 <span id="previewAbbr">PS</span>
+                <strong id="previewName">软件名称</strong> → 图标显示为 <span id="previewAbbr">APP</span>
                 <div style="margin-top:8px;">
                     <label style="font-size:12px;">📝 手动修改图标（可选）</label>
                     <input type="text" id="iconManual" placeholder="例如: PS, AI, CAD" style="margin-top:4px;">
@@ -114,8 +114,8 @@
 </div>
 
 <script>
-    // ==================== 配置 ====================
-    const AIRTABLE_TOKEN = 'patOe6PVCcEuaswP1.9aaa8be443f568c5c5b9a5d02485e0221e3f5a1b8d3873e95b1a35671ecbef1e';
+    // ==================== ✅ 已修复的配置（使用您的新 Token） ====================
+    const AIRTABLE_TOKEN = 'patrCfcKdMVo56bd4.5e8771a9086fd59f52a737b4e3b79296fcfe58346c968047fb45f427279dbe32';
     const AIRTABLE_BASE_ID = 'appM4Ty76lOlslpU9';
     const TABLE_NAME = 'softwares';
     const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${TABLE_NAME}`;
@@ -131,37 +131,21 @@
     function generateIconAbbr(name) {
         if (!name) return "APP";
         const trimmed = name.trim();
-        // 常见软件映射
         const specialMap = {
-            "photoshop": "PS",
-            "illustrator": "AI",
-            "after effects": "AE",
-            "premiere pro": "PR",
-            "lightroom": "LR",
-            "indesign": "ID",
-            "creative cloud": "CC",
-            "autocad": "CAD",
-            "3ds max": "3DS",
-            "maya": "MA",
-            "cinema 4d": "C4D",
-            "sketchup": "SU",
-            "rhino": "RH",
-            "adobe cleaner tools": "CLN",
-            "acrobat": "PDF",
-            "coreldraw": "CDR",
-            "blender": "BLN",
-            "figma": "FIG",
-            "final cut": "FCP"
+            "photoshop": "PS", "illustrator": "AI", "after effects": "AE", "premiere pro": "PR",
+            "lightroom": "LR", "indesign": "ID", "creative cloud": "CC", "autocad": "CAD",
+            "3ds max": "3DS", "maya": "MA", "cinema 4d": "C4D", "sketchup": "SU",
+            "rhino": "RH", "adobe cleaner tool": "CLN", "acrobat": "PDF", "coreldraw": "CDR",
+            "blender": "BLN", "figma": "FIG", "final cut": "FCP", "达芬奇": "达芬奇"
         };
         const lower = trimmed.toLowerCase();
         for (let [key, val] of Object.entries(specialMap)) {
             if (lower.includes(key)) return val;
         }
-        // 通用缩写：取每个单词首字母大写，最多3个字符
         const words = trimmed.split(/[\s\-\(\)]+/);
         let abbr = "";
         for (let w of words) {
-            if (w.length > 0 && /[A-Za-z]/.test(w[0])) {
+            if (w.length > 0 && /[A-Za-z\u4e00-\u9fa5]/.test(w[0])) {
                 abbr += w[0].toUpperCase();
                 if (abbr.length >= 3) break;
             }
@@ -178,14 +162,12 @@
         document.getElementById('previewAbbr').innerText = autoAbbr;
         document.getElementById('iconPreviewBadge').innerText = autoAbbr;
         document.getElementById('previewName').innerText = name || "软件名称";
-        // 如果手动输入框为空，则同步自动值
         const manualInput = document.getElementById('iconManual');
         if (!manualInput.value.trim()) {
             manualInput.value = autoAbbr;
         }
     }
 
-    // 最终获取图标值（优先手动，否则自动）
     function getFinalIcon() {
         const manual = document.getElementById('iconManual').value.trim();
         if (manual) return manual;
@@ -261,7 +243,7 @@
             const response = await fetch(API_URL, {
                 headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` }
             });
-            if(!response.ok) throw new Error('网络错误');
+            if(!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             const newSoftwares = data.records.map(record => ({
                 id: record.id,
@@ -271,7 +253,7 @@
                 version: record.fields.version || '',
                 description: record.fields.description || '',
                 icon: record.fields.icon || generateIconAbbr(record.fields.name),
-                url: record.fields.url,
+                url: record.fields.url || '',
                 noVerify: record.fields.noVerify || false
             }));
             softwares = newSoftwares;
@@ -316,7 +298,6 @@
         }
         filteredSoftwares.forEach(sw => {
             const row = tbody.insertRow();
-            // 图标列（展示圆形徽标）
             const iconCell = row.insertCell(0);
             const iconText = sw.icon || generateIconAbbr(sw.name);
             iconCell.innerHTML = `<div style="width:36px;height:36px;background:#1E6DFF;border-radius:16px;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:16px;">${iconText.slice(0,2)}</div>`;
@@ -358,7 +339,7 @@
             document.getElementById('noVerify').checked = false;
             document.getElementById('iconManual').value = '';
         }
-        updateAutoIcon();  // 根据当前名称刷新预览
+        updateAutoIcon();
         modal.classList.add('active');
     }
 
