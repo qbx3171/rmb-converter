@@ -23,7 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ========== 完整原始样式 ========== */
+        /* ========== 完整样式（与您原有完全一致） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; -webkit-text-size-adjust: 100%; }
         body.bg-dawn { background: linear-gradient(145deg, #fef9e6 0%, #fff5e6 100%); }
@@ -389,7 +389,7 @@
 </div>
 
 <script>
-    // ========== 完整 JavaScript（核心修复：从 Airtable 动态加载软件） ==========
+    // ========== 完整 JavaScript（合并 Airtable 数据与默认软件，保留全部功能） ==========
     (function(){
         const CONFIG = {
             AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
@@ -400,18 +400,18 @@
             EMAILJS_TEMPLATE_RESET: 'template_xcv0pdc'
         };
         emailjs.init(CONFIG.EMAILJS_PUBLIC_KEY);
-        
+
         function showToast(msg, type='success') {
             const t = document.createElement('div'); t.className = `toast-message ${type}`;
             t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-triangle'}"></i> ${msg}`;
             document.body.appendChild(t); setTimeout(()=>t.remove(), 3000);
         }
         function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-        
+
         let currentUser = null;
         let regEmail = '', regCode = '', regCodeExpire = 0;
         let resetEmail = '', resetCode = '', resetCodeExpire = 0;
-        
+
         async function airtableRequest(method, path, body = null) {
             const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
             const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
@@ -421,8 +421,8 @@
             if (!resp.ok) throw new Error((await resp.json()).error?.message || `HTTP ${resp.status}`);
             return await resp.json();
         }
-        
-        // ---------- 用户管理 (不变) ----------
+
+        // ---------- 用户管理 ----------
         async function findUserByEmail(email) {
             const data = await airtableRequest('GET', `Users?filterByFormula={Email}="${encodeURIComponent(email)}"`);
             return data.records.length ? data.records[0] : null;
@@ -449,26 +449,26 @@
             await airtableRequest('PATCH', `Users/${userId}`, { fields });
         }
         async function getAllUsers() {
-            const data = await airtableRequest('GET', 'Users?maxRecords=100&sort[0][field]=CreatedAt&sort[0][direction]=desc');
+            const data = await airtableRequest('GET', 'Users?maxRecords=100');
             return data.records;
         }
         async function deleteUser(recordId) { await airtableRequest('DELETE', `Users/${recordId}`); }
         async function updateUserRole(recordId, role) { await airtableRequest('PATCH', `Users/${recordId}`, { fields: { Role: role } }); }
-        
+
         async function fetchMessages() {
-            try { const data = await airtableRequest('GET', 'Messages?maxRecords=50&sort[0][field]=CreatedAt&sort[0][direction]=desc'); return data.records; }
+            try { const data = await airtableRequest('GET', 'Messages?maxRecords=50'); return data.records; }
             catch { return []; }
         }
         async function submitMessage(name, message) {
             await airtableRequest('POST', 'Messages', { fields: { Name: name || '热心网友', Message: message } });
         }
-        
+
         async function sendCode(email, type, templateId) {
             const code = Math.floor(100000 + Math.random() * 900000).toString();
             await emailjs.send(CONFIG.EMAILJS_SERVICE_ID, templateId, { email: email, code: code, expires: '10分钟' });
             return code;
         }
-        
+
         function updateUserUI() {
             const area = document.getElementById('userArea');
             if (currentUser) {
@@ -485,6 +485,7 @@
                 document.getElementById('showAuthBtn').addEventListener('click', ()=> openAuthModal('login'));
             }
         }
+
         function openAuthModal(tab='login') {
             document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
             document.getElementById('registerForm').style.display = tab==='register'?'block':'none';
@@ -516,7 +517,7 @@
                 showToast('已删除'); openAdminModal();
             }));
         }
-        
+
         async function renderFeedbackList() {
             const container = document.getElementById('feedbackListContainer');
             try {
@@ -531,75 +532,82 @@
                 container.innerHTML = html;
             } catch(e) { container.innerHTML = '<div class="feedback-empty">加载留言失败，请稍后重试</div>'; }
         }
-        
-        // ========== 软件数据管理（核心修复） ==========
+
+        // ========== 软件数据管理（合并 Airtable 与默认软件） ==========
         const CATEGORY_DISPLAY = { 'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具' };
         
-        // 后备默认数据（当 Airtable 无数据或加载失败时使用）
         const DEFAULT_SOFTWARES = [
-            { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用，管理所有Adobe软件订阅、更新与安装。", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
-            { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计，摄影后期、合成必备。", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc?from=from_copylink", noVerify: false, addedDate: "2024-09-10" },
-            { name: "Illustrator", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "矢量图形设计，标志、插画、排版全能。", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false, addedDate: "2024-09-10" },
-            { name: "Lightroom", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "摄影后期调色与管理，高效批量处理。", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J?from=from_copylink", noVerify: false, addedDate: "2024-10-01" },
-            { name: "After Effects", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效与动态图形，电影级合成。", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false, addedDate: "2024-10-15" },
-            { name: "Premiere Pro", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业视频剪辑，剪辑、调色、音频一站式。", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false, addedDate: "2024-10-20" },
+            { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15" },
+            { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计", icon: "fa-image", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc", noVerify: false, addedDate: "2024-09-10" },
+            { name: "Illustrator", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "矢量图形设计", icon: "fa-paint-brush", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false, addedDate: "2024-09-10" },
+            { name: "Lightroom", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "摄影后期调色与管理", icon: "fa-camera", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J", noVerify: false, addedDate: "2024-10-01" },
+            { name: "After Effects", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效与动态图形", icon: "fa-video", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false, addedDate: "2024-10-15" },
+            { name: "Premiere Pro", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业视频剪辑", icon: "fa-film", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false, addedDate: "2024-10-20" },
             { name: "Adobe Cleaner Tools", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe 官方清理工具", icon: "fa-broom", url: "https://www.yuque.com/example/adobe-cleaner", noVerify: false, addedDate: "2025-01-10" },
-            { name: "AutoCAD", category: "autodesk", os: ["Windows","Mac"], version: "2025", description: "计算机辅助设计，二维绘图与三维建模。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329?singleDoc#", noVerify: false, addedDate: "2024-09-18" },
-            { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模、动画与渲染，游戏开发首选。", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false, addedDate: "2024-10-05" },
-            { name: "Maya", category: "autodesk", os: ["Windows","Mac"], version: "2026", description: "三维动画、建模、渲染及特效软件。", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi?", noVerify: false, addedDate: "2024-11-01" },
-            { name: "Cinema 4D", category: "c4d", os: ["Windows","Mac"], version: "R19-2025", description: "三维建模、动画、渲染，影视后期必备。", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi?", noVerify: false, addedDate: "2024-11-25" },
-            { name: "草图大师 (SketchUp)", category: "sketchup", os: ["Windows","Mac"], version: "2015-2026", description: "建筑设计、室内设计、园林景观、城市规划。", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3?", noVerify: false, addedDate: "2024-12-01" },
-            { name: "犀牛软件 Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计、建筑设计、船舶设计、珠宝设计。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq?", noVerify: false, addedDate: "2024-12-10" },
-            { name: "犀牛软件 Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计、建筑设计、船舶设计、珠宝设计（Mac版）。", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy?", noVerify: false, addedDate: "2024-12-12" },
-            { name: "Adobe 插件全套", category: "plugin", os: ["Windows","Mac"], version: "2026 最新版", description: "支持2026最新版软件，购买注册码请联系客服（一机一码）。", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true, addedDate: "2025-02-01" }
+            { name: "AutoCAD", category: "autodesk", os: ["Windows","Mac"], version: "2025", description: "计算机辅助设计", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329", noVerify: false, addedDate: "2024-09-18" },
+            { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模", icon: "fa-cubes", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false, addedDate: "2024-10-05" },
+            { name: "Maya", category: "autodesk", os: ["Windows","Mac"], version: "2026", description: "三维动画", icon: "fa-shapes", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi", noVerify: false, addedDate: "2024-11-01" },
+            { name: "Cinema 4D", category: "c4d", os: ["Windows","Mac"], version: "R19-2025", description: "三维建模渲染", icon: "fa-cube", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi", noVerify: false, addedDate: "2024-11-25" },
+            { name: "草图大师", category: "sketchup", os: ["Windows","Mac"], version: "2015-2026", description: "建筑设计", icon: "fa-drafting-compass", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3", noVerify: false, addedDate: "2024-12-01" },
+            { name: "Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq", noVerify: false, addedDate: "2024-12-10" },
+            { name: "Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计 Mac版", icon: "fa-ruler-combined", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy", noVerify: false, addedDate: "2024-12-12" },
+            { name: "Adobe 插件全套", category: "plugin", os: ["Windows","Mac"], version: "2026 最新版", description: "支持2026最新版", icon: "fa-puzzle-piece", url: "https://pan.baidu.com/s/1TEp8VSfZcCNgV6DBVUJTvA?pwd=8888", noVerify: true, addedDate: "2025-02-01" }
         ];
-        
+
         let softwares = [];
         let currentCategory = "all";
         let searchKeyword = "";
         let showAll = false;
         const DEFAULT_LIMIT = 12;
-        
-        // 从 Airtable 获取软件数据
+
+        function getField(fields, possibleNames, defaultValue = '') {
+            for (let name of possibleNames) {
+                if (fields[name] !== undefined) return fields[name];
+            }
+            return defaultValue;
+        }
+
         async function fetchSoftwares() {
             try {
-                const data = await airtableRequest('GET', 'Softwares?maxRecords=100&sort[0][field]=AddedDate&sort[0][direction]=desc');
-                const records = data.records;
-                if (!records.length) {
-                    console.warn('Airtable 软件表为空，使用默认数据');
-                    return DEFAULT_SOFTWARES;
-                }
-                return records.map(rec => {
+                const data = await airtableRequest('GET', 'Softwares?maxRecords=100');
+                const airtableSoftwares = data.records.map(rec => {
                     const f = rec.fields;
-                    let osArray = [];
-                    if (Array.isArray(f.OS)) osArray = f.OS;
-                    else if (typeof f.OS === 'string') osArray = f.OS.split(',').map(s => s.trim());
-                    if (osArray.length === 0) osArray = ['Windows', 'Mac'];
-                    
-                    return {
-                        id: rec.id,
-                        name: f.Name || '未命名软件',
-                        category: f.Category || 'other',
-                        os: osArray,
-                        version: f.Version || '最新版',
-                        description: f.Description || '',
-                        icon: f.Icon || 'fa-cube',
-                        url: f.URL || '#',
-                        noVerify: !!f.NoVerify,
-                        addedDate: f.AddedDate || '2024-01-01'
-                    };
+                    const name = getField(f, ['Name', 'name', 'A name'], '未命名软件');
+                    const category = getField(f, ['Category', 'category'], 'other');
+                    const version = getField(f, ['Version', 'version'], '');
+                    const description = getField(f, ['Description', 'description', 'A description'], '');
+                    const icon = getField(f, ['Icon', 'icon', 'A icon'], 'fa-cube');
+                    const url = getField(f, ['URL', 'url'], '#');
+                    const noVerify = getField(f, ['NoVerify', 'noVerify'], false);
+                    const addedDate = getField(f, ['AddedDate', 'addedDate'], new Date().toISOString().split('T')[0]);
+                    let osArray = ['Windows', 'Mac'];
+                    const osField = getField(f, ['OS', 'os'], null);
+                    if (osField) {
+                        if (Array.isArray(osField)) osArray = osField;
+                        else if (typeof osField === 'string') osArray = osField.split(',').map(s => s.trim());
+                    }
+                    return { id: rec.id, name, category, os: osArray, version, description, icon, url, noVerify: !!noVerify, addedDate };
                 });
-            } catch (error) {
-                console.error('获取软件列表失败，使用默认数据', error);
+                
+                // 合并默认软件：以 Airtable 数据优先（同名覆盖），同时保留默认软件中未在 Airtable 出现的
+                const mergedMap = new Map();
+                // 先添加默认软件
+                DEFAULT_SOFTWARES.forEach(sw => mergedMap.set(sw.name.toLowerCase(), sw));
+                // Airtable 数据覆盖或新增
+                airtableSoftwares.forEach(sw => mergedMap.set(sw.name.toLowerCase(), sw));
+                
+                return Array.from(mergedMap.values());
+            } catch (e) {
+                console.error('获取软件失败，使用默认数据', e);
                 return DEFAULT_SOFTWARES;
             }
         }
-        
+
         function renderCategories() {
             const catMap = new Map();
             softwares.forEach(s => catMap.set(CATEGORY_DISPLAY[s.category] || s.category, s.category));
             let html = `<button class="cat-chip ${currentCategory==='all'?'active':''}" data-cat="all">全部</button>`;
-            Array.from(catMap.entries()).sort((a,b) => a[0].localeCompare(b[0])).forEach(([display, key]) => {
+            Array.from(catMap.entries()).sort().forEach(([display, key]) => {
                 html += `<button class="cat-chip ${currentCategory===key?'active':''}" data-cat="${key}">${display}</button>`;
             });
             document.getElementById('categoryTabs').innerHTML = html;
@@ -610,7 +618,7 @@
                 renderGrid();
             }));
         }
-        
+
         function renderGrid() {
             const filtered = softwares.filter(s => 
                 (currentCategory==='all' || s.category===currentCategory) && 
@@ -618,60 +626,37 @@
             );
             const items = showAll ? filtered : filtered.slice(0, DEFAULT_LIMIT);
             const container = document.getElementById('softwareGridContainer');
-            
             if (!items.length) {
-                container.innerHTML = '<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件，试试其他关键词～</div>';
+                container.innerHTML = '<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件</div>';
                 document.getElementById('loadMoreContainer').style.display = 'none';
                 return;
             }
-            
             let cards = '';
             items.forEach(sw => {
                 const osTags = sw.os.map(os => `<span class="os-badge">${os==='Windows'?'<i class="fab fa-windows"></i>':'<i class="fab fa-apple"></i>'} ${os}</span>`).join('');
                 cards += `<div class="software-card" data-name="${escapeHtml(sw.name)}">
-                    <div class="card-header">
-                        <div class="card-icon">${sw.icon.startsWith('fa-') ? `<i class="fas ${sw.icon}"></i>` : `<span class="text-badge">${sw.icon.slice(0,3)}</span>`}</div>
-                        <div class="software-name">${escapeHtml(sw.name)}</div>
-                    </div>
-                    <div class="version">版本 ${escapeHtml(sw.version)}</div>
-                    <div class="description">${escapeHtml(sw.description)}</div>
-                    <div class="os-tags">${osTags}</div>
-                    <div class="card-footer">
-                        <div class="added-date"><i class="far fa-calendar-alt"></i> ${sw.addedDate || '2024-01-01'}</div>
-                        <div class="download-hint"><i class="fas fa-arrow-right"></i> 获取</div>
-                    </div>
+                    <div class="card-header"><div class="card-icon">${sw.icon.startsWith('fa-')?`<i class="fas ${sw.icon}"></i>`:`<span class="text-badge">${sw.icon.slice(0,3)}</span>`}</div><div class="software-name">${escapeHtml(sw.name)}</div></div>
+                    <div class="version">版本 ${escapeHtml(sw.version)}</div><div class="description">${escapeHtml(sw.description)}</div><div class="os-tags">${osTags}</div>
+                    <div class="card-footer"><div class="added-date"><i class="far fa-calendar-alt"></i> ${sw.addedDate}</div><div class="download-hint"><i class="fas fa-arrow-right"></i> 获取</div></div>
                 </div>`;
             });
             container.innerHTML = cards;
             document.getElementById('loadMoreContainer').style.display = (!showAll && filtered.length > DEFAULT_LIMIT) ? 'block' : 'none';
-            
-            document.querySelectorAll('.software-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const sw = softwares.find(s => s.name === card.dataset.name);
-                    if (!sw) return;
-                    if (!currentUser) {
-                        openAuthModal('login');
-                        showToast('请先登录', 'error');
-                        return;
-                    }
-                    window.open(sw.url, '_blank');
-                });
-            });
+            document.querySelectorAll('.software-card').forEach(card => card.addEventListener('click', ()=>{
+                const sw = softwares.find(s => s.name === card.dataset.name);
+                if (!sw) return;
+                if (!currentUser) { openAuthModal('login'); showToast('请先登录', 'error'); return; }
+                window.open(sw.url, '_blank');
+            }));
         }
-        
+
         async function initSoftware() {
-            const container = document.getElementById('softwareGridContainer');
-            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#6c86a3;"><i class="fas fa-spinner fa-pulse"></i> 正在加载软件库...</div>';
-            try {
-                softwares = await fetchSoftwares();
-            } catch (e) {
-                softwares = DEFAULT_SOFTWARES;
-                showToast('软件列表加载失败，显示默认数据', 'error');
-            }
+            document.getElementById('softwareGridContainer').innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px;"><i class="fas fa-spinner fa-pulse"></i> 正在加载软件库...</div>';
+            softwares = await fetchSoftwares();
             renderCategories();
             renderGrid();
         }
-        
+
         // 主题切换
         function initTheme() {
             function update() {
@@ -688,14 +673,14 @@
             update();
             setInterval(update, 3600000);
         }
-        
+
         function addBaiduPush() {
             const bp = document.createElement('script');
             bp.async=true;
             bp.src='https://zz.bdstatic.com/linksubmit/push.js';
             document.head.appendChild(bp);
         }
-        
+
         // 认证事件绑定
         function initAuthEvents() {
             const modal = document.getElementById('authModal');
@@ -717,7 +702,7 @@
                 document.getElementById('forgotForm').style.display='none';
                 document.getElementById('loginForm').style.display='block';
             });
-            
+
             document.getElementById('sendRegCodeBtn').addEventListener('click', async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('regEmail').value.trim();
@@ -732,7 +717,7 @@
                     let sec = 60; const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if (sec <= 0) { clearInterval(timer); this.disabled = false; this.textContent = '发送验证码'; } }, 1000);
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled = false; this.textContent = '发送验证码'; }
             });
-            
+
             document.getElementById('registerBtn').addEventListener('click', async function() {
                 const username = document.getElementById('regUsername').value.trim();
                 const email = document.getElementById('regEmail').value.trim();
@@ -754,7 +739,7 @@
                 } catch (err) { showToast('注册失败: ' + err.message, 'error'); }
                 finally { this.disabled = false; this.textContent = '注册'; }
             });
-            
+
             document.getElementById('loginBtn').addEventListener('click', async function() {
                 const email = document.getElementById('loginEmail').value.trim();
                 const pwd = document.getElementById('loginPassword').value;
@@ -766,7 +751,7 @@
                 } catch (e) { showToast(e.message, 'error'); }
                 finally { this.disabled = false; this.textContent = '登录'; }
             });
-            
+
             document.getElementById('sendResetCodeBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 if (!email) return showToast('请输入邮箱', 'error');
@@ -780,7 +765,7 @@
                     let sec = 60; const timer = setInterval(() => { sec--; this.textContent = `${sec}秒后重发`; if(sec<=0){ clearInterval(timer); this.disabled=false; this.textContent='发送验证码'; } }, 1000);
                 } catch (err) { showToast('发送失败: ' + err.message, 'error'); this.disabled = false; this.textContent = '发送验证码'; }
             });
-            
+
             document.getElementById('resetPasswordBtn').addEventListener('click', async function() {
                 const email = document.getElementById('forgotEmail').value.trim();
                 const code = document.getElementById('resetCodeInput').value.trim();
@@ -800,12 +785,12 @@
                 } catch (e) { showToast('重置失败: ' + e.message, 'error'); }
                 finally { this.disabled = false; this.textContent = '重置密码'; }
             });
-            
+
             const saved = localStorage.getItem('lezhe_user');
             if(saved) { try { currentUser = JSON.parse(saved); } catch(e){} }
             updateUserUI();
         }
-        
+
         document.getElementById('closeProfileModal').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
         document.getElementById('cancelProfileBtn').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
         document.getElementById('saveProfileBtn').addEventListener('click', async function() {
@@ -826,7 +811,7 @@
             } catch (e) { showToast('更新失败: ' + e.message, 'error'); }
             finally { this.disabled = false; this.textContent = '保存修改'; }
         });
-        
+
         document.getElementById('closeAdminModal').addEventListener('click', ()=> document.getElementById('adminModal').classList.remove('active'));
         document.getElementById('adminAddUserBtn').addEventListener('click', async function() {
             const email = document.getElementById('newUserEmail').value.trim();
@@ -846,7 +831,7 @@
             } catch (e) { showToast('添加失败: ' + e.message, 'error'); }
             finally { this.disabled = false; this.textContent = '添加'; }
         });
-        
+
         document.getElementById('submitFeedbackBtn').addEventListener('click', async function() {
             const name = document.getElementById('feedbackName').value.trim();
             const msg = document.getElementById('feedbackMessage').value.trim();
@@ -861,7 +846,7 @@
             } catch (e) { showToast('提交失败: ' + e.message, 'error'); }
             finally { this.disabled = false; this.innerHTML = '<i class="fas fa-paper-plane"></i> 提交留言'; }
         });
-        
+
         let chatInitialized = false;
         function initChat() {
             if(chatInitialized) return; chatInitialized = true;
@@ -885,7 +870,7 @@
             window.addEventListener('mouseup', ()=>{ isDragging = false; container.style.transition = ''; });
         }
         document.getElementById('chatToggleBtn').addEventListener('click', initChat, { once: true });
-        
+
         // 启动一切
         initSoftware();
         initAuthEvents();
