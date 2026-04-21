@@ -145,6 +145,7 @@
             </table>
         </div>
     </div>
+
     <div id="softwaresPanel" class="panel" style="display:none;">
         <h2 style="margin-bottom: 20px;"><i class="fas fa-cubes"></i> 添加 / 编辑软件</h2>
         <div class="form-grid">
@@ -364,8 +365,8 @@
     }
 
     function renderIconForTable(record) {
-        const name = record.Name || '软件';
-        const icon = record.Icon;
+        const name = record.name || '软件';
+        const icon = record.icon;
         if (Array.isArray(icon) && icon[0]?.url) return `<img src="${icon[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
         if (typeof icon === 'string' && (icon.startsWith('http') || icon.startsWith('data:'))) return `<img src="${icon}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
         if (typeof icon === 'string' && icon.startsWith('fa-')) return `<i class="fas ${icon}"></i>`;
@@ -430,8 +431,8 @@
         try {
             const [users, sw, msgs, visits] = await Promise.all([
                 airtableRequest('GET', 'Users'),
-                airtableRequest('GET', 'Softwares'),
-                airtableRequest('GET', 'Messages'),
+                airtableRequest('GET', 'softwares'),
+                airtableRequest('GET', 'messages'),
                 airtableRequest('GET', 'Visits?maxRecords=1')
             ]);
             document.getElementById('statUsers').innerText = users.records.length;
@@ -452,30 +453,31 @@
 
     async function loadSoftwares() {
         try {
-            const data = await airtableRequest('GET', 'Softwares?maxRecords=100');
+            const data = await airtableRequest('GET', 'softwares?maxRecords=100');
             const tbody = document.getElementById('softwaresTbody');
             tbody.innerHTML = data.records.map(r => {
                 const f = r.fields;
-                return `<tr><td>${f.Name||''}</td><td>${f.Category||''}</td><td>${f.Version||''}</td><td>${(f.OS||[]).join(', ')}</td><td>${renderIconForTable(f)}</td><td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                // 注意字段名全部小写
+                return `<tr><td>${f.name||''}</td><td>${f.category||''}</td><td>${f.version||''}</td><td>${(f.os||[]).join(', ')}</td><td>${renderIconForTable(f)}</td><td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             }).join('');
         } catch (e) { showToast('加载软件失败', true); }
     }
 
     window.editSoftware = async function(id) {
         try {
-            const { fields } = await airtableRequest('GET', `Softwares/${id}`);
-            document.getElementById('swName').value = fields.Name || '';
-            document.getElementById('swCategory').value = fields.Category || 'adobe';
-            document.getElementById('swVersion').value = fields.Version || '';
-            const os = fields.OS || ['Windows','Mac'];
+            const { fields } = await airtableRequest('GET', `softwares/${id}`);
+            document.getElementById('swName').value = fields.name || '';
+            document.getElementById('swCategory').value = fields.category || 'adobe';
+            document.getElementById('swVersion').value = fields.version || '';
+            const os = fields.os || ['Windows','Mac'];
             document.getElementById('osWindows').checked = os.includes('Windows');
             document.getElementById('osMac').checked = os.includes('Mac');
-            document.getElementById('swURL').value = fields.URL || '';
-            document.getElementById('swDescription').value = fields.Description || '';
-            document.getElementById('swAddedDate').value = fields.AddedDate || '';
-            document.getElementById('swNoVerify').checked = !!fields.NoVerify;
+            document.getElementById('swURL').value = fields.url || '';
+            document.getElementById('swDescription').value = fields.description || '';
+            document.getElementById('swAddedDate').value = fields.addedDate || '';
+            document.getElementById('swNoVerify').checked = !!fields.noVerify;
             document.getElementById('editingId').value = id;
-            const icon = fields.Icon;
+            const icon = fields.icon;
             document.getElementById('swIconCustom').value = '';
             if (Array.isArray(icon) && icon[0]?.url) {
                 document.getElementById('swIconType').value = 'image';
@@ -496,7 +498,7 @@
 
     window.deleteSoftware = async function(id) {
         if (!confirm('确定删除？')) return;
-        try { await airtableRequest('DELETE', `Softwares/${id}`); showToast('已删除'); loadSoftwares(); loadDashboard(); }
+        try { await airtableRequest('DELETE', `softwares/${id}`); showToast('已删除'); loadSoftwares(); loadDashboard(); }
         catch (e) { showToast('删除失败', true); }
     };
 
@@ -523,7 +525,6 @@
         document.getElementById('iconPanel').classList.remove('show');
     };
 
-    // 事件绑定
     setTimeout(() => {
         document.getElementById('openIconPanel').addEventListener('click', e => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
         document.getElementById('iconSearchInput').addEventListener('input', e => {
@@ -555,21 +556,21 @@
             if (document.getElementById('osMac').checked) os.push('Mac');
             if (!os.length) return showToast('请至少选择一个系统', true);
             const fields = {
-                Name: document.getElementById('swName').value.trim(),
-                Category: document.getElementById('swCategory').value,
-                Version: document.getElementById('swVersion').value.trim(),
-                OS: os,
-                URL: document.getElementById('swURL').value.trim(),
-                Description: document.getElementById('swDescription').value.trim(),
-                Icon: finalIcon || '', // 确保不为 null/undefined
-                AddedDate: document.getElementById('swAddedDate').value,
-                NoVerify: document.getElementById('swNoVerify').checked
+                name: document.getElementById('swName').value.trim(),
+                category: document.getElementById('swCategory').value,
+                version: document.getElementById('swVersion').value.trim(),
+                os: os,
+                url: document.getElementById('swURL').value.trim(),
+                description: document.getElementById('swDescription').value.trim(),
+                icon: finalIcon || '',
+                addedDate: document.getElementById('swAddedDate').value,
+                noVerify: document.getElementById('swNoVerify').checked
             };
-            if (!fields.Name || !fields.URL) return showToast('名称和链接必填', true);
+            if (!fields.name || !fields.url) return showToast('名称和链接必填', true);
             const id = document.getElementById('editingId').value;
             try {
-                if (id) await airtableRequest('PATCH', `Softwares/${id}`, { fields });
-                else await airtableRequest('POST', 'Softwares', { fields });
+                if (id) await airtableRequest('PATCH', `softwares/${id}`, { fields });
+                else await airtableRequest('POST', 'softwares', { fields });
                 showToast('保存成功'); loadSoftwares(); loadDashboard();
                 document.getElementById('cancelEditBtn').click();
             } catch (e) { showToast('保存失败: ' + e.message, true); }
@@ -583,7 +584,6 @@
             document.getElementById('swNoVerify').checked = false;
             refreshIconPreview();
         });
-        // 用户和留言管理 (略，与之前相同)
         async function loadUsers() {
             const data = await airtableRequest('GET', 'Users?maxRecords=100');
             document.getElementById('usersTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Email}</td><td>${r.fields.Username}</td><td>${r.fields.Role||'user'}</td><td><button onclick="deleteUser('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
@@ -602,10 +602,10 @@
             } catch(e) { showToast('添加失败', true); }
         });
         async function loadMessages() {
-            const data = await airtableRequest('GET', 'Messages?maxRecords=50');
+            const data = await airtableRequest('GET', 'messages?maxRecords=50');
             document.getElementById('messagesTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Name||'网友'}</td><td>${r.fields.Message||''}</td><td>${r.fields.CreatedAt||''}</td><td><button onclick="deleteMessage('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
         }
-        window.deleteMessage = async (id) => { if(confirm('删除留言？')) { await airtableRequest('DELETE', `Messages/${id}`); loadMessages(); loadDashboard(); } };
+        window.deleteMessage = async (id) => { if(confirm('删除留言？')) { await airtableRequest('DELETE', `messages/${id}`); loadMessages(); loadDashboard(); } };
         document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
