@@ -133,7 +133,7 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>软件名称 <span style="color:red;">*</span></label>
-                <input type="text" id="swName" placeholder="例如: 达芬奇" oninput="suggestIcon(); updatePreviewFromCurrentState();">
+                <input type="text" id="swName" placeholder="例如: Photoshop" oninput="suggestIcon(); refreshIconPreview();">
             </div>
             <div class="form-group">
                 <label>分类 <span style="color:red;">*</span></label>
@@ -177,20 +177,20 @@
                         <div id="iconPreviewContainer">
                             <i id="iconPreview" class="fas fa-cube"></i>
                             <img id="iconPreviewImg" src="" style="display:none;">
-                            <div id="iconPreviewText" class="icon-text-badge" style="display:none;">软</div>
+                            <div id="iconPreviewText" class="icon-text-badge" style="display:none;">PS</div>
                         </div>
                         <div style="flex:1;">
                             <div class="icon-input-group">
                                 <div class="icon-picker-btn" id="openIconPanel">
                                     <i class="fas fa-icons"></i> 预设图标
                                 </div>
-                                <input type="text" id="swIconCustom" class="icon-custom-input" placeholder="或输入图标类名 (如: fas fa-file-pdf)" oninput="updatePreviewFromCustom()">
+                                <input type="text" id="swIconCustom" class="icon-custom-input" placeholder="或输入图标类名 (如: fas fa-image)" oninput="refreshIconPreview()">
                                 <label class="upload-btn" for="iconFileInput">
                                     <i class="fas fa-cloud-upload-alt"></i> 上传图片
                                 </label>
                                 <input type="file" id="iconFileInput" class="file-input" accept="image/*">
-                                <input type="hidden" id="swIcon" value="fa-cube">
-                                <input type="hidden" id="swIconType" value="icon">
+                                <input type="hidden" id="swIcon" value="">
+                                <input type="hidden" id="swIconType" value="text">
                             </div>
                             <div class="hint-text">支持 Font Awesome 类名、自定义类名，或上传图片（建议使用图床URL）</div>
                         </div>
@@ -251,6 +251,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
 <script>
     const CONFIG = {
         AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
@@ -281,12 +282,44 @@
         return resp.json();
     }
 
-    function generateTextBadge(name) {
+    // 精准智能缩写：Photoshop -> PS, After Effects -> AE, 达芬奇 -> 达
+    function getSmartAbbreviation(name) {
         if (!name) return '软';
+        // 中文取第一个汉字
         const chineseMatch = name.match(/[\u4e00-\u9fa5]/);
         if (chineseMatch) return chineseMatch[0];
-        const letters = name.replace(/[^a-zA-Z]/g, '');
-        return letters.slice(0, 2).toUpperCase() || name.charAt(0).toUpperCase();
+        
+        // 英文：按大写字母分割或提取单词首字母
+        const words = name.split(/[\s\-_]+/).filter(w => w.length > 0);
+        if (words.length >= 2) {
+            // 多个单词，取每个单词首字母
+            return words.map(w => w.charAt(0).toUpperCase()).slice(0, 3).join('');
+        } else {
+            // 单个单词：尝试提取大写字母（如 PhotoShop -> PS）
+            const upperChars = name.replace(/[^A-Z]/g, '');
+            if (upperChars.length >= 2) return upperChars.slice(0, 3);
+            // 否则取前两个字母（如 Photoshop -> Ph 不合适，我们改为取首字母 + 最后一个辅音？这里统一取前两个字符的大写，但针对 Photoshop 我们特殊处理）
+            // 为了更智能，对于常见单词做映射
+            const lowerName = name.toLowerCase();
+            if (lowerName.includes('photoshop')) return 'PS';
+            if (lowerName.includes('illustrator')) return 'AI';
+            if (lowerName.includes('after effects')) return 'AE';
+            if (lowerName.includes('premiere')) return 'PR';
+            if (lowerName.includes('lightroom')) return 'LR';
+            if (lowerName.includes('audition')) return 'AU';
+            if (lowerName.includes('indesign')) return 'ID';
+            if (lowerName.includes('acrobat')) return 'AC';
+            if (lowerName.includes('autocad')) return 'AC';
+            if (lowerName.includes('3ds max')) return '3D';
+            if (lowerName.includes('maya')) return 'MA';
+            if (lowerName.includes('cinema 4d')) return 'C4';
+            if (lowerName.includes('sketchup')) return 'SU';
+            if (lowerName.includes('rhino')) return 'RH';
+            if (lowerName.includes('达芬奇') || lowerName.includes('resolve')) return 'DV';
+            // 默认取前两个字母
+            const letters = name.replace(/[^a-zA-Z]/g, '');
+            return letters.slice(0, 2).toUpperCase() || name.charAt(0).toUpperCase();
+        }
     }
 
     function getColorFromName(name) {
@@ -295,29 +328,37 @@
         return `hsl(${Math.abs(hash) % 360}, 70%, 55%)`;
     }
 
-    function renderIconForTable(software) {
-        const name = software.name || '软件';
-        const iconField = software.icon;
-        if (iconField) {
-            if (Array.isArray(iconField) && iconField[0]?.url) return `<img src="${iconField[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
-            if (typeof iconField === 'string' && (iconField.startsWith('http') || iconField.startsWith('data:'))) return `<img src="${iconField}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
-            if (typeof iconField === 'string' && iconField.startsWith('fa-')) return `<i class="fas ${iconField}"></i>`;
+    // 渲染表格中的图标
+    function renderIconForTable(record) {
+        const name = record.Name || '软件';
+        const iconField = record.Icon;
+        // 1. 图片附件
+        if (Array.isArray(iconField) && iconField.length > 0 && iconField[0].url) {
+            return `<img src="${iconField[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
         }
-        if (software.iconType === 'icon' && software.iconValue) return `<i class="fas ${software.iconValue}"></i>`;
-        const badgeText = generateTextBadge(name);
+        // 2. 图片 URL 字符串
+        if (typeof iconField === 'string' && (iconField.startsWith('http') || iconField.startsWith('data:'))) {
+            return `<img src="${iconField}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
+        }
+        // 3. Font Awesome 类名
+        if (typeof iconField === 'string' && iconField.startsWith('fa-')) {
+            return `<i class="fas ${iconField}"></i>`;
+        }
+        // 4. 文字缩略图
+        const abbr = getSmartAbbreviation(name);
         const bgColor = getColorFromName(name);
-        return `<div class="icon-text-badge" style="background: ${bgColor};">${badgeText}</div>`;
+        return `<div class="icon-text-badge" style="background: ${bgColor};">${abbr}</div>`;
     }
 
-    // 更新预览（根据当前 swIcon, swIconCustom, swIconType）
+    // 实时更新预览区
     function refreshIconPreview() {
-        const iconType = document.getElementById('swIconType').value;
         const iconValue = document.getElementById('swIcon').value;
         const customVal = document.getElementById('swIconCustom').value.trim();
-        const name = document.getElementById('swName').value || '软件';
+        const name = document.getElementById('swName').value.trim() || '软件';
         const previewIcon = document.getElementById('iconPreview');
         const previewImg = document.getElementById('iconPreviewImg');
         const previewText = document.getElementById('iconPreviewText');
+        
         previewIcon.style.display = 'none';
         previewImg.style.display = 'none';
         previewText.style.display = 'none';
@@ -332,15 +373,41 @@
                 previewIcon.style.display = 'flex';
             }
         } else {
-            const badgeText = generateTextBadge(name);
-            previewText.textContent = badgeText;
+            const abbr = getSmartAbbreviation(name);
+            previewText.textContent = abbr;
             previewText.style.background = getColorFromName(name);
             previewText.style.display = 'flex';
         }
     }
 
-    window.updatePreviewFromCurrentState = refreshIconPreview;
-    window.updatePreviewFromCustom = refreshIconPreview;
+    window.refreshIconPreview = refreshIconPreview;
+    window.suggestIcon = function () {
+        const name = document.getElementById('swName').value.toLowerCase();
+        const suggestions = [];
+        if (name.includes('acrobat') || name.includes('pdf')) suggestions.push('fa-file-pdf');
+        if (name.includes('photoshop')) suggestions.push('fa-image');
+        if (name.includes('illustrator')) suggestions.push('fa-paint-brush');
+        if (name.includes('after effects')) suggestions.push('fa-video');
+        if (name.includes('premiere')) suggestions.push('fa-film');
+        if (name.includes('lightroom')) suggestions.push('fa-camera');
+        if (name.includes('audition')) suggestions.push('fa-headphones');
+        if (name.includes('indesign')) suggestions.push('fa-book');
+        if (name.includes('autocad')) suggestions.push('fa-cube');
+        if (name.includes('3ds max')) suggestions.push('fa-cubes');
+        if (name.includes('maya')) suggestions.push('fa-shapes');
+        if (name.includes('cinema 4d')) suggestions.push('fa-cube');
+        if (name.includes('sketchup')) suggestions.push('fa-drafting-compass');
+        if (name.includes('rhino')) suggestions.push('fa-ruler-combined');
+        if (name.includes('达芬奇') || name.includes('resolve')) suggestions.push('fa-video');
+        if (name.includes('blender')) suggestions.push('fa-cube');
+        if (name.includes('插件')) suggestions.push('fa-puzzle-piece');
+        if (name.includes('cleaner')) suggestions.push('fa-broom');
+        const sugDiv = document.getElementById('iconSuggestions');
+        if (suggestions.length) {
+            const unique = [...new Set(suggestions)];
+            sugDiv.innerHTML = '💡 推荐: ' + unique.map(s => `<span onclick="selectPresetIcon('${s}')"><i class="fas ${s}"></i> ${s.replace('fa-','')}</span>`).join('');
+        } else { sugDiv.innerHTML = ''; }
+    };
 
     async function loadDashboard() {
         try {
@@ -376,8 +443,7 @@
             const tbody = document.getElementById('softwaresTbody');
             tbody.innerHTML = data.records.map(r => {
                 const f = r.fields;
-                const software = { name: f.Name || '', icon: f.Icon, iconType: f.IconType, iconValue: f.Icon };
-                const iconHtml = renderIconForTable(software);
+                const iconHtml = renderIconForTable(f);
                 return `<tr><td>${f.Name || ''}</td><td>${f.Category || ''}</td><td>${f.Version || ''}</td><td>${(f.OS || []).join(', ')}</td><td style="text-align:center;">${iconHtml}</td><td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             }).join('');
         } catch (e) { showToast('加载软件失败', true); }
@@ -478,34 +544,6 @@
         }
     });
 
-    window.suggestIcon = function () {
-        const name = document.getElementById('swName').value.toLowerCase();
-        const suggestions = [];
-        if (name.includes('acrobat') || name.includes('pdf')) suggestions.push('fa-file-pdf');
-        if (name.includes('photoshop')) suggestions.push('fa-image');
-        if (name.includes('illustrator')) suggestions.push('fa-paint-brush');
-        if (name.includes('after effects')) suggestions.push('fa-video');
-        if (name.includes('premiere')) suggestions.push('fa-film');
-        if (name.includes('lightroom')) suggestions.push('fa-camera');
-        if (name.includes('audition')) suggestions.push('fa-headphones');
-        if (name.includes('indesign')) suggestions.push('fa-book');
-        if (name.includes('autocad')) suggestions.push('fa-cube');
-        if (name.includes('3ds max')) suggestions.push('fa-cubes');
-        if (name.includes('maya')) suggestions.push('fa-shapes');
-        if (name.includes('cinema 4d')) suggestions.push('fa-cube');
-        if (name.includes('sketchup')) suggestions.push('fa-drafting-compass');
-        if (name.includes('rhino')) suggestions.push('fa-ruler-combined');
-        if (name.includes('达芬奇') || name.includes('resolve')) suggestions.push('fa-video');
-        if (name.includes('blender')) suggestions.push('fa-cube');
-        if (name.includes('插件')) suggestions.push('fa-puzzle-piece');
-        if (name.includes('cleaner')) suggestions.push('fa-broom');
-        const sugDiv = document.getElementById('iconSuggestions');
-        if (suggestions.length) {
-            const unique = [...new Set(suggestions)];
-            sugDiv.innerHTML = '💡 推荐: ' + unique.map(s => `<span onclick="selectPresetIcon('${s}')"><i class="fas ${s}"></i> ${s.replace('fa-','')}</span>`).join('');
-        } else { sugDiv.innerHTML = ''; }
-    };
-
     document.getElementById('saveSoftwareBtn').addEventListener('click', async () => {
         let finalIcon = document.getElementById('swIcon').value;
         const customVal = document.getElementById('swIconCustom').value.trim();
@@ -541,9 +579,9 @@
         document.getElementById('swVersion').value = '';
         document.getElementById('swURL').value = '';
         document.getElementById('swDescription').value = '';
-        document.getElementById('swIcon').value = 'fa-cube';
+        document.getElementById('swIcon').value = '';
         document.getElementById('swIconCustom').value = '';
-        document.getElementById('swIconType').value = 'icon';
+        document.getElementById('swIconType').value = 'text';
         document.getElementById('osWindows').checked = true;
         document.getElementById('osMac').checked = true;
         document.getElementById('editingId').value = '';
@@ -597,6 +635,7 @@
 
     initIconPanel();
     loadDashboard();
+    refreshIconPreview();
 </script>
 </body>
 </html>
