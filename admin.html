@@ -29,10 +29,13 @@
         .form-group label { font-weight: 600; font-size: 13px; color: #475569; }
         .form-group input, .form-group select, .form-group textarea { padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 16px; font-size: 14px; transition: 0.2s; background: white; }
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #1e6bdf; outline: none; box-shadow: 0 0 0 3px rgba(30,107,223,0.1); }
+        .checkbox-group { display: flex; gap: 24px; align-items: center; }
+        .checkbox-group label { display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; }
+        .checkbox-group input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #1e6bdf; }
         .icon-selector-wrapper { position: relative; }
         .icon-preview { display: flex; align-items: center; gap: 12px; }
-        .icon-preview i, .icon-preview img { width: 48px; height: 48px; object-fit: contain; border-radius: 12px; background: #f8fafc; padding: 4px; }
-        .icon-preview i { font-size: 32px; display: flex; align-items: center; justify-content: center; color: #1e6bdf; }
+        .icon-preview i, .icon-preview img, .icon-text-badge { width: 48px; height: 48px; object-fit: contain; border-radius: 12px; background: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; }
+        .icon-preview i { font-size: 32px; color: #1e6bdf; background: transparent; }
         .icon-input-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
         .icon-picker-btn { padding: 12px 16px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap; }
         .icon-picker-btn:hover { background: #eef2ff; border-color: #1e6bdf; }
@@ -67,6 +70,10 @@
         .logout-btn { float: right; }
         .hint-text { font-size: 12px; color: #64748b; margin-top: 4px; }
         .file-input { display: none; }
+        .icon-text-badge { font-size: 18px; font-weight: 600; text-transform: uppercase; color: white; background: #1e6bdf; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .table .icon-text-badge { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
+        .table i { font-size: 24px; color: #1e6bdf; }
+        .table img { width: 32px; height: 32px; object-fit: contain; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -126,7 +133,7 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>软件名称 <span style="color:red;">*</span></label>
-                <input type="text" id="swName" placeholder="例如: 达芬奇" oninput="suggestIcon()">
+                <input type="text" id="swName" placeholder="例如: 达芬奇" oninput="suggestIcon(); updatePreviewFromCurrentState();">
             </div>
             <div class="form-group">
                 <label>分类 <span style="color:red;">*</span></label>
@@ -142,15 +149,14 @@
             </div>
             <div class="form-group">
                 <label>版本</label>
-                <input type="text" id="swVersion" placeholder="例如: 18.5">
+                <input type="text" id="swVersion" placeholder="例如: 2024">
             </div>
             <div class="form-group">
                 <label>支持系统 <span style="color:red;">*</span></label>
-                <select id="swOS" multiple style="height:80px;">
-                    <option value="Windows" selected>Windows</option>
-                    <option value="Mac" selected>Mac</option>
-                </select>
-                <small>按住 Ctrl/Cmd 多选</small>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="osWindows" checked> Windows</label>
+                    <label><input type="checkbox" id="osMac" checked> Mac</label>
+                </div>
             </div>
             <div class="form-group">
                 <label>下载链接 <span style="color:red;">*</span></label>
@@ -171,21 +177,22 @@
                         <div id="iconPreviewContainer">
                             <i id="iconPreview" class="fas fa-cube"></i>
                             <img id="iconPreviewImg" src="" style="display:none;">
+                            <div id="iconPreviewText" class="icon-text-badge" style="display:none;">软</div>
                         </div>
                         <div style="flex:1;">
                             <div class="icon-input-group">
                                 <div class="icon-picker-btn" id="openIconPanel">
                                     <i class="fas fa-icons"></i> 预设图标
                                 </div>
-                                <input type="text" id="swIconCustom" class="icon-custom-input" placeholder="或输入图标类名 (如: fas fa-star)" oninput="updatePreviewFromCustom()">
+                                <input type="text" id="swIconCustom" class="icon-custom-input" placeholder="或输入图标类名 (如: fas fa-file-pdf)" oninput="updatePreviewFromCustom()">
                                 <label class="upload-btn" for="iconFileInput">
                                     <i class="fas fa-cloud-upload-alt"></i> 上传图片
                                 </label>
                                 <input type="file" id="iconFileInput" class="file-input" accept="image/*">
                                 <input type="hidden" id="swIcon" value="fa-cube">
-                                <input type="hidden" id="swIconType" value="icon"> <!-- icon 或 image -->
+                                <input type="hidden" id="swIconType" value="icon">
                             </div>
-                            <div class="hint-text">支持 Font Awesome 类名、自定义类名，或上传图片（PNG/JPG）</div>
+                            <div class="hint-text">支持 Font Awesome 类名、自定义类名，或上传图片（建议使用图床URL）</div>
                         </div>
                     </div>
                     <div class="icon-panel" id="iconPanel">
@@ -250,12 +257,11 @@
         AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9'
     };
 
-    // 图标库数据
     const iconCategories = {
-        '常用': ['fa-cube', 'fa-image', 'fa-paint-brush', 'fa-video', 'fa-film', 'fa-camera', 'fa-cloud-download-alt', 'fa-puzzle-piece', 'fa-drafting-compass', 'fa-ruler-combined', 'fa-shapes', 'fa-cubes'],
+        '常用': ['fa-cube', 'fa-image', 'fa-paint-brush', 'fa-video', 'fa-film', 'fa-camera', 'fa-cloud-download-alt', 'fa-puzzle-piece', 'fa-drafting-compass', 'fa-ruler-combined', 'fa-shapes', 'fa-cubes', 'fa-file-pdf', 'fa-file-alt', 'fa-file'],
         '品牌': ['fa-adobe', 'fa-apple', 'fa-windows', 'fa-linux'],
         '工具': ['fa-wrench', 'fa-screwdriver', 'fa-tools', 'fa-broom', 'fa-magic'],
-        '文件': ['fa-file', 'fa-folder', 'fa-save', 'fa-download'],
+        '文件': ['fa-file', 'fa-folder', 'fa-save', 'fa-download', 'fa-file-pdf', 'fa-file-image', 'fa-file-video'],
         '箭头': ['fa-arrow-right', 'fa-chevron-right']
     };
     let allIcons = [];
@@ -270,47 +276,86 @@
     async function airtableRequest(method, path, body = null) {
         const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
         const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
-        const opts = { method, headers };
-        if (body) opts.body = JSON.stringify(body);
-        const resp = await fetch(url, opts);
-        if (!resp.ok) throw new Error((await resp.json()).error.message);
+        const opts = { method, headers }; if (body) opts.body = JSON.stringify(body);
+        const resp = await fetch(url, opts); if (!resp.ok) throw new Error((await resp.json()).error.message);
         return resp.json();
     }
 
-    // ========== 仪表盘数据加载 ==========
+    function generateTextBadge(name) {
+        if (!name) return '软';
+        const chineseMatch = name.match(/[\u4e00-\u9fa5]/);
+        if (chineseMatch) return chineseMatch[0];
+        const letters = name.replace(/[^a-zA-Z]/g, '');
+        return letters.slice(0, 2).toUpperCase() || name.charAt(0).toUpperCase();
+    }
+
+    function getColorFromName(name) {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        return `hsl(${Math.abs(hash) % 360}, 70%, 55%)`;
+    }
+
+    function renderIconForTable(software) {
+        const name = software.name || '软件';
+        const iconField = software.icon;
+        if (iconField) {
+            if (Array.isArray(iconField) && iconField[0]?.url) return `<img src="${iconField[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
+            if (typeof iconField === 'string' && (iconField.startsWith('http') || iconField.startsWith('data:'))) return `<img src="${iconField}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
+            if (typeof iconField === 'string' && iconField.startsWith('fa-')) return `<i class="fas ${iconField}"></i>`;
+        }
+        if (software.iconType === 'icon' && software.iconValue) return `<i class="fas ${software.iconValue}"></i>`;
+        const badgeText = generateTextBadge(name);
+        const bgColor = getColorFromName(name);
+        return `<div class="icon-text-badge" style="background: ${bgColor};">${badgeText}</div>`;
+    }
+
+    // 更新预览（根据当前 swIcon, swIconCustom, swIconType）
+    function refreshIconPreview() {
+        const iconType = document.getElementById('swIconType').value;
+        const iconValue = document.getElementById('swIcon').value;
+        const customVal = document.getElementById('swIconCustom').value.trim();
+        const name = document.getElementById('swName').value || '软件';
+        const previewIcon = document.getElementById('iconPreview');
+        const previewImg = document.getElementById('iconPreviewImg');
+        const previewText = document.getElementById('iconPreviewText');
+        previewIcon.style.display = 'none';
+        previewImg.style.display = 'none';
+        previewText.style.display = 'none';
+
+        const effectiveIcon = customVal || iconValue;
+        if (effectiveIcon) {
+            if (effectiveIcon.startsWith('http') || effectiveIcon.startsWith('data:')) {
+                previewImg.src = effectiveIcon;
+                previewImg.style.display = 'block';
+            } else {
+                previewIcon.className = effectiveIcon;
+                previewIcon.style.display = 'flex';
+            }
+        } else {
+            const badgeText = generateTextBadge(name);
+            previewText.textContent = badgeText;
+            previewText.style.background = getColorFromName(name);
+            previewText.style.display = 'flex';
+        }
+    }
+
+    window.updatePreviewFromCurrentState = refreshIconPreview;
+    window.updatePreviewFromCustom = refreshIconPreview;
+
     async function loadDashboard() {
         try {
-            // 获取各表记录数
-            const [usersData, softwaresData, messagesData, visitsData] = await Promise.all([
-                airtableRequest('GET', 'Users?maxRecords=1'),
-                airtableRequest('GET', 'Softwares?maxRecords=1'),
-                airtableRequest('GET', 'Messages?maxRecords=1'),
-                airtableRequest('GET', 'Visits?maxRecords=1')
-            ]);
-
-            // 由于使用了 maxRecords=1，实际记录数需要再请求一次全量或通过解析 offset 等，为简化直接请求全量（数据量不大）
-            const [allUsers, allSoftwares, allMessages] = await Promise.all([
+            const [allUsers, allSoftwares, allMessages, visitsData] = await Promise.all([
                 airtableRequest('GET', 'Users'),
                 airtableRequest('GET', 'Softwares'),
-                airtableRequest('GET', 'Messages')
+                airtableRequest('GET', 'Messages'),
+                airtableRequest('GET', 'Visits?maxRecords=1')
             ]);
-
-            const userCount = allUsers.records.length;
-            const softwareCount = allSoftwares.records.length;
-            const messageCount = allMessages.records.length;
-
-            // 访问量从 Visits 表获取（假设只有一条记录，字段为 Count）
+            document.getElementById('statUsers').innerText = allUsers.records.length;
+            document.getElementById('statSoftwares').innerText = allSoftwares.records.length;
+            document.getElementById('statMessages').innerText = allMessages.records.length;
             let visitCount = 0;
-            if (visitsData.records.length > 0) {
-                visitCount = visitsData.records[0].fields.Count || 0;
-            }
-
-            document.getElementById('statUsers').innerText = userCount;
-            document.getElementById('statSoftwares').innerText = softwareCount;
-            document.getElementById('statMessages').innerText = messageCount;
+            if (visitsData.records.length > 0) visitCount = visitsData.records[0].fields.Count || 0;
             document.getElementById('statVisits').innerText = visitCount;
-
-            // 加载最近5个注册用户
             try {
                 const recentUsers = await airtableRequest('GET', 'Users?maxRecords=5&sort[0][field]=CreatedAt&sort[0][direction]=desc');
                 const tbody = document.getElementById('recentUsersTbody');
@@ -320,36 +365,20 @@
                     return `<tr><td>${f.Email || ''}</td><td>${f.Username || ''}</td><td>${created}</td></tr>`;
                 }).join('');
             } catch (e) {
-                // 如果 CreatedAt 字段不存在，则忽略最近用户显示
                 document.getElementById('recentUsersTbody').innerHTML = '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">暂无最近用户数据</td></tr>';
             }
-        } catch (e) {
-            console.error('加载仪表盘失败', e);
-            showToast('加载仪表盘数据失败', true);
-        }
+        } catch (e) { showToast('加载仪表盘失败', true); }
     }
 
-    // ========== 软件管理 ==========
     async function loadSoftwares() {
         try {
             const data = await airtableRequest('GET', 'Softwares?maxRecords=100');
             const tbody = document.getElementById('softwaresTbody');
             tbody.innerHTML = data.records.map(r => {
                 const f = r.fields;
-                let iconHtml = '';
-                if (f.Icon) {
-                    if (Array.isArray(f.Icon) && f.Icon[0]?.url) {
-                        iconHtml = `<img src="${f.Icon[0].url}" style="width:24px;height:24px;object-fit:contain;">`;
-                    } else if (typeof f.Icon === 'string' && (f.Icon.startsWith('http') || f.Icon.startsWith('data:'))) {
-                        iconHtml = `<img src="${f.Icon}" style="width:24px;height:24px;object-fit:contain;">`;
-                    } else {
-                        iconHtml = `<i class="${f.Icon || 'fa-cube'}"></i>`;
-                    }
-                } else {
-                    iconHtml = `<i class="fa-cube"></i>`;
-                }
-                return `<tr><td>${f.Name || ''}</td><td>${f.Category || ''}</td><td>${f.Version || ''}</td><td>${(f.OS || []).join(', ')}</td><td>${iconHtml}</td>
-                    <td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                const software = { name: f.Name || '', icon: f.Icon, iconType: f.IconType, iconValue: f.Icon };
+                const iconHtml = renderIconForTable(software);
+                return `<tr><td>${f.Name || ''}</td><td>${f.Category || ''}</td><td>${f.Version || ''}</td><td>${(f.OS || []).join(', ')}</td><td style="text-align:center;">${iconHtml}</td><td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             }).join('');
         } catch (e) { showToast('加载软件失败', true); }
     }
@@ -361,38 +390,31 @@
             document.getElementById('swName').value = f.Name || '';
             document.getElementById('swCategory').value = f.Category || 'adobe';
             document.getElementById('swVersion').value = f.Version || '';
-            const osSelect = document.getElementById('swOS');
-            Array.from(osSelect.options).forEach(opt => opt.selected = (f.OS || []).includes(opt.value));
+            const osArray = f.OS || ['Windows', 'Mac'];
+            document.getElementById('osWindows').checked = osArray.includes('Windows');
+            document.getElementById('osMac').checked = osArray.includes('Mac');
             document.getElementById('swURL').value = f.URL || '';
             document.getElementById('swDescription').value = f.Description || '';
-
-            const iconField = f.Icon;
-            if (Array.isArray(iconField) && iconField[0]?.url) {
-                document.getElementById('swIconType').value = 'image';
-                document.getElementById('swIcon').value = iconField[0].url;
-                document.getElementById('swIconCustom').value = iconField[0].url;
-                document.getElementById('iconPreview').style.display = 'none';
-                document.getElementById('iconPreviewImg').src = iconField[0].url;
-                document.getElementById('iconPreviewImg').style.display = 'block';
-            } else if (typeof iconField === 'string' && (iconField.startsWith('http') || iconField.startsWith('data:'))) {
-                document.getElementById('swIconType').value = 'image';
-                document.getElementById('swIcon').value = iconField;
-                document.getElementById('swIconCustom').value = iconField;
-                document.getElementById('iconPreview').style.display = 'none';
-                document.getElementById('iconPreviewImg').src = iconField;
-                document.getElementById('iconPreviewImg').style.display = 'block';
-            } else {
-                const iconClass = iconField || 'fa-cube';
-                document.getElementById('swIconType').value = 'icon';
-                document.getElementById('swIcon').value = iconClass;
-                document.getElementById('swIconCustom').value = '';
-                document.getElementById('iconPreview').className = iconClass;
-                document.getElementById('iconPreview').style.display = 'flex';
-                document.getElementById('iconPreviewImg').style.display = 'none';
-            }
             document.getElementById('swAddedDate').value = f.AddedDate || '';
             document.getElementById('swNoVerify').checked = !!f.NoVerify;
             document.getElementById('editingId').value = id;
+
+            const iconField = f.Icon;
+            document.getElementById('swIconCustom').value = '';
+            if (Array.isArray(iconField) && iconField[0]?.url) {
+                document.getElementById('swIconType').value = 'image';
+                document.getElementById('swIcon').value = iconField[0].url;
+            } else if (typeof iconField === 'string' && (iconField.startsWith('http') || iconField.startsWith('data:'))) {
+                document.getElementById('swIconType').value = 'image';
+                document.getElementById('swIcon').value = iconField;
+            } else if (typeof iconField === 'string' && iconField.startsWith('fa-')) {
+                document.getElementById('swIconType').value = 'icon';
+                document.getElementById('swIcon').value = iconField;
+            } else {
+                document.getElementById('swIconType').value = 'text';
+                document.getElementById('swIcon').value = '';
+            }
+            refreshIconPreview();
         } catch (e) { showToast('加载详情失败', true); }
     };
 
@@ -402,7 +424,6 @@
         catch (e) { showToast('删除失败', true); }
     };
 
-    // 图标选择器逻辑
     function initIconPanel() {
         const all = [];
         Object.values(iconCategories).forEach(arr => arr.forEach(icon => all.push(icon)));
@@ -413,9 +434,7 @@
     function renderIconCategories() {
         const catDiv = document.getElementById('iconCategories');
         let html = '';
-        Object.keys(iconCategories).forEach(cat => {
-            html += `<button class="icon-cat ${cat === currentIconCat ? 'active' : ''}" onclick="setIconCat('${cat}')">${cat}</button>`;
-        });
+        Object.keys(iconCategories).forEach(cat => { html += `<button class="icon-cat ${cat === currentIconCat ? 'active' : ''}" onclick="setIconCat('${cat}')">${cat}</button>`; });
         catDiv.innerHTML = html;
     }
     window.setIconCat = function (cat) { currentIconCat = cat; renderIconCategories(); renderIconGrid(cat); };
@@ -423,63 +442,23 @@
         let icons = iconCategories[cat] || [];
         if (filter) icons = icons.filter(i => i.includes(filter.toLowerCase()));
         const grid = document.getElementById('iconGrid');
-        grid.innerHTML = icons.map(icon => `
-            <div class="icon-item" onclick="selectPresetIcon('${icon}')">
-                <i class="fas ${icon}"></i><span>${icon.replace('fa-', '')}</span>
-            </div>`).join('');
+        grid.innerHTML = icons.map(icon => `<div class="icon-item" onclick="selectPresetIcon('${icon}')"><i class="fas ${icon}"></i><span>${icon.replace('fa-', '')}</span></div>`).join('');
     }
     window.selectPresetIcon = function (icon) {
         document.getElementById('swIconType').value = 'icon';
         document.getElementById('swIcon').value = icon;
         document.getElementById('swIconCustom').value = '';
-        document.getElementById('iconPreview').className = icon;
-        document.getElementById('iconPreview').style.display = 'flex';
-        document.getElementById('iconPreviewImg').style.display = 'none';
+        refreshIconPreview();
         document.getElementById('iconPanel').classList.remove('show');
     };
-    window.updatePreviewFromCustom = function () {
-        const customVal = document.getElementById('swIconCustom').value.trim();
-        if (customVal) {
-            if (customVal.startsWith('http') || customVal.startsWith('data:')) {
-                document.getElementById('swIconType').value = 'image';
-                document.getElementById('swIcon').value = customVal;
-                document.getElementById('iconPreview').style.display = 'none';
-                document.getElementById('iconPreviewImg').src = customVal;
-                document.getElementById('iconPreviewImg').style.display = 'block';
-            } else {
-                document.getElementById('swIconType').value = 'icon';
-                document.getElementById('swIcon').value = customVal;
-                document.getElementById('iconPreview').className = customVal;
-                document.getElementById('iconPreview').style.display = 'flex';
-                document.getElementById('iconPreviewImg').style.display = 'none';
-            }
-        } else {
-            const preset = document.getElementById('swIcon').value;
-            if (preset.startsWith('http')) {
-                document.getElementById('iconPreviewImg').src = preset;
-                document.getElementById('iconPreview').style.display = 'none';
-                document.getElementById('iconPreviewImg').style.display = 'block';
-            } else {
-                document.getElementById('iconPreview').className = preset;
-                document.getElementById('iconPreview').style.display = 'flex';
-                document.getElementById('iconPreviewImg').style.display = 'none';
-            }
-        }
-    };
 
-    document.getElementById('openIconPanel').addEventListener('click', (e) => {
-        e.stopPropagation();
-        document.getElementById('iconPanel').classList.toggle('show');
-    });
+    document.getElementById('openIconPanel').addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
     document.getElementById('iconSearchInput').addEventListener('input', (e) => {
         const val = e.target.value.toLowerCase();
         if (val) {
             const filtered = allIcons.filter(i => i.includes(val));
             const grid = document.getElementById('iconGrid');
-            grid.innerHTML = filtered.map(icon => `
-                <div class="icon-item" onclick="selectPresetIcon('${icon}')">
-                    <i class="fas ${icon}"></i><span>${icon.replace('fa-', '')}</span>
-                </div>`).join('');
+            grid.innerHTML = filtered.map(icon => `<div class="icon-item" onclick="selectPresetIcon('${icon}')"><i class="fas ${icon}"></i><span>${icon.replace('fa-', '')}</span></div>`).join('');
         } else { renderIconGrid(currentIconCat); }
     });
     window.addEventListener('click', () => document.getElementById('iconPanel').classList.remove('show'));
@@ -490,12 +469,10 @@
             showToast('请将图片上传到图床后，将 URL 粘贴到自定义输入框', false);
             const reader = new FileReader();
             reader.onload = (ev) => {
-                document.getElementById('iconPreviewImg').src = ev.target.result;
-                document.getElementById('iconPreview').style.display = 'none';
-                document.getElementById('iconPreviewImg').style.display = 'block';
-                document.getElementById('swIcon').value = ev.target.result;
                 document.getElementById('swIconType').value = 'image';
+                document.getElementById('swIcon').value = ev.target.result;
                 document.getElementById('swIconCustom').value = ev.target.result;
+                refreshIconPreview();
             };
             reader.readAsDataURL(file);
         }
@@ -504,44 +481,47 @@
     window.suggestIcon = function () {
         const name = document.getElementById('swName').value.toLowerCase();
         const suggestions = [];
-        if (name.includes('photoshop') || name.includes('ps')) suggestions.push('fa-image');
-        if (name.includes('illustrator') || name.includes('ai')) suggestions.push('fa-paint-brush');
-        if (name.includes('after effects') || name.includes('ae')) suggestions.push('fa-video');
-        if (name.includes('premiere') || name.includes('pr')) suggestions.push('fa-film');
-        if (name.includes('lightroom') || name.includes('lr')) suggestions.push('fa-camera');
+        if (name.includes('acrobat') || name.includes('pdf')) suggestions.push('fa-file-pdf');
+        if (name.includes('photoshop')) suggestions.push('fa-image');
+        if (name.includes('illustrator')) suggestions.push('fa-paint-brush');
+        if (name.includes('after effects')) suggestions.push('fa-video');
+        if (name.includes('premiere')) suggestions.push('fa-film');
+        if (name.includes('lightroom')) suggestions.push('fa-camera');
+        if (name.includes('audition')) suggestions.push('fa-headphones');
+        if (name.includes('indesign')) suggestions.push('fa-book');
         if (name.includes('autocad')) suggestions.push('fa-cube');
-        if (name.includes('3ds max') || name.includes('3d')) suggestions.push('fa-cubes');
+        if (name.includes('3ds max')) suggestions.push('fa-cubes');
         if (name.includes('maya')) suggestions.push('fa-shapes');
-        if (name.includes('cinema 4d') || name.includes('c4d')) suggestions.push('fa-cube');
-        if (name.includes('sketchup') || name.includes('草图')) suggestions.push('fa-drafting-compass');
-        if (name.includes('rhino') || name.includes('犀牛')) suggestions.push('fa-ruler-combined');
-        if (name.includes('插件') || name.includes('plugin')) suggestions.push('fa-puzzle-piece');
-        if (name.includes('cleaner')) suggestions.push('fa-broom');
+        if (name.includes('cinema 4d')) suggestions.push('fa-cube');
+        if (name.includes('sketchup')) suggestions.push('fa-drafting-compass');
+        if (name.includes('rhino')) suggestions.push('fa-ruler-combined');
         if (name.includes('达芬奇') || name.includes('resolve')) suggestions.push('fa-video');
+        if (name.includes('blender')) suggestions.push('fa-cube');
+        if (name.includes('插件')) suggestions.push('fa-puzzle-piece');
+        if (name.includes('cleaner')) suggestions.push('fa-broom');
         const sugDiv = document.getElementById('iconSuggestions');
         if (suggestions.length) {
-            sugDiv.innerHTML = '💡 推荐: ' + suggestions.map(s => `<span onclick="selectPresetIcon('${s}')"><i class="fas ${s}"></i> ${s}</span>`).join('');
+            const unique = [...new Set(suggestions)];
+            sugDiv.innerHTML = '💡 推荐: ' + unique.map(s => `<span onclick="selectPresetIcon('${s}')"><i class="fas ${s}"></i> ${s.replace('fa-','')}</span>`).join('');
         } else { sugDiv.innerHTML = ''; }
     };
 
     document.getElementById('saveSoftwareBtn').addEventListener('click', async () => {
-        const iconType = document.getElementById('swIconType').value;
         let finalIcon = document.getElementById('swIcon').value;
         const customVal = document.getElementById('swIconCustom').value.trim();
         if (customVal) finalIcon = customVal;
-
-        if ((finalIcon.startsWith('data:') || (!finalIcon.startsWith('http') && !finalIcon.startsWith('fa-'))) && iconType === 'image') {
-            if (!confirm('当前图标为本地图片 Base64，Airtable 可能无法正常显示。建议上传到图床后使用 URL。是否继续？')) return;
-        }
-
+        const osArray = [];
+        if (document.getElementById('osWindows').checked) osArray.push('Windows');
+        if (document.getElementById('osMac').checked) osArray.push('Mac');
+        if (osArray.length === 0) return showToast('请至少选择一个支持系统', true);
         const fields = {
             Name: document.getElementById('swName').value.trim(),
             Category: document.getElementById('swCategory').value,
             Version: document.getElementById('swVersion').value.trim(),
-            OS: Array.from(document.getElementById('swOS').selectedOptions).map(o => o.value),
+            OS: osArray,
             URL: document.getElementById('swURL').value.trim(),
             Description: document.getElementById('swDescription').value.trim(),
-            Icon: finalIcon,
+            Icon: finalIcon || null,
             AddedDate: document.getElementById('swAddedDate').value,
             NoVerify: document.getElementById('swNoVerify').checked
         };
@@ -564,25 +544,18 @@
         document.getElementById('swIcon').value = 'fa-cube';
         document.getElementById('swIconCustom').value = '';
         document.getElementById('swIconType').value = 'icon';
-        document.getElementById('iconPreview').className = 'fas fa-cube';
-        document.getElementById('iconPreview').style.display = 'flex';
-        document.getElementById('iconPreviewImg').style.display = 'none';
+        document.getElementById('osWindows').checked = true;
+        document.getElementById('osMac').checked = true;
         document.getElementById('editingId').value = '';
         document.getElementById('swNoVerify').checked = false;
+        refreshIconPreview();
     });
 
-    // ========== 用户管理 ==========
     async function loadUsers() {
         const data = await airtableRequest('GET', 'Users?maxRecords=100');
-        document.getElementById('usersTbody').innerHTML = data.records.map(r => {
-            const f = r.fields;
-            return `<tr><td>${f.Email}</td><td>${f.Username}</td><td>${f.Role || 'user'}</td><td><button onclick="deleteUser('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
-        }).join('');
+        document.getElementById('usersTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Email}</td><td>${r.fields.Username}</td><td>${r.fields.Role || 'user'}</td><td><button onclick="deleteUser('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
     }
-    window.deleteUser = async function (id) {
-        if (!confirm('确定删除用户？')) return;
-        await airtableRequest('DELETE', `Users/${id}`); showToast('已删除'); loadUsers(); loadDashboard();
-    };
+    window.deleteUser = async function (id) { if (!confirm('确定删除用户？')) return; await airtableRequest('DELETE', `Users/${id}`); showToast('已删除'); loadUsers(); loadDashboard(); };
     document.getElementById('addUserBtn').addEventListener('click', async () => {
         const email = document.getElementById('newUserEmail').value.trim();
         const username = document.getElementById('newUsername').value.trim();
@@ -598,20 +571,12 @@
         } catch (e) { showToast('添加失败', true); }
     });
 
-    // ========== 留言管理 ==========
     async function loadMessages() {
         const data = await airtableRequest('GET', 'Messages?maxRecords=50');
-        document.getElementById('messagesTbody').innerHTML = data.records.map(r => {
-            const f = r.fields;
-            return `<tr><td>${f.Name || '网友'}</td><td>${f.Message || ''}</td><td>${f.CreatedAt || ''}</td><td><button onclick="deleteMessage('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
-        }).join('');
+        document.getElementById('messagesTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Name || '网友'}</td><td>${r.fields.Message || ''}</td><td>${r.fields.CreatedAt || ''}</td><td><button onclick="deleteMessage('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
     }
-    window.deleteMessage = async function (id) {
-        if (!confirm('删除留言？')) return;
-        await airtableRequest('DELETE', `Messages/${id}`); showToast('已删除'); loadMessages(); loadDashboard();
-    };
+    window.deleteMessage = async function (id) { if (!confirm('删除留言？')) return; await airtableRequest('DELETE', `Messages/${id}`); showToast('已删除'); loadMessages(); loadDashboard(); };
 
-    // ========== 标签页切换 ==========
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -621,7 +586,6 @@
             document.getElementById('softwaresPanel').style.display = tab === 'softwares' ? 'block' : 'none';
             document.getElementById('usersPanel').style.display = tab === 'users' ? 'block' : 'none';
             document.getElementById('messagesPanel').style.display = tab === 'messages' ? 'block' : 'none';
-            
             if (tab === 'dashboard') loadDashboard();
             if (tab === 'softwares') loadSoftwares();
             if (tab === 'users') loadUsers();
@@ -629,14 +593,10 @@
         });
     });
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('lezhe_admin');
-        window.location.href = 'download.html';
-    });
+    document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('lezhe_admin'); window.location.href = 'download.html'; });
 
-    // 初始化
     initIconPanel();
-    loadDashboard();  // 默认打开仪表盘
+    loadDashboard();
 </script>
 </body>
 </html>
