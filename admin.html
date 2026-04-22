@@ -492,13 +492,14 @@
             const visitCount = visits.records[0]?.fields?.Count || 0;
             document.getElementById('statVisits').innerText = visitCount;
             try {
-                const recent = await airtableRequest('GET', 'Users?maxRecords=5&sort[0][field]=CreatedAt&sort[0][direction]=desc');
+                // 不排序，避免 CreatedAt 字段不存在报错
+                const recent = await airtableRequest('GET', 'Users?maxRecords=5');
                 const tbody = document.getElementById('recentUsersTbody');
                 tbody.innerHTML = recent.records.map(r => {
                     const f = r.fields;
                     return `<tr><td>${f.Email||''}</td><td>${f.Username||''}</td><td>${f.CreatedAt ? new Date(f.CreatedAt).toLocaleString('zh-CN') : '未知'}</td></tr>`;
                 }).join('');
-            } catch { document.getElementById('recentUsersTbody').innerHTML = '<tr><td colspan="3">暂无数据</td></tr>'; }
+            } catch { document.getElementById('recentUsersTbody').innerHTML = '<tr><td colspan="3">暂无最近用户数据</td></tr>'; }
         } catch (e) { showToast('加载仪表盘失败', true); }
     }
 
@@ -575,28 +576,43 @@
         document.getElementById('iconPanel').classList.remove('show');
     };
 
-    // ========== 广告管理 ==========
+    // ========== 广告管理（修复字段名） ==========
     async function loadAds() {
         try {
             const data = await airtableRequest('GET', 'Ads?maxRecords=50');
             const tbody = document.getElementById('adsTbody');
+            if (!data.records.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">暂无广告，请添加</td></tr>';
+                return;
+            }
             tbody.innerHTML = data.records.map(r => {
                 const f = r.fields;
+                // 兼容您表中的字段名：A Title, OLink, Image, Enabled
                 const img = f.Image || f.image || '';
-                const title = f.Title || f.title || '';
-                const link = f.Link || f.link || '';
+                const title = f['A Title'] || f.Title || f.title || '';
+                const link = f.OLink || f.Link || f.link || '';
                 const enabled = f.Enabled !== undefined ? f.Enabled : true;
-                return `<tr><td><img src="${img}" style="width:80px; height:40px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'"></td><td>${title}</td><td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${link}</td><td>${enabled?'✅ 启用':'⏸️ 禁用'}</td><td class="action-btns"><button onclick="editAd('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteAd('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                return `<tr>
+                    <td><img src="${img}" style="width:80px; height:40px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'"></td>
+                    <td>${title}</td>
+                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${link}</td>
+                    <td>${enabled?'✅ 启用':'⏸️ 禁用'}</td>
+                    <td class="action-btns"><button onclick="editAd('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteAd('${r.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
             }).join('');
-        } catch (e) { showToast('加载广告失败', true); }
+        } catch (e) {
+            console.error('加载广告失败', e);
+            const tbody = document.getElementById('adsTbody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#ef4444;">加载失败，请检查 Ads 表是否存在</td></tr>';
+        }
     }
 
     window.editAd = async function(id) {
         try {
             const data = await airtableRequest('GET', `Ads/${id}`);
             const f = data.fields;
-            document.getElementById('adTitle').value = f.Title || f.title || '';
-            document.getElementById('adLink').value = f.Link || f.link || '';
+            document.getElementById('adTitle').value = f['A Title'] || f.Title || f.title || '';
+            document.getElementById('adLink').value = f.OLink || f.Link || f.link || '';
             document.getElementById('adImageUrl').value = f.Image || f.image || '';
             document.getElementById('adEnabled').checked = f.Enabled !== undefined ? f.Enabled : true;
             document.getElementById('editingAdId').value = id;
@@ -628,7 +644,7 @@
     document.getElementById('adImageFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        showToast('请上传到图床后复制URL填入，或直接粘贴图片链接', false);
+        showToast('请上传到图床后复制URL填入', false);
         const reader = new FileReader();
         reader.onload = ev => {
             document.getElementById('adImageUrl').value = ev.target.result;
@@ -643,7 +659,8 @@
         const image = document.getElementById('adImageUrl').value.trim();
         const enabled = document.getElementById('adEnabled').checked;
         if (!link || !image) return showToast('链接和图片URL不能为空', true);
-        const fields = { Title: title, Link: link, Image: image, Enabled: enabled };
+        // 使用您表中的字段名
+        const fields = { 'A Title': title, OLink: link, Image: image, Enabled: enabled };
         const id = document.getElementById('editingAdId').value;
         try {
             if (id) await airtableRequest('PATCH', `Ads/${id}`, { fields });
@@ -663,7 +680,7 @@
         document.getElementById('adPreviewPlaceholder').style.display = 'block';
     });
 
-    // ========== 原有事件绑定（保留不变） ==========
+    // ========== 原有事件绑定 ==========
     setTimeout(() => {
         document.getElementById('openIconPanel').addEventListener('click', e => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
         document.getElementById('iconSearchInput').addEventListener('input', e => {
@@ -746,7 +763,6 @@
         }
         window.deleteMessage = async (id) => { if(confirm('删除留言？')) { await airtableRequest('DELETE', `messages/${id}`); loadMessages(); loadDashboard(); } };
         
-        // 标签页切换（新增 ads 标签）
         document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
