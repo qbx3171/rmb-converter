@@ -20,7 +20,7 @@
         #mainContent { display: none; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; }
         h1 i { color: #a855f7; }
-        .tabs { display: flex; gap: 8px; margin-bottom: 28px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 28px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; flex-wrap: wrap; }
         .tab-btn { padding: 8px 20px; border: none; background: transparent; font-size: 15px; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 40px; transition: 0.2s; }
         .tab-btn.active { background: #1e6bdf; color: white; }
         .tab-btn:hover:not(.active) { background: #eef2ff; color: #1e6bdf; }
@@ -83,6 +83,9 @@
         .table .icon-text-badge { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
         .table i { font-size: 24px; color: #1e6bdf; }
         .table img { width: 32px; height: 32px; object-fit: contain; border-radius: 8px; }
+        /* 广告管理样式 */
+        .ad-preview-img { max-width: 200px; max-height: 80px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .size-tip { background: #eef2ff; padding: 8px 16px; border-radius: 40px; font-size: 13px; color: #1e6bdf; display: inline-block; margin-bottom: 16px; }
     </style>
 </head>
 <body>
@@ -105,6 +108,7 @@
     <div class="tabs">
         <button class="tab-btn active" data-tab="dashboard">📊 仪表盘</button>
         <button class="tab-btn" data-tab="softwares">📦 软件管理</button>
+        <button class="tab-btn" data-tab="ads">🎬 广告管理</button>
         <button class="tab-btn" data-tab="users">👥 用户管理</button>
         <button class="tab-btn" data-tab="messages">💬 留言管理</button>
     </div>
@@ -145,7 +149,6 @@
             </table>
         </div>
     </div>
-
     <div id="softwaresPanel" class="panel" style="display:none;">
         <h2 style="margin-bottom: 20px;"><i class="fas fa-cubes"></i> 添加 / 编辑软件</h2>
         <div class="form-grid">
@@ -239,6 +242,54 @@
                 <tr><th>名称</th><th>分类</th><th>版本</th><th>系统</th><th>图标</th><th>操作</th></tr>
             </thead>
             <tbody id="softwaresTbody"></tbody>
+        </table>
+    </div>
+
+    <!-- 广告管理面板 -->
+    <div id="adsPanel" class="panel" style="display:none;">
+        <h2 style="margin-bottom: 20px;"><i class="fas fa-ad"></i> 添加 / 编辑广告</h2>
+        <div class="size-tip">
+            <i class="fas fa-image"></i> 建议图片尺寸：<strong>1200 x 500 像素</strong>（宽高比 12:5），轮播图将自动适配。
+        </div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>广告标题</label>
+                <input type="text" id="adTitle" placeholder="例如: Adobe Creative Cloud">
+            </div>
+            <div class="form-group">
+                <label>跳转链接 <span style="color:red;">*</span></label>
+                <input type="url" id="adLink" placeholder="https://...">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label>广告图片 <span style="color:red;">*</span></label>
+                <div style="display: flex; gap: 16px; align-items: center;">
+                    <input type="text" id="adImageUrl" class="icon-custom-input" placeholder="输入图片 URL（推荐使用图床）" style="flex:1;">
+                    <label class="upload-btn" for="adImageFile">
+                        <i class="fas fa-cloud-upload-alt"></i> 本地上传
+                    </label>
+                    <input type="file" id="adImageFile" class="file-input" accept="image/*">
+                </div>
+                <div class="hint-text">可直接填写图片URL，或上传后复制URL填入。建议尺寸 1200x500。</div>
+            </div>
+            <div class="form-group">
+                <label>预览</label>
+                <img id="adPreviewImage" class="ad-preview-img" src="" alt="预览" style="display:none; max-width:100%;">
+                <div id="adPreviewPlaceholder" style="background:#f1f5f9; border-radius:12px; padding:20px; text-align:center; color:#64748b;">填写图片URL后显示预览</div>
+            </div>
+            <div class="form-group">
+                <label><input type="checkbox" id="adEnabled" checked> 启用广告</label>
+            </div>
+        </div>
+        <div style="display: flex; gap: 16px;">
+            <button class="btn-primary" id="saveAdBtn"><i class="fas fa-save"></i> 保存广告</button>
+            <button class="btn-secondary" id="cancelAdBtn">取消编辑</button>
+        </div>
+        <input type="hidden" id="editingAdId" value="">
+
+        <h3 style="margin: 32px 0 16px;">📋 现有广告列表</h3>
+        <table class="table" id="adsTable">
+            <thead><tr><th>预览</th><th>标题</th><th>链接</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="adsTbody"></tbody>
         </table>
     </div>
 
@@ -457,7 +508,6 @@
             const tbody = document.getElementById('softwaresTbody');
             tbody.innerHTML = data.records.map(r => {
                 const f = r.fields;
-                // 注意字段名全部小写
                 return `<tr><td>${f.name||''}</td><td>${f.category||''}</td><td>${f.version||''}</td><td>${(f.os||[]).join(', ')}</td><td>${renderIconForTable(f)}</td><td class="action-btns"><button onclick="editSoftware('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteSoftware('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
             }).join('');
         } catch (e) { showToast('加载软件失败', true); }
@@ -525,6 +575,95 @@
         document.getElementById('iconPanel').classList.remove('show');
     };
 
+    // ========== 广告管理 ==========
+    async function loadAds() {
+        try {
+            const data = await airtableRequest('GET', 'Ads?maxRecords=50');
+            const tbody = document.getElementById('adsTbody');
+            tbody.innerHTML = data.records.map(r => {
+                const f = r.fields;
+                const img = f.Image || f.image || '';
+                const title = f.Title || f.title || '';
+                const link = f.Link || f.link || '';
+                const enabled = f.Enabled !== undefined ? f.Enabled : true;
+                return `<tr><td><img src="${img}" style="width:80px; height:40px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'"></td><td>${title}</td><td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${link}</td><td>${enabled?'✅ 启用':'⏸️ 禁用'}</td><td class="action-btns"><button onclick="editAd('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteAd('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+            }).join('');
+        } catch (e) { showToast('加载广告失败', true); }
+    }
+
+    window.editAd = async function(id) {
+        try {
+            const data = await airtableRequest('GET', `Ads/${id}`);
+            const f = data.fields;
+            document.getElementById('adTitle').value = f.Title || f.title || '';
+            document.getElementById('adLink').value = f.Link || f.link || '';
+            document.getElementById('adImageUrl').value = f.Image || f.image || '';
+            document.getElementById('adEnabled').checked = f.Enabled !== undefined ? f.Enabled : true;
+            document.getElementById('editingAdId').value = id;
+            updateAdPreview();
+        } catch (e) { showToast('加载广告详情失败', true); }
+    };
+
+    window.deleteAd = async function(id) {
+        if (!confirm('确定删除？')) return;
+        try { await airtableRequest('DELETE', `Ads/${id}`); showToast('已删除'); loadAds(); }
+        catch (e) { showToast('删除失败', true); }
+    };
+
+    function updateAdPreview() {
+        const url = document.getElementById('adImageUrl').value.trim();
+        const previewImg = document.getElementById('adPreviewImage');
+        const placeholder = document.getElementById('adPreviewPlaceholder');
+        if (url) {
+            previewImg.src = url;
+            previewImg.style.display = 'block';
+            placeholder.style.display = 'none';
+        } else {
+            previewImg.style.display = 'none';
+            placeholder.style.display = 'block';
+        }
+    }
+
+    document.getElementById('adImageUrl').addEventListener('input', updateAdPreview);
+    document.getElementById('adImageFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        showToast('请上传到图床后复制URL填入，或直接粘贴图片链接', false);
+        const reader = new FileReader();
+        reader.onload = ev => {
+            document.getElementById('adImageUrl').value = ev.target.result;
+            updateAdPreview();
+        };
+        reader.readAsDataURL(file);
+    });
+
+    document.getElementById('saveAdBtn').addEventListener('click', async function() {
+        const title = document.getElementById('adTitle').value.trim();
+        const link = document.getElementById('adLink').value.trim();
+        const image = document.getElementById('adImageUrl').value.trim();
+        const enabled = document.getElementById('adEnabled').checked;
+        if (!link || !image) return showToast('链接和图片URL不能为空', true);
+        const fields = { Title: title, Link: link, Image: image, Enabled: enabled };
+        const id = document.getElementById('editingAdId').value;
+        try {
+            if (id) await airtableRequest('PATCH', `Ads/${id}`, { fields });
+            else await airtableRequest('POST', 'Ads', { fields });
+            showToast('广告保存成功'); loadAds();
+            document.getElementById('cancelAdBtn').click();
+        } catch (e) { showToast('保存失败: ' + e.message, true); }
+    });
+
+    document.getElementById('cancelAdBtn').addEventListener('click', function() {
+        document.getElementById('adTitle').value = '';
+        document.getElementById('adLink').value = '';
+        document.getElementById('adImageUrl').value = '';
+        document.getElementById('adEnabled').checked = true;
+        document.getElementById('editingAdId').value = '';
+        document.getElementById('adPreviewImage').style.display = 'none';
+        document.getElementById('adPreviewPlaceholder').style.display = 'block';
+    });
+
+    // ========== 原有事件绑定（保留不变） ==========
     setTimeout(() => {
         document.getElementById('openIconPanel').addEventListener('click', e => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
         document.getElementById('iconSearchInput').addEventListener('input', e => {
@@ -606,16 +745,20 @@
             document.getElementById('messagesTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Name||'网友'}</td><td>${r.fields.Message||''}</td><td>${r.fields.CreatedAt||''}</td><td><button onclick="deleteMessage('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
         }
         window.deleteMessage = async (id) => { if(confirm('删除留言？')) { await airtableRequest('DELETE', `messages/${id}`); loadMessages(); loadDashboard(); } };
+        
+        // 标签页切换（新增 ads 标签）
         document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const tab = btn.dataset.tab;
-            ['dashboard','softwares','users','messages'].forEach(t => document.getElementById(t+'Panel').style.display = t===tab?'block':'none');
+            ['dashboard','softwares','ads','users','messages'].forEach(t => document.getElementById(t+'Panel').style.display = t===tab?'block':'none');
             if (tab==='dashboard') loadDashboard();
             if (tab==='softwares') loadSoftwares();
+            if (tab==='ads') loadAds();
             if (tab==='users') loadUsers();
             if (tab==='messages') loadMessages();
         }));
+        
         if (mainContent.style.display === 'block') {
             initIconPanel();
             loadDashboard();
