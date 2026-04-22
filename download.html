@@ -38,18 +38,46 @@
         body.bg-night .search-bar input { color: white; }
         body.bg-night .search-bar input::placeholder { color: #94a3b8; }
 
-        /* ========== 顶部导航（质感升级） ========== */
+        /* 移动端滚动优化 */
+        .chat-messages, .detail-card, .auth-card, .profile-card, .admin-card, .search-suggestions {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ========== 顶部导航（质感升级 + 移动汉堡菜单） ========== */
         .top-nav { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.5); padding: 0 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
         .nav-inner { max-width: 1300px; margin: 0 auto; padding: 14px 0; display: flex; align-items: center; justify-content: space-between; }
         .logo-area { display: flex; align-items: baseline; gap: 10px; }
         .logo { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #0a2540, #1e6bdf); -webkit-background-clip: text; background-clip: text; color: transparent; letter-spacing: -0.5px; }
         .domain { background: rgba(30,107,223,0.1); backdrop-filter: blur(4px); padding: 4px 12px; border-radius: 40px; font-size: 12px; font-weight: 500; color: #1e6bdf; }
+        
+        /* 桌面导航链接 */
         .nav-links { display: flex; gap: 28px; }
         .nav-links a { text-decoration: none; color: #334155; font-size: 16px; font-weight: 600; padding: 8px 0; position: relative; transition: color 0.2s; }
         .nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: #1e6bdf; transition: width 0.25s ease; border-radius: 2px; }
         .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
         .nav-links a.active, .nav-links a:hover { color: #1e6bdf; }
         .nav-links a:hover { background: linear-gradient(135deg, rgba(30,107,223,0.05), transparent); border-radius: 30px; padding: 8px 16px; margin: -8px -16px; }
+
+        /* 汉堡菜单按钮（移动端显示） */
+        .hamburger { display: none; flex-direction: column; justify-content: space-around; width: 28px; height: 24px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 1001; }
+        .hamburger span { width: 28px; height: 3px; background: #1e6bdf; border-radius: 3px; transition: all 0.3s; }
+        body.bg-night .hamburger span { background: #e2e8f0; }
+        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .hamburger.active span:nth-child(2) { opacity: 0; }
+        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+        /* 移动端导航覆盖 */
+        @media (max-width: 768px) {
+            .nav-inner { flex-wrap: wrap; }
+            .hamburger { display: flex; }
+            .nav-links { display: none; width: 100%; flex-direction: column; gap: 8px; padding: 16px 0 8px; order: 3; }
+            .nav-links.show { display: flex; }
+            .nav-links a { padding: 12px 16px; width: 100%; text-align: center; border-radius: 40px; }
+            .nav-links a:hover { background: rgba(30,107,223,0.05); margin: 0; padding: 12px 16px; }
+            .domain { display: none; }
+            .logo-area { flex: 1; }
+        }
+
         .user-area { margin-left: 10px; }
         .auth-btn { background: #1e6bdf; color: white; border: none; padding: 10px 22px; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 8px rgba(30,107,223,0.2); transition: 0.2s; }
         .auth-btn:hover { background: #1557b0; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(30,107,223,0.25); }
@@ -68,6 +96,83 @@
         .main-content { flex: 1; min-width: 0; }
         .sidebar { width: 300px; flex-shrink: 0; }
         @media (max-width: 900px) { .content-wrapper { flex-direction: column; } .sidebar { width: 100%; } }
+
+        /* ========== 顶部横幅广告位 ========== */
+        .top-banner-ad {
+            margin-bottom: 24px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
+            background: white;
+            width: 100%;
+        }
+        body.bg-night .top-banner-ad { background: #1e293b; }
+        .banner-carousel-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 21 / 9; /* 更宽的横幅比例 */
+        }
+        @media (max-width: 640px) {
+            .banner-carousel-container { aspect-ratio: 16 / 9; }
+        }
+        .banner-carousel-slides {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s ease;
+        }
+        .banner-carousel-slide {
+            flex: 0 0 100%;
+            height: 100%;
+            position: relative;
+            background: #f1f5f9;
+        }
+        body.bg-night .banner-carousel-slide { background: #1e293b; }
+        .banner-carousel-slide a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .banner-carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .banner-carousel-slide img.loaded { opacity: 1; }
+        .banner-loading-placeholder {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg, #eceff4 8%, #f5f7fb 18%, #eceff4 33%);
+            background-size: 200% 100%;
+            animation: adShimmer 1.5s infinite linear;
+            z-index: 2;
+            pointer-events: none;
+        }
+        body.bg-night .banner-loading-placeholder {
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+        }
+        .banner-carousel-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+        .banner-carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .banner-carousel-dot.active {
+            width: 24px;
+            background: white;
+        }
 
         /* ========== 分类标签 ========== */
         .category-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
@@ -108,20 +213,42 @@
         .suggestion-item { padding: 14px 20px; cursor: pointer; border-bottom: 1px solid #f1f5f9; }
         .suggestion-item:hover { background: #eef2ff; }
 
-        /* 广告轮播（骨架屏加速） */
+        /* ========== 侧边栏广告轮播 ========== */
         .sidebar-ad { margin-bottom: 24px; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.02); background: white; }
         body.bg-night .sidebar-ad { background: #1e293b; }
         .sidebar-carousel-container { position: relative; width: 100%; aspect-ratio: 21 / 10; }
         .sidebar-carousel-slides { display: flex; height: 100%; transition: transform 0.5s ease; }
-        .sidebar-carousel-slide { flex: 0 0 100%; height: 100%; }
+        .sidebar-carousel-slide { flex: 0 0 100%; height: 100%; position: relative; background: #f1f5f9; }
+        body.bg-night .sidebar-carousel-slide { background: #1e293b; }
         .sidebar-carousel-slide a { display: block; width: 100%; height: 100%; }
-        .sidebar-carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
-        .sidebar-carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+        .sidebar-carousel-slide img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: inherit;
+        }
+        .sidebar-carousel-slide img.loaded { opacity: 1; }
+        .ad-loading-placeholder {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg, #eceff4 8%, #f5f7fb 18%, #eceff4 33%);
+            background-size: 200% 100%;
+            animation: adShimmer 1.5s infinite linear;
+            z-index: 2;
+            pointer-events: none;
+        }
+        body.bg-night .ad-loading-placeholder {
+            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+        }
+        @keyframes adShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .sidebar-carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
         .sidebar-carousel-dot { width: 6px; height: 6px; border-radius: 10px; background: rgba(255,255,255,0.6); cursor: pointer; transition: 0.3s; }
         .sidebar-carousel-dot.active { width: 20px; background: white; }
-        /* 广告骨架屏 */
-        .ad-skeleton { position: absolute; inset: 0; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 24px; z-index: 5; }
-        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
         /* 日历 */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
@@ -172,7 +299,7 @@
         .chatbot-container { position: fixed; right: 24px; bottom: 100px; z-index: 200; }
         .chat-toggle { width: 52px; height: 52px; background: linear-gradient(135deg, #1e6bdf, #a855f7); border-radius: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 26px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
         .chat-window { position: absolute; bottom: 70px; right: 0; width: 340px; height: 480px; background: white; border-radius: 28px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 40px rgba(0,0,0,0.15); display: none; }
-        .chat-header { background: #f8faff; padding: 12px 18px; font-weight: 600; display: flex; justify-content: space-between; border-bottom: 1px solid #eef2fc; }
+        .chat-header { background: #f8faff; padding: 12px 18px; font-weight: 600; display: flex; justify-content: space-between; border-bottom: 1px solid #eef2fc; cursor: move; }
         .chat-messages { flex: 1; padding: 14px; overflow-y: auto; }
         .message { max-width: 85%; padding: 8px 14px; border-radius: 22px; font-size: 12px; margin-bottom: 8px; }
         .message.customer { background: #1e6bdf; color: white; align-self: flex-end; }
@@ -204,7 +331,12 @@
             <span class="logo">乐哲软件</span>
             <span class="domain"><i class="fas fa-globe"></i> www.lezhesoft.cn</span>
         </div>
-        <div class="nav-links">
+        <button class="hamburger" id="hamburgerBtn" aria-label="菜单">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links" id="navLinks">
             <a href="index.html">首页</a>
             <a href="service.html">服务项目</a>
             <a href="download.html" class="active">软件下载</a>
@@ -217,6 +349,14 @@
 <div class="main">
     <div class="content-wrapper">
         <div class="main-content">
+            <!-- 新增：顶部横幅广告位 -->
+            <div class="top-banner-ad" id="topBannerAd">
+                <div class="banner-carousel-container" id="bannerContainer">
+                    <div class="banner-carousel-slides" id="bannerCarouselSlides"></div>
+                    <div class="banner-carousel-dots" id="bannerCarouselDots"></div>
+                </div>
+            </div>
+            
             <div class="category-row" id="categoryTabs"></div>
             <div id="softwareGridContainer" class="grid" style="min-height: 200px;"></div>
             <div id="loadMoreContainer" style="text-align: center; margin-top: 40px; display: none;">
@@ -232,10 +372,9 @@
                 </div>
                 <div class="search-suggestions" id="searchSuggestions"></div>
             </div>
-            <!-- 广告轮播（带骨架屏，立即显示） -->
+            <!-- 侧边栏广告轮播 -->
             <div class="sidebar-ad" id="adCarouselSidebar">
                 <div class="sidebar-carousel-container" id="adContainer">
-                    <div class="ad-skeleton" id="adSkeleton"></div>
                     <div class="sidebar-carousel-slides" id="sidebarCarouselSlides"></div>
                     <div class="sidebar-carousel-dots" id="sidebarCarouselDots"></div>
                 </div>
@@ -282,6 +421,7 @@
         <i class="fas fa-download"></i> 乐哲软件博客 · 原版安装包推荐，安全无捆绑<br>www.lezhesoft.cn | 个人技术分享
     </footer>
 </div>
+
 <!-- 软件详情模态框 -->
 <div id="detailModal" class="detail-modal">
     <div class="detail-card">
@@ -433,49 +573,146 @@
         }
         function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-        // ========== 广告轮播（骨架屏 + 快速加载） ==========
-        const DEFAULT_ADS = [
-            { image: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600&h=286&fit=crop', link: 'https://www.adobe.com/', title: 'Adobe Creative Cloud' },
-            { image: 'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=600&h=286&fit=crop', link: 'https://www.autodesk.com/', title: 'Autodesk' }
-        ];
-        let ads = [];
-        let currentSlide = 0, carouselInterval = null;
-        const carouselSlides = document.getElementById('sidebarCarouselSlides');
-        const carouselDots = document.getElementById('sidebarCarouselDots');
-        const adSkeleton = document.getElementById('adSkeleton');
+        // ========== 汉堡菜单交互 ==========
+        const hamburger = document.getElementById('hamburgerBtn');
+        const navLinks = document.getElementById('navLinks');
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navLinks.classList.toggle('show');
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('show');
+            });
+        });
 
-        function renderCarousel() {
-            adSkeleton.style.display = 'none';
-            if (!ads.length) ads = DEFAULT_ADS;
-            carouselSlides.innerHTML = ads.map(ad => `
-                <div class="sidebar-carousel-slide">
+        // ========== 默认广告数据 ==========
+        const DEFAULT_ADS = [
+            { image: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=1200&h=514&fit=crop', link: 'https://www.adobe.com/', title: 'Adobe Creative Cloud' },
+            { image: 'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1200&h=514&fit=crop', link: 'https://www.autodesk.com/', title: 'Autodesk' }
+        ];
+        // 顶部横幅广告也可使用相同默认广告，或单独配置，这里复用
+        let bannerAds = [...DEFAULT_ADS];
+        let sidebarAds = [...DEFAULT_ADS];
+        
+        let bannerCurrentSlide = 0, bannerInterval = null;
+        let sidebarCurrentSlide = 0, sidebarInterval = null;
+
+        // ========== 通用轮播渲染函数 ==========
+        function renderCarousel(containerSlides, containerDots, ads, currentSlideObj, intervalObj, startAutoPlayFn, dotClickHandler) {
+            containerSlides.innerHTML = ads.map((ad, index) => `
+                <div class="${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-slide' : 'sidebar-carousel-slide'}">
+                    <div class="${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-loading-placeholder' : 'ad-loading-placeholder'}"></div>
                     <a href="${escapeHtml(ad.link)}" target="_blank" rel="noopener noreferrer">
-                        <img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="lazy" onerror="this.src='https://placehold.co/600x286/1e6bdf/white?text=${encodeURIComponent(ad.title)}'">
+                        <img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" data-index="${index}">
                     </a>
                 </div>
             `).join('');
-            carouselDots.innerHTML = ads.map((_, i) => `<div class="sidebar-carousel-dot ${i===0?'active':''}" data-index="${i}"></div>`).join('');
-            updateCarousel(0);
-            carouselDots.querySelectorAll('.sidebar-carousel-dot').forEach(dot => dot.addEventListener('click', e => { updateCarousel(parseInt(e.target.dataset.index)); resetAutoPlay(); }));
+            
+            containerDots.innerHTML = ads.map((_, i) => `<div class="${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-dot' : 'sidebar-carousel-dot'} ${i===0?'active':''}" data-index="${i}"></div>`).join('');
+            
+            const slides = containerSlides.querySelectorAll(containerSlides.classList.contains('banner-carousel-slides') ? '.banner-carousel-slide' : '.sidebar-carousel-slide');
+            slides.forEach((slide, i) => {
+                const img = slide.querySelector('img');
+                const placeholder = slide.querySelector(containerSlides.classList.contains('banner-carousel-slides') ? '.banner-loading-placeholder' : '.ad-loading-placeholder');
+                if (img && placeholder) {
+                    if (img.complete) {
+                        placeholder.style.display = 'none';
+                        img.classList.add('loaded');
+                    } else {
+                        img.onload = () => { placeholder.style.display = 'none'; img.classList.add('loaded'); };
+                        img.onerror = () => { placeholder.style.display = 'none'; img.style.background = '#cbd5e1'; };
+                    }
+                    img.decoding = 'async';
+                    if (i === 0) img.loading = 'eager';
+                }
+            });
+            
+            const updateFn = (index) => {
+                currentSlideObj.val = index;
+                containerSlides.style.transform = `translateX(-${index*100}%)`;
+                containerDots.querySelectorAll(`.${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-dot' : 'sidebar-carousel-dot'}`).forEach((d,i)=> d.classList.toggle('active', i===index));
+                // 预加载下一张
+                const nextIndex = (index + 1) % ads.length;
+                if (ads[nextIndex]) {
+                    const preloadImg = new Image();
+                    preloadImg.src = ads[nextIndex].image;
+                }
+            };
+            
+            containerDots.querySelectorAll(`.${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-dot' : 'sidebar-carousel-dot'}`).forEach(dot => {
+                dot.addEventListener('click', e => {
+                    const idx = parseInt(e.target.dataset.index);
+                    updateFn(idx);
+                    if (intervalObj.val) { clearInterval(intervalObj.val); startAutoPlayFn(); }
+                });
+            });
+            
+            return updateFn;
         }
 
-        function updateCarousel(index) { currentSlide = index; carouselSlides.style.transform = `translateX(-${index*100}%)`; document.querySelectorAll('.sidebar-carousel-dot').forEach((d,i)=> d.classList.toggle('active', i===index)); }
-        function startAutoPlay() { if(carouselInterval) clearInterval(carouselInterval); carouselInterval = setInterval(()=> { if(ads.length) updateCarousel((currentSlide+1)%ads.length); }, 4000); }
-        function resetAutoPlay() { clearInterval(carouselInterval); startAutoPlay(); }
+        // ========== 顶部横幅广告 ==========
+        const bannerSlides = document.getElementById('bannerCarouselSlides');
+        const bannerDots = document.getElementById('bannerCarouselDots');
+        let bannerCurrent = { val: 0 };
+        
+        function startBannerAutoPlay() {
+            if (bannerInterval) clearInterval(bannerInterval);
+            bannerInterval = setInterval(() => {
+                if (bannerAds.length) {
+                    bannerUpdate((bannerCurrent.val + 1) % bannerAds.length);
+                }
+            }, 4000);
+        }
+        
+        const bannerUpdate = renderCarousel(bannerSlides, bannerDots, bannerAds, bannerCurrent, { val: bannerInterval }, startBannerAutoPlay);
+        bannerUpdate(0);
+        startBannerAutoPlay();
 
-        async function loadAds() {
+        // ========== 侧边栏广告 ==========
+        const sidebarSlides = document.getElementById('sidebarCarouselSlides');
+        const sidebarDots = document.getElementById('sidebarCarouselDots');
+        let sidebarCurrent = { val: 0 };
+        
+        function startSidebarAutoPlay() {
+            if (sidebarInterval) clearInterval(sidebarInterval);
+            sidebarInterval = setInterval(() => {
+                if (sidebarAds.length) {
+                    sidebarUpdate((sidebarCurrent.val + 1) % sidebarAds.length);
+                }
+            }, 4000);
+        }
+        
+        const sidebarUpdate = renderCarousel(sidebarSlides, sidebarDots, sidebarAds, sidebarCurrent, { val: sidebarInterval }, startSidebarAutoPlay);
+        sidebarUpdate(0);
+        startSidebarAutoPlay();
+
+        // ========== 从Airtable更新广告（后台静默） ==========
+        async function updateAdsFromAirtable() {
             try {
                 const data = await airtableRequest('GET', 'Ads?maxRecords=20');
                 const fetched = data.records.map(r => r.fields).filter(f => (f.Enabled===undefined||f.Enabled) && (f.Image||f.image) && (f.Link||f.link))
                     .map(f => ({ image: f.Image||f.image, link: f.Link||f.link, title: f.Title||f.title||'' }));
-                ads = fetched.length ? fetched : DEFAULT_ADS;
-            } catch(e) { console.warn('广告加载失败', e); ads = DEFAULT_ADS; }
-            renderCarousel();
-            startAutoPlay();
+                if (fetched.length) {
+                    // 更新顶部横幅广告（若内容变化则重新渲染）
+                    if (JSON.stringify(fetched) !== JSON.stringify(bannerAds)) {
+                        bannerAds = fetched;
+                        bannerUpdate = renderCarousel(bannerSlides, bannerDots, bannerAds, bannerCurrent, { val: bannerInterval }, startBannerAutoPlay);
+                        bannerUpdate(bannerCurrent.val);
+                        if (bannerInterval) { clearInterval(bannerInterval); startBannerAutoPlay(); }
+                    }
+                    // 更新侧边栏广告
+                    if (JSON.stringify(fetched) !== JSON.stringify(sidebarAds)) {
+                        sidebarAds = fetched;
+                        sidebarUpdate = renderCarousel(sidebarSlides, sidebarDots, sidebarAds, sidebarCurrent, { val: sidebarInterval }, startSidebarAutoPlay);
+                        sidebarUpdate(sidebarCurrent.val);
+                        if (sidebarInterval) { clearInterval(sidebarInterval); startSidebarAutoPlay(); }
+                    }
+                }
+            } catch(e) { console.warn('Airtable广告获取失败', e); }
         }
-        // 立即显示骨架屏，然后拉取广告
-        adSkeleton.style.display = 'block';
-        loadAds();
+        setTimeout(updateAdsFromAirtable, 800);
 
         // ========== 日历 ==========
         let currentDate = new Date();
@@ -712,12 +949,47 @@
         document.getElementById('searchInput').addEventListener('input', e => { searchKeyword = e.target.value; renderGrid(); });
         document.getElementById('searchBtn').addEventListener('click', ()=> renderGrid());
 
-        // 聊天机器人
+        // 聊天机器人（触摸拖拽支持）
         let chatInitialized = false;
-        function initChat() { if(chatInitialized) return; chatInitialized = true; const toggle=document.getElementById('chatToggleBtn'), win=document.getElementById('chatWindow'), close=document.getElementById('chatCloseBtn'), send=document.getElementById('chatSendBtn'), input=document.getElementById('chatInput'), msgDiv=document.getElementById('chatMessagesList'); const botReply = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～"; let messages = []; function renderMsgs() { msgDiv.innerHTML = ''; if(!messages.length) { const d=document.createElement('div'); d.className='message bot'; d.innerHTML=`<strong>乐哲麦</strong>${botReply}`; msgDiv.appendChild(d); } else messages.forEach(m=>{ const d=document.createElement('div'); d.className=`message ${m.sender}`; d.innerHTML=`<strong>${m.sender==='customer'?'我':'乐哲麦'}</strong>${escapeHtml(m.text)}`; msgDiv.appendChild(d); }); } function addMsg(text, sender) { messages.push({text, sender}); renderMsgs(); } send.onclick = ()=>{ const v=input.value.trim(); if(v) { addMsg(v, 'customer'); setTimeout(()=>addMsg(botReply, 'bot'), 500); input.value=''; } }; input.onkeypress = e=>{ if(e.key==='Enter') send.click(); }; toggle.onclick = ()=>{ win.style.display = win.style.display==='none'?'flex':'none'; renderMsgs(); }; close.onclick = ()=> win.style.display = 'none'; const dragHandle=document.getElementById('chatHeaderDrag'), container=document.getElementById('chatbotContainer'); let isDragging=false, startX, startY, startRight, startBottom; dragHandle.addEventListener('mousedown', e=>{ if(e.target.closest('.chat-close')) return; e.preventDefault(); isDragging=true; startX=e.clientX; startY=e.clientY; const style=getComputedStyle(container); startRight=parseFloat(style.right)||24; startBottom=parseFloat(style.bottom)||100; container.style.transition='none'; }); window.addEventListener('mousemove', e=>{ if(!isDragging) return; e.preventDefault(); let newRight=startRight-(e.clientX-startX), newBottom=startBottom-(e.clientY-startY); newRight=Math.min(Math.max(10,newRight),window.innerWidth-70); newBottom=Math.min(Math.max(10,newBottom),window.innerHeight-90); container.style.right=newRight+'px'; container.style.bottom=newBottom+'px'; }); window.addEventListener('mouseup', ()=>{ isDragging=false; container.style.transition=''; }); }
+        function initChat() { if(chatInitialized) return; chatInitialized = true; const toggle=document.getElementById('chatToggleBtn'), win=document.getElementById('chatWindow'), close=document.getElementById('chatCloseBtn'), send=document.getElementById('chatSendBtn'), input=document.getElementById('chatInput'), msgDiv=document.getElementById('chatMessagesList'); const botReply = "您好！我是乐哲软件客服 乐哲麦，有任何需求或问题请添加微信：Win_Mac_123，我们会尽快回复您～"; let messages = []; function renderMsgs() { msgDiv.innerHTML = ''; if(!messages.length) { const d=document.createElement('div'); d.className='message bot'; d.innerHTML=`<strong>乐哲麦</strong>${botReply}`; msgDiv.appendChild(d); } else messages.forEach(m=>{ const d=document.createElement('div'); d.className=`message ${m.sender}`; d.innerHTML=`<strong>${m.sender==='customer'?'我':'乐哲麦'}</strong>${escapeHtml(m.text)}`; msgDiv.appendChild(d); }); } function addMsg(text, sender) { messages.push({text, sender}); renderMsgs(); } send.onclick = ()=>{ const v=input.value.trim(); if(v) { addMsg(v, 'customer'); setTimeout(()=>addMsg(botReply, 'bot'), 500); input.value=''; } }; input.onkeypress = e=>{ if(e.key==='Enter') send.click(); }; toggle.onclick = ()=>{ win.style.display = win.style.display==='none'?'flex':'none'; renderMsgs(); }; close.onclick = ()=> win.style.display = 'none';
+        
+        const dragHandle=document.getElementById('chatHeaderDrag'), container=document.getElementById('chatbotContainer');
+        let isDragging=false, startX, startY, startRight, startBottom;
+        function onDragStart(e) {
+            if(e.target.closest('.chat-close')) return;
+            e.preventDefault();
+            isDragging=true;
+            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            startX=clientX; startY=clientY;
+            const style=getComputedStyle(container);
+            startRight=parseFloat(style.right)||24;
+            startBottom=parseFloat(style.bottom)||100;
+            container.style.transition='none';
+        }
+        function onDragMove(e) {
+            if(!isDragging) return;
+            e.preventDefault();
+            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            let newRight=startRight-(clientX-startX), newBottom=startBottom-(clientY-startY);
+            newRight=Math.min(Math.max(10,newRight),window.innerWidth-70);
+            newBottom=Math.min(Math.max(10,newBottom),window.innerHeight-90);
+            container.style.right=newRight+'px';
+            container.style.bottom=newBottom+'px';
+        }
+        function onDragEnd() { isDragging=false; container.style.transition=''; }
+        
+        dragHandle.addEventListener('mousedown', onDragStart);
+        window.addEventListener('mousemove', onDragMove);
+        window.addEventListener('mouseup', onDragEnd);
+        dragHandle.addEventListener('touchstart', onDragStart, {passive: false});
+        window.addEventListener('touchmove', onDragMove, {passive: false});
+        window.addEventListener('touchend', onDragEnd);
+        window.addEventListener('touchcancel', onDragEnd);
+        }
         document.getElementById('chatToggleBtn').addEventListener('click', initChat, { once: true });
 
-        // 关闭详情等
         document.getElementById('closeDetailModal').addEventListener('click', ()=> document.getElementById('detailModal').classList.remove('active'));
         document.getElementById('detailModal').addEventListener('click', e=> { if (e.target===document.getElementById('detailModal')) document.getElementById('detailModal').classList.remove('active'); });
         document.getElementById('closeProfileModal').addEventListener('click', ()=> document.getElementById('profileModal').classList.remove('active'));
