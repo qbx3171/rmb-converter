@@ -86,6 +86,10 @@
         /* 广告管理样式 */
         .ad-preview-img { max-width: 200px; max-height: 80px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .size-tip { background: #eef2ff; padding: 8px 16px; border-radius: 40px; font-size: 13px; color: #1e6bdf; display: inline-block; margin-bottom: 16px; }
+        .position-badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 12px; font-weight: 500; }
+        .position-badge.top { background: #fef3c7; color: #d97706; }
+        .position-badge.banner { background: #dcfce7; color: #16a34a; }
+        .position-badge.sidebar { background: #e0f2fe; color: #0284c7; }
     </style>
 </head>
 <body>
@@ -244,7 +248,7 @@
             <tbody id="softwaresTbody"></tbody>
         </table>
     </div>
-    <!-- 广告管理面板 -->
+    <!-- 广告管理面板（升级版：包含位置管理） -->
     <div id="adsPanel" class="panel" style="display:none;">
         <h2 style="margin-bottom: 20px;"><i class="fas fa-ad"></i> 添加 / 编辑广告</h2>
         <div class="size-tip">
@@ -254,6 +258,15 @@
             <div class="form-group">
                 <label>广告标题</label>
                 <input type="text" id="adTitle" placeholder="例如: Adobe Creative Cloud">
+            </div>
+            <div class="form-group">
+                <label>展示位置 <span style="color:red;">*</span></label>
+                <select id="adPosition">
+                    <option value="top">顶部横幅 (首页大图)</option>
+                    <option value="banner">分类上方横幅</option>
+                    <option value="sidebar">侧边栏轮播</option>
+                </select>
+                <div class="hint-text">选择广告将显示在前台哪个区域</div>
             </div>
             <div class="form-group">
                 <label>跳转链接 <span style="color:red;">*</span></label>
@@ -287,7 +300,16 @@
 
         <h3 style="margin: 32px 0 16px;">📋 现有广告列表</h3>
         <table class="table" id="adsTable">
-            <thead><tr><th>预览</th><th>标题</th><th>链接</th><th>状态</th><th>操作</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>预览</th>
+                    <th>标题</th>
+                    <th>位置</th>
+                    <th>链接</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
             <tbody id="adsTbody"></tbody>
         </table>
     </div>
@@ -574,33 +596,36 @@
         document.getElementById('iconPanel').classList.remove('show');
     };
 
-    // ========== 广告管理（完全修复字段名兼容） ==========
+    // ========== 广告管理（增强版：位置字段） ==========
     async function loadAds() {
         try {
             const data = await airtableRequest('GET', 'Ads?maxRecords=50');
             const tbody = document.getElementById('adsTbody');
             if (!data.records.length) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">暂无广告，请添加</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#94a3b8;">暂无广告，请添加</td></tr>';
                 return;
             }
             tbody.innerHTML = data.records.map(r => {
                 const f = r.fields;
-                // 兼容多种字段名写法
                 const img = f.Image || f.image || '';
                 const title = f.Title || f.title || f['A Title'] || '';
                 const link = f.Link || f.link || f.OLink || '';
                 const enabled = f.Enabled !== undefined ? f.Enabled : true;
+                const position = f.Position || f.position || 'sidebar'; // 默认侧边栏
+                const posMap = { 'top': '顶部横幅', 'banner': '分类上方', 'sidebar': '侧边栏' };
+                const posText = posMap[position] || position;
                 return `<tr>
                     <td><img src="${img}" style="width:80px; height:40px; object-fit:cover; border-radius:8px;" onerror="this.style.display='none'"></td>
                     <td>${title}</td>
-                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis;">${link}</td>
+                    <td><span class="position-badge ${position}">${posText}</span></td>
+                    <td style="max-width:150px; overflow:hidden; text-overflow:ellipsis;">${link}</td>
                     <td>${enabled?'✅ 启用':'⏸️ 禁用'}</td>
                     <td class="action-btns"><button onclick="editAd('${r.id}')"><i class="fas fa-edit"></i></button><button class="delete" onclick="deleteAd('${r.id}')"><i class="fas fa-trash"></i></button></td>
                 </tr>`;
             }).join('');
         } catch (e) {
             console.error('加载广告失败', e);
-            document.getElementById('adsTbody').innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#ef4444;">加载失败，请检查 Ads 表是否存在</td></tr>';
+            document.getElementById('adsTbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#ef4444;">加载失败，请检查 Ads 表是否存在</td></tr>';
         }
     }
 
@@ -611,6 +636,7 @@
             document.getElementById('adTitle').value = f.Title || f.title || f['A Title'] || '';
             document.getElementById('adLink').value = f.Link || f.link || f.OLink || '';
             document.getElementById('adImageUrl').value = f.Image || f.image || '';
+            document.getElementById('adPosition').value = f.Position || f.position || 'sidebar';
             document.getElementById('adEnabled').checked = f.Enabled !== undefined ? f.Enabled : true;
             document.getElementById('editingAdId').value = id;
             updateAdPreview();
@@ -654,15 +680,22 @@
         const title = document.getElementById('adTitle').value.trim();
         const link = document.getElementById('adLink').value.trim();
         const image = document.getElementById('adImageUrl').value.trim();
+        const position = document.getElementById('adPosition').value;
         const enabled = document.getElementById('adEnabled').checked;
         if (!link || !image) return showToast('链接和图片URL不能为空', true);
-        // 使用常见字段名，兼容您表中可能存在的任何变体
-        const fields = { Title: title, Link: link, Image: image, Enabled: enabled };
+        const fields = { 
+            Title: title, 
+            Link: link, 
+            Image: image, 
+            Position: position,
+            Enabled: enabled 
+        };
         const id = document.getElementById('editingAdId').value;
         try {
             if (id) await airtableRequest('PATCH', `Ads/${id}`, { fields });
             else await airtableRequest('POST', 'Ads', { fields });
-            showToast('广告保存成功'); loadAds();
+            showToast('广告保存成功'); 
+            loadAds();
             document.getElementById('cancelAdBtn').click();
         } catch (e) { showToast('保存失败: ' + e.message, true); }
     });
@@ -671,6 +704,7 @@
         document.getElementById('adTitle').value = '';
         document.getElementById('adLink').value = '';
         document.getElementById('adImageUrl').value = '';
+        document.getElementById('adPosition').value = 'sidebar';
         document.getElementById('adEnabled').checked = true;
         document.getElementById('editingAdId').value = '';
         document.getElementById('adPreviewImage').style.display = 'none';
