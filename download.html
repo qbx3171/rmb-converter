@@ -37,13 +37,17 @@
         body.bg-night .download-hint { color: #a855f7; }
         body.bg-night .search-bar input { color: white; }
         body.bg-night .search-bar input::placeholder { color: #94a3b8; }
+        body.bg-night .os-badge { background: #334155; color: #e2e8f0; }
+        /* 深色模式反馈区完全可读 */
+        body.bg-night .feedback-section { background: rgba(30,41,59,0.8); color: #e2e8f0; }
+        body.bg-night .feedback-item { background: #1e293b !important; border-left-color: #a855f7 !important; }
+        body.bg-night .feedback-name, body.bg-night .feedback-message { color: #f1f5f9; }
+        body.bg-night .feedback-date { color: #94a3b8; }
 
         /* 移动端滚动优化 */
-        .chat-messages, .detail-card, .auth-card, .profile-card, .admin-card, .search-suggestions {
-            -webkit-overflow-scrolling: touch;
-        }
+        .chat-messages, .detail-card, .auth-card, .profile-card, .admin-card, .search-suggestions { -webkit-overflow-scrolling: touch; }
 
-        /* ========== 顶部导航（质感升级 + 移动汉堡菜单） ========== */
+        /* ========== 顶部导航（含主题切换按钮） ========== */
         .top-nav { position: sticky; top: 0; z-index: 1000; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.5); padding: 0 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
         .nav-inner { max-width: 1300px; margin: 0 auto; padding: 14px 0; display: flex; align-items: center; justify-content: space-between; }
         .logo-area { display: flex; align-items: baseline; gap: 10px; }
@@ -78,7 +82,9 @@
             .logo-area { flex: 1; }
         }
 
-        .user-area { margin-left: 10px; }
+        .user-area { margin-left: 10px; display: flex; align-items: center; gap: 8px; }
+        .theme-toggle-btn { background: rgba(255,255,255,0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); width: 42px; height: 42px; border-radius: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 20px; color: #1e6bdf; transition: 0.2s; }
+        body.bg-night .theme-toggle-btn { background: rgba(30,41,59,0.8); border-color: #334155; color: #fbbf24; }
         .auth-btn { background: #1e6bdf; color: white; border: none; padding: 10px 22px; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 8px rgba(30,107,223,0.2); transition: 0.2s; }
         .auth-btn:hover { background: #1557b0; transform: translateY(-1px); box-shadow: 0 6px 12px rgba(30,107,223,0.25); }
         .user-name-btn { background: rgba(255,255,255,0.6); backdrop-filter: blur(8px); padding: 8px 18px; border-radius: 40px; display: flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); font-weight: 500; }
@@ -97,82 +103,22 @@
         .sidebar { width: 300px; flex-shrink: 0; }
         @media (max-width: 900px) { .content-wrapper { flex-direction: column; } .sidebar { width: 100%; } }
 
-        /* ========== 顶部横幅广告位 ========== */
-        .top-banner-ad {
-            margin-bottom: 24px;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.02);
-            background: white;
-            width: 100%;
-        }
-        body.bg-night .top-banner-ad { background: #1e293b; }
-        .banner-carousel-container {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 21 / 9; /* 更宽的横幅比例 */
-        }
-        @media (max-width: 640px) {
-            .banner-carousel-container { aspect-ratio: 16 / 9; }
-        }
-        .banner-carousel-slides {
-            display: flex;
-            height: 100%;
-            transition: transform 0.5s ease;
-        }
-        .banner-carousel-slide {
-            flex: 0 0 100%;
-            height: 100%;
-            position: relative;
-            background: #f1f5f9;
-        }
+        /* ========== 分类上方横幅广告位 ========== */
+        .category-banner-ad { margin-bottom: 24px; border-radius: 24px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.02); background: white; width: 100%; }
+        body.bg-night .category-banner-ad { background: #1e293b; }
+        .banner-carousel-container { position: relative; width: 100%; aspect-ratio: 21 / 9; }
+        @media (max-width: 640px) { .banner-carousel-container { aspect-ratio: 16 / 9; } }
+        .banner-carousel-slides { display: flex; height: 100%; transition: transform 0.5s ease; }
+        .banner-carousel-slide { flex: 0 0 100%; height: 100%; position: relative; background: #f1f5f9; }
         body.bg-night .banner-carousel-slide { background: #1e293b; }
-        .banner-carousel-slide a {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        .banner-carousel-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+        .banner-carousel-slide a { display: block; width: 100%; height: 100%; }
+        .banner-carousel-slide img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.3s ease; }
         .banner-carousel-slide img.loaded { opacity: 1; }
-        .banner-loading-placeholder {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(110deg, #eceff4 8%, #f5f7fb 18%, #eceff4 33%);
-            background-size: 200% 100%;
-            animation: adShimmer 1.5s infinite linear;
-            z-index: 2;
-            pointer-events: none;
-        }
-        body.bg-night .banner-loading-placeholder {
-            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
-        }
-        .banner-carousel-dots {
-            position: absolute;
-            bottom: 12px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            z-index: 10;
-        }
-        .banner-carousel-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.6);
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .banner-carousel-dot.active {
-            width: 24px;
-            background: white;
-        }
+        .banner-loading-placeholder { position: absolute; inset: 0; background: linear-gradient(110deg, #eceff4 8%, #f5f7fb 18%, #eceff4 33%); background-size: 200% 100%; animation: adShimmer 1.5s infinite linear; z-index: 2; pointer-events: none; }
+        body.bg-night .banner-loading-placeholder { background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%); }
+        .banner-carousel-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+        .banner-carousel-dot { width: 8px; height: 8px; border-radius: 10px; background: rgba(255,255,255,0.6); cursor: pointer; transition: 0.3s; }
+        .banner-carousel-dot.active { width: 24px; background: white; }
 
         /* ========== 分类标签 ========== */
         .category-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
@@ -201,8 +147,6 @@
 
         /* ========== 侧边栏 ========== */
         .sidebar-card { background: white; border-radius: 24px; padding: 24px; margin-bottom: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.02); }
-
-        /* 搜索框 */
         .sidebar-search { margin-bottom: 24px; }
         .search-bar { background: white; border-radius: 40px; padding: 6px 6px 6px 20px; display: flex; align-items: center; box-shadow: 0 8px 20px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.03); }
         .search-bar i { color: #94a3b8; font-size: 16px; }
@@ -221,31 +165,11 @@
         .sidebar-carousel-slide { flex: 0 0 100%; height: 100%; position: relative; background: #f1f5f9; }
         body.bg-night .sidebar-carousel-slide { background: #1e293b; }
         .sidebar-carousel-slide a { display: block; width: 100%; height: 100%; }
-        .sidebar-carousel-slide img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            background: inherit;
-        }
+        .sidebar-carousel-slide img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.3s ease; }
         .sidebar-carousel-slide img.loaded { opacity: 1; }
-        .ad-loading-placeholder {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(110deg, #eceff4 8%, #f5f7fb 18%, #eceff4 33%);
-            background-size: 200% 100%;
-            animation: adShimmer 1.5s infinite linear;
-            z-index: 2;
-            pointer-events: none;
-        }
-        body.bg-night .ad-loading-placeholder {
-            background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
-        }
-        @keyframes adShimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+        .ad-loading-placeholder { position: absolute; inset: 0; background: linear-gradient(110deg, #eceff4 8%, #f5f7fb 18%, #eceff4 33%); background-size: 200% 100%; animation: adShimmer 1.5s infinite linear; z-index: 2; pointer-events: none; }
+        body.bg-night .ad-loading-placeholder { background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%); }
+        @keyframes adShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         .sidebar-carousel-dots { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 10; }
         .sidebar-carousel-dot { width: 6px; height: 6px; border-radius: 10px; background: rgba(255,255,255,0.6); cursor: pointer; transition: 0.3s; }
         .sidebar-carousel-dot.active { width: 20px; background: white; }
@@ -342,18 +266,23 @@
             <a href="download.html" class="active">软件下载</a>
             <a href="copyright.html">版权声明</a>
         </div>
-        <div class="user-area" id="userArea"></div>
+        <div class="user-area">
+            <div class="theme-toggle-btn" id="themeToggleBtn" title="切换主题">
+                <i class="fas fa-moon"></i>
+            </div>
+            <div id="userArea"></div>
+        </div>
     </div>
 </div>
 
 <div class="main">
     <div class="content-wrapper">
         <div class="main-content">
-            <!-- 新增：顶部横幅广告位 -->
-            <div class="top-banner-ad" id="topBannerAd">
-                <div class="banner-carousel-container" id="bannerContainer">
-                    <div class="banner-carousel-slides" id="bannerCarouselSlides"></div>
-                    <div class="banner-carousel-dots" id="bannerCarouselDots"></div>
+            <!-- 分类上方横幅广告位（仅此一个横幅，顶部已移除） -->
+            <div class="category-banner-ad" id="categoryBannerAd">
+                <div class="banner-carousel-container" id="categoryBannerContainer">
+                    <div class="banner-carousel-slides" id="categoryBannerSlides"></div>
+                    <div class="banner-carousel-dots" id="categoryBannerDots"></div>
                 </div>
             </div>
             
@@ -587,35 +516,89 @@
             });
         });
 
-        // ========== 默认广告数据 ==========
-        const DEFAULT_ADS = [
-            { image: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=1200&h=514&fit=crop', link: 'https://www.adobe.com/', title: 'Adobe Creative Cloud' },
-            { image: 'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1200&h=514&fit=crop', link: 'https://www.autodesk.com/', title: 'Autodesk' }
-        ];
-        // 顶部横幅广告也可使用相同默认广告，或单独配置，这里复用
-        let bannerAds = [...DEFAULT_ADS];
-        let sidebarAds = [...DEFAULT_ADS];
+        // ========== 手动主题切换（覆盖自动主题） ==========
+        const themeClasses = ['bg-dawn', 'bg-morning', 'bg-afternoon', 'bg-evening', 'bg-night', ''];
+        const themeIcons = ['fa-sun', 'fa-sun', 'fa-cloud-sun', 'fa-cloud-sun', 'fa-moon', 'fa-sun'];
+        let currentThemeIndex = 2; // 默认午后
+        let manualTheme = localStorage.getItem('manualTheme');
+        if (manualTheme !== null) {
+            currentThemeIndex = parseInt(manualTheme);
+        } else {
+            const hour = new Date().getHours();
+            if (hour >= 5 && hour < 8) currentThemeIndex = 0;
+            else if (hour >= 8 && hour < 12) currentThemeIndex = 1;
+            else if (hour >= 12 && hour < 17) currentThemeIndex = 2;
+            else if (hour >= 17 && hour < 20) currentThemeIndex = 3;
+            else currentThemeIndex = 4;
+        }
         
-        let bannerCurrentSlide = 0, bannerInterval = null;
-        let sidebarCurrentSlide = 0, sidebarInterval = null;
+        function applyTheme(index) {
+            const className = themeClasses[index];
+            document.body.className = className;
+            const icon = document.getElementById('themeToggleBtn').querySelector('i');
+            icon.className = `fas ${themeIcons[index]}`;
+            if (className === 'bg-night') {
+                document.getElementById('themeToggleBtn').style.color = '#fbbf24';
+            } else {
+                document.getElementById('themeToggleBtn').style.color = '#1e6bdf';
+            }
+            localStorage.setItem('manualTheme', index);
+        }
+        applyTheme(currentThemeIndex);
+        
+        document.getElementById('themeToggleBtn').addEventListener('click', () => {
+            currentThemeIndex = (currentThemeIndex + 1) % themeClasses.length;
+            applyTheme(currentThemeIndex);
+        });
 
-        // ========== 通用轮播渲染函数 ==========
-        function renderCarousel(containerSlides, containerDots, ads, currentSlideObj, intervalObj, startAutoPlayFn, dotClickHandler) {
+        // ========== 广告轮播（分类上方横幅 + 侧边栏，顶部已移除） ==========
+        const DEFAULT_BANNER_ADS = [
+            { image: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=1200&h=500&fit=crop', link: 'https://www.adobe.com/', title: 'Adobe Creative Cloud' },
+            { image: 'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=1200&h=500&fit=crop', link: 'https://www.autodesk.com/', title: 'Autodesk' }
+        ];
+        const DEFAULT_SIDEBAR_ADS = [
+            { image: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600&h=286&fit=crop', link: 'https://www.adobe.com/', title: 'Adobe Creative Cloud' },
+            { image: 'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb&w=600&h=286&fit=crop', link: 'https://www.autodesk.com/', title: 'Autodesk' }
+        ];
+
+        let bannerAds = [...DEFAULT_BANNER_ADS];
+        let sidebarAds = [...DEFAULT_SIDEBAR_ADS];
+
+        const carousels = {
+            banner: {
+                slides: document.getElementById('categoryBannerSlides'),
+                dots: document.getElementById('categoryBannerDots'),
+                current: { val: 0 },
+                interval: null
+            },
+            sidebar: {
+                slides: document.getElementById('sidebarCarouselSlides'),
+                dots: document.getElementById('sidebarCarouselDots'),
+                current: { val: 0 },
+                interval: null
+            }
+        };
+
+        function renderCarousel(containerSlides, containerDots, ads, currentObj, isBanner = true) {
+            const slideClass = isBanner ? 'banner-carousel-slide' : 'sidebar-carousel-slide';
+            const placeholderClass = isBanner ? 'banner-loading-placeholder' : 'ad-loading-placeholder';
+            const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
+            
             containerSlides.innerHTML = ads.map((ad, index) => `
-                <div class="${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-slide' : 'sidebar-carousel-slide'}">
-                    <div class="${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-loading-placeholder' : 'ad-loading-placeholder'}"></div>
+                <div class="${slideClass}">
+                    <div class="${placeholderClass}"></div>
                     <a href="${escapeHtml(ad.link)}" target="_blank" rel="noopener noreferrer">
                         <img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" data-index="${index}">
                     </a>
                 </div>
             `).join('');
             
-            containerDots.innerHTML = ads.map((_, i) => `<div class="${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-dot' : 'sidebar-carousel-dot'} ${i===0?'active':''}" data-index="${i}"></div>`).join('');
+            containerDots.innerHTML = ads.map((_, i) => `<div class="${dotClass} ${i===0?'active':''}" data-index="${i}"></div>`).join('');
             
-            const slides = containerSlides.querySelectorAll(containerSlides.classList.contains('banner-carousel-slides') ? '.banner-carousel-slide' : '.sidebar-carousel-slide');
+            const slides = containerSlides.querySelectorAll(`.${slideClass}`);
             slides.forEach((slide, i) => {
                 const img = slide.querySelector('img');
-                const placeholder = slide.querySelector(containerSlides.classList.contains('banner-carousel-slides') ? '.banner-loading-placeholder' : '.ad-loading-placeholder');
+                const placeholder = slide.querySelector(`.${placeholderClass}`);
                 if (img && placeholder) {
                     if (img.complete) {
                         placeholder.style.display = 'none';
@@ -630,10 +613,9 @@
             });
             
             const updateFn = (index) => {
-                currentSlideObj.val = index;
+                currentObj.val = index;
                 containerSlides.style.transform = `translateX(-${index*100}%)`;
-                containerDots.querySelectorAll(`.${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-dot' : 'sidebar-carousel-dot'}`).forEach((d,i)=> d.classList.toggle('active', i===index));
-                // 预加载下一张
+                containerDots.querySelectorAll(`.${dotClass}`).forEach((d, i) => d.classList.toggle('active', i === index));
                 const nextIndex = (index + 1) % ads.length;
                 if (ads[nextIndex]) {
                     const preloadImg = new Image();
@@ -641,74 +623,64 @@
                 }
             };
             
-            containerDots.querySelectorAll(`.${containerSlides.classList.contains('banner-carousel-slides') ? 'banner-carousel-dot' : 'sidebar-carousel-dot'}`).forEach(dot => {
+            containerDots.querySelectorAll(`.${dotClass}`).forEach(dot => {
                 dot.addEventListener('click', e => {
                     const idx = parseInt(e.target.dataset.index);
                     updateFn(idx);
-                    if (intervalObj.val) { clearInterval(intervalObj.val); startAutoPlayFn(); }
+                    resetAutoPlay(currentObj, ads, updateFn);
                 });
             });
             
             return updateFn;
         }
 
-        // ========== 顶部横幅广告 ==========
-        const bannerSlides = document.getElementById('bannerCarouselSlides');
-        const bannerDots = document.getElementById('bannerCarouselDots');
-        let bannerCurrent = { val: 0 };
-        
-        function startBannerAutoPlay() {
-            if (bannerInterval) clearInterval(bannerInterval);
-            bannerInterval = setInterval(() => {
-                if (bannerAds.length) {
-                    bannerUpdate((bannerCurrent.val + 1) % bannerAds.length);
+        function startAutoPlay(currentObj, ads, updateFn) {
+            if (currentObj.interval) clearInterval(currentObj.interval);
+            currentObj.interval = setInterval(() => {
+                if (ads.length) {
+                    const next = (currentObj.val + 1) % ads.length;
+                    updateFn(next);
                 }
             }, 4000);
         }
-        
-        const bannerUpdate = renderCarousel(bannerSlides, bannerDots, bannerAds, bannerCurrent, { val: bannerInterval }, startBannerAutoPlay);
-        bannerUpdate(0);
-        startBannerAutoPlay();
 
-        // ========== 侧边栏广告 ==========
-        const sidebarSlides = document.getElementById('sidebarCarouselSlides');
-        const sidebarDots = document.getElementById('sidebarCarouselDots');
-        let sidebarCurrent = { val: 0 };
-        
-        function startSidebarAutoPlay() {
-            if (sidebarInterval) clearInterval(sidebarInterval);
-            sidebarInterval = setInterval(() => {
-                if (sidebarAds.length) {
-                    sidebarUpdate((sidebarCurrent.val + 1) % sidebarAds.length);
-                }
-            }, 4000);
+        function resetAutoPlay(currentObj, ads, updateFn) {
+            if (currentObj.interval) clearInterval(currentObj.interval);
+            startAutoPlay(currentObj, ads, updateFn);
         }
-        
-        const sidebarUpdate = renderCarousel(sidebarSlides, sidebarDots, sidebarAds, sidebarCurrent, { val: sidebarInterval }, startSidebarAutoPlay);
-        sidebarUpdate(0);
-        startSidebarAutoPlay();
 
-        // ========== 从Airtable更新广告（后台静默） ==========
+        const bannerUpdate = renderCarousel(carousels.banner.slides, carousels.banner.dots, bannerAds, carousels.banner.current, true);
+        startAutoPlay(carousels.banner, bannerAds, bannerUpdate);
+        
+        const sidebarUpdate = renderCarousel(carousels.sidebar.slides, carousels.sidebar.dots, sidebarAds, carousels.sidebar.current, false);
+        startAutoPlay(carousels.sidebar, sidebarAds, sidebarUpdate);
+
         async function updateAdsFromAirtable() {
             try {
-                const data = await airtableRequest('GET', 'Ads?maxRecords=20');
-                const fetched = data.records.map(r => r.fields).filter(f => (f.Enabled===undefined||f.Enabled) && (f.Image||f.image) && (f.Link||f.link))
-                    .map(f => ({ image: f.Image||f.image, link: f.Link||f.link, title: f.Title||f.title||'' }));
-                if (fetched.length) {
-                    // 更新顶部横幅广告（若内容变化则重新渲染）
-                    if (JSON.stringify(fetched) !== JSON.stringify(bannerAds)) {
-                        bannerAds = fetched;
-                        bannerUpdate = renderCarousel(bannerSlides, bannerDots, bannerAds, bannerCurrent, { val: bannerInterval }, startBannerAutoPlay);
-                        bannerUpdate(bannerCurrent.val);
-                        if (bannerInterval) { clearInterval(bannerInterval); startBannerAutoPlay(); }
-                    }
-                    // 更新侧边栏广告
-                    if (JSON.stringify(fetched) !== JSON.stringify(sidebarAds)) {
-                        sidebarAds = fetched;
-                        sidebarUpdate = renderCarousel(sidebarSlides, sidebarDots, sidebarAds, sidebarCurrent, { val: sidebarInterval }, startSidebarAutoPlay);
-                        sidebarUpdate(sidebarCurrent.val);
-                        if (sidebarInterval) { clearInterval(sidebarInterval); startSidebarAutoPlay(); }
-                    }
+                const data = await airtableRequest('GET', 'Ads?maxRecords=50');
+                const allAds = data.records.map(r => {
+                    const f = r.fields;
+                    return {
+                        image: f.Image || f.image || '',
+                        link: f.Link || f.link || '',
+                        title: f.Title || f.title || '',
+                        position: (f.Position || f.position || 'sidebar').toLowerCase(),
+                        enabled: f.Enabled !== undefined ? f.Enabled : true
+                    };
+                }).filter(ad => ad.enabled && ad.image && ad.link);
+                
+                const newBannerAds = allAds.filter(ad => ad.position === 'banner');
+                const newSidebarAds = allAds.filter(ad => ad.position === 'sidebar');
+                
+                if (newBannerAds.length && JSON.stringify(newBannerAds) !== JSON.stringify(bannerAds)) {
+                    bannerAds = newBannerAds;
+                    const newUpdate = renderCarousel(carousels.banner.slides, carousels.banner.dots, bannerAds, carousels.banner.current, true);
+                    resetAutoPlay(carousels.banner, bannerAds, newUpdate);
+                }
+                if (newSidebarAds.length && JSON.stringify(newSidebarAds) !== JSON.stringify(sidebarAds)) {
+                    sidebarAds = newSidebarAds;
+                    const newUpdate = renderCarousel(carousels.sidebar.slides, carousels.sidebar.dots, sidebarAds, carousels.sidebar.current, false);
+                    resetAutoPlay(carousels.sidebar, sidebarAds, newUpdate);
                 }
             } catch(e) { console.warn('Airtable广告获取失败', e); }
         }
@@ -926,8 +898,6 @@
 
         function initSoftware() { renderSkeleton(); softwares = DEFAULT_SOFTWARES.map(sw => ({ ...sw, icon: { type: 'icon', value: sw.icon } })); renderCategories(); renderGrid(); updateSoftwaresFromAirtable(); }
 
-        // ========== 主题切换 ==========
-        function initTheme() { function update() { const h = new Date().getHours(); let bg='', g=''; if(h>=5&&h<8){bg='bg-dawn';g='🌅 晨曦';} else if(h>=8&&h<12){bg='bg-morning';g='☀️ 上午';} else if(h>=12&&h<17){bg='bg-afternoon';g='🌤️ 午后';} else if(h>=17&&h<20){bg='bg-evening';g='🌇 黄昏';} else{bg='bg-night';g='🌙 夜晚';} document.body.className = bg; } update(); setInterval(update, 3600000); }
         function addBaiduPush() { const bp = document.createElement('script'); bp.async=true; bp.src='https://zz.bdstatic.com/linksubmit/push.js'; document.head.appendChild(bp); }
 
         // ========== 认证事件绑定 ==========
@@ -1006,7 +976,7 @@
         const backBtn = document.getElementById('backToTop'); window.addEventListener('scroll', ()=> backBtn.classList.toggle('show', window.scrollY>300)); backBtn.addEventListener('click', ()=> window.scrollTo({ top:0, behavior:'smooth' }));
 
         // ========== 启动一切 ==========
-        async function initAll() { initSoftware(); initAuthEvents(); initTheme(); addBaiduPush(); renderFeedbackList(); }
+        async function initAll() { initSoftware(); initAuthEvents(); addBaiduPush(); renderFeedbackList(); }
         initAll();
     })();
 </script>
