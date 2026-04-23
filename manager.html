@@ -211,6 +211,7 @@
         let operationLogs = [];
         let currentTeam = "Art Grid Dynamics Garcia Miami";
         let autoRefreshInterval = null;
+        let loadError = false; // 标记是否加载出错
 
         // 辅助函数
         function parseToStandardDate(input) {
@@ -245,6 +246,7 @@
         function showToast(msg, duration=2000) { let existing = document.querySelector('.toast-message'); if(existing) existing.remove(); let toast = document.createElement('div'); toast.className='toast-message'; toast.textContent=msg; document.body.appendChild(toast); setTimeout(()=>toast.remove(), duration); }
         function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
+        // ★★★ 增强错误处理的 fetchAllRecords ★★★
         async function fetchAllRecords(table) {
             let url = `https://api.airtable.com/v0/${BASE_ID}/${table}?pageSize=100`;
             let all=[], offset=null;
@@ -252,36 +254,55 @@
                 do {
                     let fetchUrl = url + (offset ? `&offset=${offset}` : '');
                     let resp = await fetch(fetchUrl, { headers: { Authorization: `Bearer ${AIRTABLE_TOKEN}` } });
-                    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    if(!resp.ok) {
+                        let errorBody = await resp.json().catch(() => ({}));
+                        throw new Error(errorBody.error?.message || `HTTP ${resp.status}`);
+                    }
                     let data = await resp.json();
                     all = all.concat(data.records);
                     offset = data.offset;
                 } while(offset);
                 return all;
-            } catch(e) { throw e; }
+            } catch(e) {
+                console.error(`加载 ${table} 失败:`, e);
+                showToast(`❌ 数据加载失败: ${e.message}`, 3500);
+                throw e; // 继续抛出以便上层处理
+            }
         }
 
         async function loadAccountsFromCloud() {
-            let records = await fetchAllRecords(TABLE_NAME);
-            accounts = records.map(rec => ({
-                id: rec.id, email: rec.fields.Email,
-                joinedTeam: rec.fields.joinedTeam === true,
-                isGenuine: rec.fields.isGenuine === true,
-                subscriptionStart: rec.fields.subscriptionStart || getDefaultSubscription().subscriptionStart,
-                subscriptionEnd: rec.fields.subscriptionEnd || getDefaultSubscription().subscriptionEnd,
-                teamName: rec.fields.teamName || currentTeam,
-                syncing: false
-            }));
-            for(let acc of accounts) {
-                if(!isValidDateString(acc.subscriptionStart)) acc.subscriptionStart = getDefaultSubscription().subscriptionStart;
-                if(!isValidDateString(acc.subscriptionEnd)) acc.subscriptionEnd = addOneYearToDateStr(acc.subscriptionStart);
-                if(!acc.teamName) acc.teamName = currentTeam;
+            try {
+                let records = await fetchAllRecords(TABLE_NAME);
+                accounts = records.map(rec => ({
+                    id: rec.id, email: rec.fields.Email,
+                    joinedTeam: rec.fields.joinedTeam === true,
+                    isGenuine: rec.fields.isGenuine === true,
+                    subscriptionStart: rec.fields.subscriptionStart || getDefaultSubscription().subscriptionStart,
+                    subscriptionEnd: rec.fields.subscriptionEnd || getDefaultSubscription().subscriptionEnd,
+                    teamName: rec.fields.teamName || currentTeam,
+                    syncing: false
+                }));
+                for(let acc of accounts) {
+                    if(!isValidDateString(acc.subscriptionStart)) acc.subscriptionStart = getDefaultSubscription().subscriptionStart;
+                    if(!isValidDateString(acc.subscriptionEnd)) acc.subscriptionEnd = addOneYearToDateStr(acc.subscriptionStart);
+                    if(!acc.teamName) acc.teamName = currentTeam;
+                }
+                loadError = false;
+            } catch(e) {
+                loadError = true;
+                accounts = []; // 清空数据
+                throw e;
             }
         }
 
         async function loadSubAdminsFromCloud() {
-            let records = await fetchAllRecords(ADMINS_TABLE);
-            subAdmins = records.map(rec => ({ id: rec.id, username: rec.fields.username, password: rec.fields.password, syncing: false }));
+            try {
+                let records = await fetchAllRecords(ADMINS_TABLE);
+                subAdmins = records.map(rec => ({ id: rec.id, username: rec.fields.username, password: rec.fields.password, syncing: false }));
+            } catch(e) {
+                subAdmins = [];
+                throw e;
+            }
         }
 
         async function loadLogsFromCloud() {
@@ -331,16 +352,26 @@
             }
             tbody.innerHTML = html;
         }
-        // 渲染账号表格（所属团队改为输入框）
+        // 渲染账号表格（团队状态使用账号自身的 teamName）
         function renderAccountTable() {
             let tbody = document.getElementById('tableBody');
             if(!tbody) return;
-            if(!accounts.length) { tbody.innerHTML='<tr><td colspan="8" style="text-align:center;">暂无账号，请添加或导入</td></tr>'; updateStats(); return; }
+            if(loadError) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#b91c1c; padding:40px;">⚠️ 数据加载失败，请检查网络或 Airtable 配置，然后点击“刷新”按钮重试</td></tr>';
+                updateStats();
+                return;
+            }
+            if(!accounts.length) {
+                tbody.innerHTML='<tr><td colspan="8" style="text-align:center;">暂无账号，请添加或导入</td></tr>';
+                updateStats();
+                return;
+            }
             let html = '';
             accounts.forEach((acc, idx) => {
-                let teamStatus = acc.joinedTeam ? `已加入 ${currentTeam}` : '未加入';
+                let displayTeam = acc.teamName || currentTeam;
+                let teamStatus = acc.joinedTeam ? `已加入 ${displayTeam}` : '未加入';
                 let genuineStatus = acc.isGenuine ? '✅ 正版' : '⭕ 未认证';
-                let teamBadge = (acc.joinedTeam && !acc.syncing) ? `<span class="badge-team">${currentTeam.length>10?currentTeam.slice(0,8)+'..':currentTeam}</span>` : '';
+                let teamBadge = (acc.joinedTeam && !acc.syncing) ? `<span class="badge-team">${displayTeam.length>15?displayTeam.slice(0,13)+'..':displayTeam}</span>` : '';
                 html += `<tr>
                     <td><input type="checkbox" class="row-selector" data-index="${idx}"></td>
                     <td class="email-cell">${escapeHtml(acc.email)}</td>
@@ -410,19 +441,20 @@
             renderAccountTable();
             try { await updateSingleRecord(accounts[idx]); } catch(err){ showToast("同步失败"); }
         }
-        // ★★★ 单独修改团队 ★★★
+        // ★★★ 修复：修改所属团队时，联动更新团队状态 ★★★
         async function onTeamBlur(e) {
             let idx = parseInt(e.target.dataset.index);
             if(isNaN(idx) || !accounts[idx]) return;
             let newTeam = e.target.value.trim();
-            if(!newTeam) {
-                showToast("团队名称不能为空");
-                renderAccountTable();
-                return;
-            }
             accounts[idx].teamName = newTeam;
+            accounts[idx].joinedTeam = !!newTeam;
             renderAccountTable();
-            try { await updateSingleRecord(accounts[idx]); showToast("团队已更新"); } catch(err){ showToast("同步失败"); }
+            try { 
+                await updateSingleRecord(accounts[idx]); 
+                showToast(newTeam ? `团队已更新为 "${newTeam}"，并已加入团队` : "团队已清空，已移出团队");
+            } catch(err){ 
+                showToast("同步失败"); 
+            }
         }
         async function onDeleteClick(e) {
             let idx = parseInt(e.target.dataset.index);
@@ -493,7 +525,6 @@
                 await deleteSubAdmin(id, name);
             }
         }
-
         // 批量操作
         function getSelectedIndices() { return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb=>parseInt(cb.dataset.index)).filter(i=>!isNaN(i) && accounts[i]); }
         async function batchUpdate(prop, val) {
@@ -594,6 +625,7 @@
                 for (let acc of accounts) {
                     if (acc.teamName !== newTeamTrimmed) {
                         acc.teamName = newTeamTrimmed;
+                        acc.joinedTeam = !!newTeamTrimmed;
                         if (acc.id && !acc.id.toString().startsWith('temp')) {
                             updatePromises.push(updateSingleRecord(acc));
                         }
@@ -610,7 +642,6 @@
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
         }
-
         function bindEvents() {
             document.getElementById('batchJoinTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',true));
             document.getElementById('batchLeaveTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',false));
@@ -629,7 +660,13 @@
         }
 
         async function refreshAllData() {
-            await Promise.all([loadAccountsFromCloud(), loadSubAdminsFromCloud(), loadLogsFromCloud()]);
+            loadError = false; // 重置错误标记
+            try {
+                await Promise.all([loadAccountsFromCloud(), loadSubAdminsFromCloud(), loadLogsFromCloud()]);
+            } catch (e) {
+                // 错误已在各个加载函数中处理
+                console.warn('数据刷新失败，部分表格可能为空');
+            }
             renderAccountTable();
             renderSubAdminTable();
             updateStats();
