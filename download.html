@@ -569,7 +569,7 @@
         return url.includes('?') ? `${url}&${size}&fit=crop` : `${url}?${size}&fit=crop`;
     }
 
-    // 默认广告（使用绝对可访问的图片）
+    // 默认广告
     const DEFAULT_BANNER_ADS = [
         { image:'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb', link:'https://www.adobe.com/', title:'Adobe Creative Cloud' },
         { image:'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb', link:'https://www.autodesk.com/', title:'Autodesk' }
@@ -691,15 +691,61 @@
     document.getElementById('nextMonth').addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
     renderCalendar();
 
-    // ★★★ 内置默认软件数据（立即显示）★★★
+    // ★★★ 行业标准缩写映射表 ★★★
+    const STANDARD_ABBREVIATIONS = {
+        'photoshop': 'PS', 'adobe photoshop': 'PS',
+        'illustrator': 'AI', 'adobe illustrator': 'AI',
+        'premiere pro': 'PR', 'adobe premiere pro': 'PR',
+        'after effects': 'AE', 'adobe after effects': 'AE',
+        'lightroom': 'LR', 'adobe lightroom': 'LR',
+        'indesign': 'ID', 'adobe indesign': 'ID',
+        'cinema 4d': 'C4D', 'c4d': 'C4D',
+        'autocad': 'AC', 'cad': 'AC',
+        '3ds max': '3DS', '3d studio max': '3DS',
+        'maya': 'MA', 'autodesk maya': 'MA',
+        'sketchup': 'SU', '草图大师': 'SU',
+        'rhino': 'RH', 'rhinoceros': 'RH',
+        'adobe camera raw': 'ACR', 'camera raw': 'ACR',
+        'creative cloud': 'CC', 'adobe creative cloud': 'CC',
+        'blender': 'BL', 'da vinci resolve': 'DR', 'davinci resolve': 'DR',
+        'final cut pro': 'FCP', 'final cut': 'FCP',
+        'logic pro': 'LP', 'ableton live': 'AL', 'fl studio': 'FL',
+        'media encoder': 'ME', 'adobe media encoder': 'ME',
+        'audition': 'AU', 'adobe audition': 'AU',
+        'character animator': 'CH', 'adobe character animator': 'CH',
+        'dreamweaver': 'DW', 'adobe dreamweaver': 'DW',
+        'animate': 'AN', 'adobe animate': 'AN',
+        'bridge': 'BR', 'adobe bridge': 'BR'
+    };
+
+    // 根据软件名获取标准缩写
+    function getStandardAbbreviation(name){
+        if(!name) return 'SW';
+        const lowerName = name.toLowerCase().trim();
+        // 直接匹配映射表
+        if(STANDARD_ABBREVIATIONS[lowerName]) return STANDARD_ABBREVIATIONS[lowerName];
+        // 部分匹配（例如 "Adobe Photoshop 2024" 匹配 "photoshop"）
+        for(const [key, abbr] of Object.entries(STANDARD_ABBREVIATIONS)){
+            if(lowerName.includes(key)) return abbr;
+        }
+        // 提取首字母大写组合（备用）
+        const words = name.split(/[\s\-_]+/).filter(w=>w.length);
+        if(words.length >= 2){
+            return words.map(w=>w.charAt(0).toUpperCase()).slice(0,3).join('');
+        }
+        return name.slice(0,2).toUpperCase();
+    }
+
+    // 内置软件（使用正确缩写）
     const BUILTIN_SOFTWARES = [
         { id: 'builtin1', name: 'Photoshop', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '专业图像编辑与设计', icon: { type:'text', value:'PS' }, url: 'https://www.adobe.com/products/photoshop.html', noVerify: false, addedDate: '2024-01-01', downloads: 3420 },
         { id: 'builtin2', name: 'Illustrator', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '矢量图形设计', icon: { type:'text', value:'AI' }, url: 'https://www.adobe.com/products/illustrator.html', noVerify: false, addedDate: '2024-01-01', downloads: 2180 },
         { id: 'builtin3', name: 'Premiere Pro', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '专业视频剪辑', icon: { type:'text', value:'PR' }, url: 'https://www.adobe.com/products/premiere.html', noVerify: false, addedDate: '2024-01-01', downloads: 3100 },
         { id: 'builtin4', name: 'After Effects', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '视觉特效与动态图形', icon: { type:'text', value:'AE' }, url: 'https://www.adobe.com/products/aftereffects.html', noVerify: false, addedDate: '2024-01-01', downloads: 2890 },
         { id: 'builtin5', name: 'Lightroom', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '摄影后期调色与管理', icon: { type:'text', value:'LR' }, url: 'https://www.adobe.com/products/photoshop-lightroom.html', noVerify: false, addedDate: '2024-01-01', downloads: 1560 },
-        { id: 'builtin6', name: 'AutoCAD', category: 'autodesk', os: ['Windows','Mac'], version: '2025', description: '计算机辅助设计', icon: { type:'text', value:'AC' }, url: 'https://www.autodesk.com/products/autocad/', noVerify: false, addedDate: '2024-01-01', downloads: 1950 },
-        { id: 'builtin7', name: 'Cinema 4D', category: 'c4d', os: ['Windows','Mac'], version: '2024', description: '三维建模渲染', icon: { type:'text', value:'C4D' }, url: 'https://www.maxon.net/cinema-4d', noVerify: false, addedDate: '2024-01-01', downloads: 1750 }
+        { id: 'builtin6', name: 'InDesign', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '专业排版设计', icon: { type:'text', value:'ID' }, url: 'https://www.adobe.com/products/indesign.html', noVerify: false, addedDate: '2024-01-01', downloads: 980 },
+        { id: 'builtin7', name: 'Cinema 4D', category: 'c4d', os: ['Windows','Mac'], version: '2025', description: '三维建模渲染', icon: { type:'text', value:'C4D' }, url: 'https://www.maxon.net/cinema-4d', noVerify: false, addedDate: '2024-01-01', downloads: 1750 },
+        { id: 'builtin8', name: 'AutoCAD', category: 'autodesk', os: ['Windows','Mac'], version: '2025', description: '计算机辅助设计', icon: { type:'text', value:'AC' }, url: 'https://www.autodesk.com/products/autocad/', noVerify: false, addedDate: '2024-01-01', downloads: 1950 }
     ];
 
     const CATEGORY_DISPLAY = { 'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他' };
@@ -718,15 +764,16 @@
 
     function getField(fields, possibleNames, defaultValue=''){ for(let n of possibleNames) if(fields[n]!==undefined) return fields[n]; return defaultValue; }
     
-    function parseIcon(iconField){
-        if(!iconField) return { type:'text', value:'' };
+    function parseIcon(iconField, softwareName){
+        if(!iconField) return { type:'text', value: getStandardAbbreviation(softwareName) };
         if(Array.isArray(iconField) && iconField[0]?.url) return { type:'image', value:iconField[0].url };
         if(typeof iconField==='string'){
             if(iconField.startsWith('http')||iconField.startsWith('data:image')) return { type:'image', value:iconField };
             if(iconField.startsWith('fa-')||iconField.startsWith('fas ')||iconField.startsWith('far ')||iconField.startsWith('fab ')) return { type:'icon', value:iconField };
+            // 纯文本图标：直接使用后台填写的值，不做任何修改
             return { type:'text', value:iconField };
         }
-        return { type:'text', value:'' };
+        return { type:'text', value: getStandardAbbreviation(softwareName) };
     }
 
     function getRandomDownloads(){ return Math.floor(Math.random() * 4951) + 50; }
@@ -740,7 +787,7 @@
                 const category = getField(f, ['A category','category','Category'], 'other');
                 const version = getField(f, ['version','Version'], '');
                 const description = getField(f, ['description','Description'], '');
-                const iconParsed = parseIcon(getField(f, ['icon','Icon'], null));
+                const iconParsed = parseIcon(getField(f, ['icon','Icon'], null), name);
                 const url = getField(f, ['url','URL'], '#');
                 const noVerify = getField(f, ['noVerify','NoVerify'], false);
                 const addedDate = getField(f, ['addedDate','AddedDate'], new Date().toISOString().split('T')[0]);
@@ -765,33 +812,6 @@
         renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles();
     }
 
-    // ★★★ 核心修复：智能缩写函数，与后台行为一致 ★★★
-    function getSmartAbbreviation(name){
-        if(!name) return '软';
-        const lower = name.toLowerCase();
-        // 已知软件映射（精确匹配）
-        const knownMap = {
-            'photoshop': 'PS', 'illustrator': 'AI', 'premiere pro': 'PR', 'after effects': 'AE',
-            'lightroom': 'LR', 'autocad': 'AC', 'cinema 4d': 'C4D', '3ds max': '3D',
-            'maya': 'MA', 'sketchup': 'SU', 'rhino': 'RH', 'adobe插件全套': 'PL',
-            'creative cloud': 'CC', 'indesign': 'ID', 'acrobat': 'AC'
-        };
-        if(knownMap[lower]) return knownMap[lower];
-        // 提取所有大写字母（如 "Cinema4D" → "C4D"）
-        const upperChars = name.replace(/[^A-Z]/g, '');
-        if(upperChars.length >= 2) return upperChars;
-        // 按空格/连字符分词取首字母
-        const words = name.split(/[\s\-_]+/).filter(w=>w.length);
-        if(words.length >= 2) return words.map(w=>w.charAt(0).toUpperCase()).join('');
-        // 中文取首字
-        const chineseMatch = name.match(/[\u4e00-\u9fa5]/);
-        if(chineseMatch) return chineseMatch[0];
-        // 单个英文单词取前2个字母（如 "Photoshop" → "PH" 已修正，优先映射已处理，这里作为后备）
-        const letters = name.replace(/[^a-zA-Z]/g, '');
-        if(letters.length >= 2) return letters.slice(0,2).toUpperCase();
-        return letters.slice(0,1).toUpperCase() || '软';
-    }
-
     function getColorFromName(name){ let hash=0; for(let i=0;i<name.length;i++) hash=name.charCodeAt(i)+((hash<<5)-hash); return `hsl(${Math.abs(hash)%360}, 70%, 55%)`; }
 
     // 点赞收藏
@@ -804,44 +824,34 @@
         const history = JSON.parse(localStorage.getItem('browseHistory')) || [];
         const container = document.getElementById('historyList');
         if(!history.length){ container.innerHTML='<div style="color:#94a3b8; font-size:13px; padding:8px 0;">暂无浏览记录</div>'; return; }
-        container.innerHTML = history.map(h=>{
-            return `<div class="history-item" data-name="${escapeHtml(h.name)}"><i class="fas fa-clock"></i> ${escapeHtml(h.name)}</div>`;
-        }).join('');
-        container.querySelectorAll('.history-item').forEach(item=>{
-            item.addEventListener('click', ()=>{
-                const sw = softwares.find(s=>s.name===item.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
+        container.innerHTML = history.map(h=> `<div class="history-item" data-name="${escapeHtml(h.name)}"><i class="fas fa-clock"></i> ${escapeHtml(h.name)}</div>` ).join('');
+        container.querySelectorAll('.history-item').forEach(item=>{ item.addEventListener('click', ()=>{ const sw = softwares.find(s=>s.name===item.dataset.name); if(sw) downloadSoftware(sw); }); });
     }
     document.getElementById('clearHistoryBtn').addEventListener('click', ()=>{ localStorage.removeItem('browseHistory'); renderHistoryList(); showToast('浏览历史已清空'); });
 
     function renderIconHtml(icon, name){
-        if(!icon) icon = { type:'text', value:'' };
+        if(!icon) icon = { type:'text', value: getStandardAbbreviation(name) };
         if(icon.type === 'image'){
             return `<img src="${escapeHtml(icon.value)}" style="width:100%;height:100%;object-fit:cover;">`;
         } else if(icon.type === 'icon'){
             return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
         } else {
-            const abbr = icon.value || getSmartAbbreviation(name);
+            // 文本图标：优先使用 icon.value（后台填写的），若为空则使用标准缩写
+            const abbr = icon.value || getStandardAbbreviation(name);
             const color = getColorFromName(name);
             return `<div class="icon-fallback" style="background: ${color};">${escapeHtml(abbr)}</div>`;
         }
     }
 
-    // 核心：下载函数（需要登录）
+    // 下载函数
     function downloadSoftware(sw){
-        if(!currentUser){
-            openAuthModal('login');
-            showToast('请先登录','error');
-            return;
-        }
+        if(!currentUser){ openAuthModal('login'); showToast('请先登录','error'); return; }
         addToHistory(sw);
         window.open(sw.url, '_blank');
         incrementDownloadCount(sw.id);
     }
 
-    // 热门推荐自动滚动（带箭头）
+    // 热门推荐自动滚动
     let hotScrollInterval = null;
     const hotScroll = document.getElementById('hotScroll');
     function startHotAutoScroll(){
@@ -849,24 +859,13 @@
         if(hotScrollInterval) clearInterval(hotScrollInterval);
         hotScrollInterval = setInterval(()=>{
             const maxScroll = hotScroll.scrollWidth - hotScroll.clientWidth;
-            if(hotScroll.scrollLeft >= maxScroll - 10){
-                hotScroll.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-                hotScroll.scrollBy({ left: 220, behavior: 'smooth' });
-            }
+            if(hotScroll.scrollLeft >= maxScroll - 10) hotScroll.scrollTo({ left: 0, behavior: 'smooth' });
+            else hotScroll.scrollBy({ left: 220, behavior: 'smooth' });
         }, 2000);
     }
     function stopHotAutoScroll(){ if(hotScrollInterval){ clearInterval(hotScrollInterval); hotScrollInterval = null; } }
-    document.getElementById('hotArrowLeft').addEventListener('click', ()=>{
-        hotScroll.scrollBy({ left: -220, behavior: 'smooth' });
-        stopHotAutoScroll();
-        startHotAutoScroll();
-    });
-    document.getElementById('hotArrowRight').addEventListener('click', ()=>{
-        hotScroll.scrollBy({ left: 220, behavior: 'smooth' });
-        stopHotAutoScroll();
-        startHotAutoScroll();
-    });
+    document.getElementById('hotArrowLeft').addEventListener('click', ()=>{ hotScroll.scrollBy({ left: -220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
+    document.getElementById('hotArrowRight').addEventListener('click', ()=>{ hotScroll.scrollBy({ left: 220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
 
     function renderHotSection(){
         if(!softwares.length) return;
@@ -879,12 +878,7 @@
                 <div class="hot-meta"><span>${sw.os.join(' · ')}</span><span class="hot-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</span></div>
             </div>`;
         }).join('');
-        hotScroll.querySelectorAll('.hot-card').forEach(card=>{
-            card.addEventListener('click', ()=>{
-                const sw = softwares.find(s=>s.name===card.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
+        hotScroll.querySelectorAll('.hot-card').forEach(card=>{ card.addEventListener('click', ()=>{ const sw = softwares.find(s=>s.name===card.dataset.name); if(sw) downloadSoftware(sw); }); });
         hotScroll.removeEventListener('mouseenter', stopHotAutoScroll);
         hotScroll.removeEventListener('mouseleave', startHotAutoScroll);
         hotScroll.addEventListener('mouseenter', stopHotAutoScroll);
@@ -902,12 +896,7 @@
                 <div class="rank-index ${rankClass}">${i+1}</div><div class="rank-info"><div class="rank-name">${escapeHtml(sw.name)}</div><div class="rank-downloads"><i class="fas fa-download"></i> ${sw.downloads||0} 次下载</div></div>
             </div>`;
         }).join('');
-        rankList.querySelectorAll('.rank-item').forEach(item=>{
-            item.addEventListener('click', ()=>{
-                const sw = softwares.find(s=>s.name===item.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
+        rankList.querySelectorAll('.rank-item').forEach(item=>{ item.addEventListener('click', ()=>{ const sw = softwares.find(s=>s.name===item.dataset.name); if(sw) downloadSoftware(sw); }); });
     }
 
     function renderRandomArticles(){
@@ -920,12 +909,7 @@
                 <div class="random-article-icon">${iconHtml}</div><div class="random-article-info"><div class="random-article-name">${escapeHtml(sw.name)}</div><div class="random-article-os">${sw.os.join(' · ')}</div></div>
             </div>`;
         }).join('');
-        container.querySelectorAll('.random-article-item').forEach(item=>{
-            item.addEventListener('click', ()=>{
-                const sw = softwares.find(s=>s.name===item.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
+        container.querySelectorAll('.random-article-item').forEach(item=>{ item.addEventListener('click', ()=>{ const sw = softwares.find(s=>s.name===item.dataset.name); if(sw) downloadSoftware(sw); }); });
     }
 
     function renderCategories(){
@@ -977,10 +961,7 @@
             });
         });
         container.querySelectorAll('.like-btn').forEach(btn=>{
-            btn.addEventListener('click', (e)=>{
-                e.stopPropagation();
-                toggleLike(btn.dataset.name);
-            });
+            btn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleLike(btn.dataset.name); });
         });
         renderRandomArticles();
     }
@@ -997,12 +978,7 @@
 
     function initSoftware(){
         const cached = localStorage.getItem('cachedSoftwares');
-        if(cached){
-            try {
-                const parsed = JSON.parse(cached);
-                if(Array.isArray(parsed) && parsed.length) softwares = parsed;
-            } catch(e){}
-        }
+        if(cached){ try { const parsed = JSON.parse(cached); if(Array.isArray(parsed) && parsed.length) softwares = parsed; } catch(e){} }
         renderSkeleton();
         renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
         updateSoftwaresFromAirtable();
@@ -1059,8 +1035,6 @@
         document.getElementById('sendRegCodeBtn').addEventListener('click', async function(e){ e.preventDefault(); const email = document.getElementById('regEmail').value.trim(); if(!email) return showToast('请输入邮箱','error'); try{ if(await findUserByEmail(email)) return showToast('该邮箱已被注册','error'); }catch(err){ return showToast('验证失败: '+err.message,'error'); } this.disabled=true; this.textContent='发送中...'; try{ const code = await sendCode(email, '注册', CONFIG.EMAILJS_TEMPLATE_REG); regEmail=email; regCode=code; regCodeExpire=Date.now()+600000; showToast('验证码已发送'); let sec=60; const timer=setInterval(()=>{ sec--; this.textContent=`${sec}秒后重发`; if(sec<=0){ clearInterval(timer); this.disabled=false; this.textContent='发送验证码'; } },1000); }catch(err){ showToast('发送失败: '+err.message,'error'); this.disabled=false; this.textContent='发送验证码'; } });
         document.getElementById('registerBtn').addEventListener('click', async function(){ const username = document.getElementById('regUsername').value.trim(), email = document.getElementById('regEmail').value.trim(), code = document.getElementById('regCodeInput').value.trim(), pwd = document.getElementById('regPassword').value, confirm = document.getElementById('regConfirm').value; if(!username) return showToast('请输入用户名','error'); if(!regEmail||!regCode) return showToast('请先获取验证码','error'); if(email!==regEmail) return showToast('邮箱不匹配','error'); if(code!==regCode||Date.now()>regCodeExpire) return showToast('验证码错误或已过期','error'); if(pwd!==confirm) return showToast('两次密码不一致','error'); if(pwd.length<6) return showToast('密码至少6位','error'); this.disabled=true; this.textContent='注册中...'; try{ await registerUser(email, pwd, username); showToast('注册成功，请登录'); openAuthModal('login'); regEmail=''; regCode=''; }catch(err){ showToast('注册失败: '+err.message,'error'); }finally{ this.disabled=false; this.textContent='注册'; } });
         document.getElementById('loginBtn').addEventListener('click', async function(){ const email = document.getElementById('loginEmail').value.trim(), pwd = document.getElementById('loginPassword').value; this.disabled=true; this.textContent='登录中...'; try{ currentUser = await loginUser(email, pwd); localStorage.setItem('lezhe_user', JSON.stringify(currentUser)); updateUserUI(); modal.classList.remove('active'); showToast('登录成功'); }catch(e){ showToast(e.message,'error'); }finally{ this.disabled=false; this.textContent='登录'; } });
-        document.getElementById('sendResetCodeBtn')?.addEventListener('click', async function(){ /* 重置密码逻辑 */ });
-        document.getElementById('resetPasswordBtn')?.addEventListener('click', async function(){ /* 重置密码提交 */ });
         const saved = localStorage.getItem('lezhe_user'); if(saved){ try{ currentUser = JSON.parse(saved); }catch(e){} } updateUserUI();
     }
 
@@ -1070,23 +1044,17 @@
 
     // 聊天机器人
     let chatInitialized=false;
-    function initChat(){ if(chatInitialized) return; chatInitialized=true; /* 聊天逻辑保留 */ }
+    function initChat(){ if(chatInitialized) return; chatInitialized=true; }
     document.getElementById('chatToggleBtn')?.addEventListener('click', initChat, {once:true});
 
     // 关闭弹窗等
     document.getElementById('closeDetailModal').addEventListener('click', ()=>document.getElementById('detailModal').classList.remove('active'));
     document.getElementById('detailModal').addEventListener('click', e=>{ if(e.target===document.getElementById('detailModal')) e.target.classList.remove('active'); });
-    document.getElementById('closeProfileModal')?.addEventListener('click', ()=>document.getElementById('profileModal').classList.remove('active'));
-    document.getElementById('cancelProfileBtn')?.addEventListener('click', ()=>document.getElementById('profileModal').classList.remove('active'));
-    document.getElementById('saveProfileBtn')?.addEventListener('click', async function(){ /* 保存个人资料 */ });
-    document.getElementById('closeAdminModal')?.addEventListener('click', ()=>document.getElementById('adminModal').classList.remove('active'));
-    document.getElementById('adminAddUserBtn')?.addEventListener('click', async function(){ /* 添加用户 */ });
     document.getElementById('submitFeedbackBtn').addEventListener('click', async function(){ 
         const name = document.getElementById('feedbackName').value.trim(); 
         const msg = document.getElementById('feedbackMessage').value.trim(); 
         if(!msg) return showToast('请填写留言内容','error'); 
-        this.disabled=true; 
-        this.innerHTML='<i class="fas fa-spinner fa-pulse"></i> 提交中...'; 
+        this.disabled=true; this.innerHTML='<i class="fas fa-spinner fa-pulse"></i> 提交中...'; 
         try{ await submitMessage(name, msg); showToast('留言提交成功！'); document.getElementById('feedbackName').value=''; document.getElementById('feedbackMessage').value=''; await renderFeedbackList(); } 
         catch(e){ showToast('提交失败: '+e.message,'error'); } 
         finally{ this.disabled=false; this.innerHTML='<i class="fas fa-paper-plane"></i> 提交留言'; } 
