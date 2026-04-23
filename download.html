@@ -691,24 +691,9 @@
     document.getElementById('nextMonth').addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
     renderCalendar();
 
-    // 软件数据
+    // 软件数据（仅从 Airtable 加载，无默认软件）
     const CATEGORY_DISPLAY = { 'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他' };
-    const DEFAULT_SOFTWARES = [
-        { name: "Creative Cloud", category: "adobe", os: ["Windows","Mac"], version: "最新版", description: "Adobe Creative Cloud 桌面应用", icon: "fa-cloud-download-alt", url: "https://creativecloud.adobe.com/apps/download/creative-cloud", noVerify: true, addedDate: "2024-08-15", downloads: 1250 },
-        { name: "Photoshop", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业图像编辑与设计", icon: "PS", url: "https://p0lcr45sc1m.feishu.cn/wiki/HHRRw8Cspib8CXk0xj9cHQQWnOc", noVerify: false, addedDate: "2024-09-10", downloads: 3420 },
-        { name: "Illustrator", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "矢量图形设计", icon: "AI", url: "https://p0lcr45sc1m.feishu.cn/docx/CTGEd8BkFowM8CxsM7McEm2Cnsf", noVerify: false, addedDate: "2024-09-10", downloads: 2180 },
-        { name: "Lightroom", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "摄影后期调色与管理", icon: "LR", url: "https://p0lcr45sc1m.feishu.cn/docx/RBrkdSt8OoEjCyxFo5UcnecJn8J", noVerify: false, addedDate: "2024-10-01", downloads: 1560 },
-        { name: "After Effects", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "视觉特效与动态图形", icon: "AE", url: "https://p0lcr45sc1m.feishu.cn/docx/JNK7dEiZ2oN4UJxPSvUcyZbMnWg", noVerify: false, addedDate: "2024-10-15", downloads: 2890 },
-        { name: "Premiere Pro", category: "adobe", os: ["Windows","Mac"], version: "CS6-2026", description: "专业视频剪辑", icon: "PR", url: "https://p0lcr45sc1m.feishu.cn/docx/OP8VdvI69ocLHDxIlfEcYBFJnzd", noVerify: false, addedDate: "2024-10-20", downloads: 3100 },
-        { name: "AutoCAD", category: "autodesk", os: ["Windows","Mac"], version: "2025", description: "计算机辅助设计", icon: "AC", url: "https://www.yuque.com/islandgg13/tdg1oz/lbt43ghrvznz0329", noVerify: false, addedDate: "2024-09-18", downloads: 1950 },
-        { name: "3ds Max", category: "autodesk", os: ["Windows"], version: "2025", description: "专业三维建模", icon: "3D", url: "https://v6fsd03qf7.feishu.cn/drive/folder/OXY9fBtWqlWSptdr059c0dvZnFg", noVerify: false, addedDate: "2024-10-05", downloads: 1340 },
-        { name: "Maya", category: "autodesk", os: ["Windows","Mac"], version: "2026", description: "三维动画", icon: "MA", url: "https://www.yuque.com/islandgg13/tdg1oz/wfkwhi", noVerify: false, addedDate: "2024-11-01", downloads: 980 },
-        { name: "Cinema 4D", category: "c4d", os: ["Windows","Mac"], version: "R19-2025", description: "三维建模渲染", icon: "C4", url: "https://www.yuque.com/islandgg13/tdg1oz/vyh4pi", noVerify: false, addedDate: "2024-11-25", downloads: 1750 },
-        { name: "草图大师", category: "sketchup", os: ["Windows","Mac"], version: "2015-2026", description: "建筑设计", icon: "SU", url: "https://www.yuque.com/islandgg13/tdg1oz/sicdf3", noVerify: false, addedDate: "2024-12-01", downloads: 1120 },
-        { name: "Rhino 7/8 (Win)", category: "rhino", os: ["Windows"], version: "5.0-8.28", description: "工业设计", icon: "RH", url: "https://www.yuque.com/islandgg13/tdg1oz/hxmtbq", noVerify: false, addedDate: "2024-12-10", downloads: 760 },
-        { name: "Rhino 7/8 (Mac)", category: "rhino", os: ["Mac"], version: "5.0-8.21", description: "工业设计 Mac版", icon: "RH", url: "https://www.yuque.com/islandgg13/tdg1oz/hq0syy", noVerify: false, addedDate: "2024-12-12", downloads: 520 },
-    ];
-    let softwares = [...DEFAULT_SOFTWARES];
+    let softwares = [];
     let currentCategory="all", searchKeyword="", showAll=false;
     const DEFAULT_LIMIT=12;
 
@@ -722,17 +707,12 @@
 
     function getField(fields, possibleNames, defaultValue=''){ for(let n of possibleNames) if(fields[n]!==undefined) return fields[n]; return defaultValue; }
     
-    // ★★★ 修复：parseIcon 增强，支持纯文本图标 ★★★
     function parseIcon(iconField){
         if(!iconField) return { type:'text', value:'' };
-        // Airtable 附件
         if(Array.isArray(iconField) && iconField[0]?.url) return { type:'image', value:iconField[0].url };
         if(typeof iconField==='string'){
-            // 图片 URL
             if(iconField.startsWith('http')||iconField.startsWith('data:image')) return { type:'image', value:iconField };
-            // Font Awesome 类名
             if(iconField.startsWith('fa-')||iconField.startsWith('fas ')||iconField.startsWith('far ')||iconField.startsWith('fab ')) return { type:'icon', value:iconField };
-            // 纯文本（如 "PS"）
             return { type:'text', value:iconField };
         }
         return { type:'text', value:'' };
@@ -756,18 +736,15 @@
                 if(osField){ if(Array.isArray(osField)) osArray = osField; else if(typeof osField==='string') osArray = osField.split(',').map(s=>s.trim()); }
                 return { id: rec.id, name, category, os: osArray, version, description, icon: iconParsed, url, noVerify: !!noVerify, addedDate, downloads };
             });
-        }catch(e){ console.error('获取软件失败', e); return null; }
+        }catch(e){ console.error('获取软件失败', e); return []; }
     }
 
     async function updateSoftwaresFromAirtable(){
         const airtableSoftwares = await fetchAirtableSoftwares();
-        if(airtableSoftwares){
-            const mergedMap = new Map();
-            DEFAULT_SOFTWARES.forEach(sw => mergedMap.set(sw.name.toLowerCase(), { ...sw, icon: parseIcon(sw.icon) }));
-            airtableSoftwares.forEach(sw => mergedMap.set(sw.name.toLowerCase(), sw));
-            softwares = Array.from(mergedMap.values());
-            renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles();
+        if(airtableSoftwares.length){
+            softwares = airtableSoftwares;
         }
+        renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles();
     }
 
     function getSmartAbbreviation(name){ if(!name) return '软'; const chineseMatch = name.match(/[\u4e00-\u9fa5]/); if(chineseMatch) return chineseMatch[0]; const words = name.split(/[\s\-_]+/).filter(w=>w.length); if(words.length>=2) return words.map(w=>w.charAt(0).toUpperCase()).slice(0,3).join(''); const letters = name.replace(/[^a-zA-Z]/g,''); return letters.slice(0,2).toUpperCase()||name.charAt(0).toUpperCase(); }
@@ -784,7 +761,6 @@
         const container = document.getElementById('historyList');
         if(!history.length){ container.innerHTML='<div style="color:#94a3b8; font-size:13px; padding:8px 0;">暂无浏览记录</div>'; return; }
         container.innerHTML = history.map(h=>{
-            let iconHtml = renderIconHtml(h.icon, h.name);
             return `<div class="history-item" data-name="${escapeHtml(h.name)}"><i class="fas fa-clock"></i> ${escapeHtml(h.name)}</div>`;
         }).join('');
         container.querySelectorAll('.history-item').forEach(item=>{
@@ -796,7 +772,6 @@
     }
     document.getElementById('clearHistoryBtn').addEventListener('click', ()=>{ localStorage.removeItem('browseHistory'); renderHistoryList(); showToast('浏览历史已清空'); });
 
-    // ★★★ 统一图标渲染函数 ★★★
     function renderIconHtml(icon, name){
         if(!icon) icon = { type:'text', value:'' };
         if(icon.type === 'image'){
@@ -804,7 +779,6 @@
         } else if(icon.type === 'icon'){
             return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
         } else {
-            // 文本图标：使用彩色背景
             const abbr = icon.value || getSmartAbbreviation(name);
             const color = getColorFromName(name);
             return `<div class="icon-fallback" style="background: ${color};">${escapeHtml(abbr)}</div>`;
@@ -967,9 +941,18 @@
         renderRandomArticles();
     }
 
-    async function incrementDownloadCount(recordId){ try { const rec = await airtableRequest('GET', `softwares/${recordId}`); await airtableRequest('PATCH', `softwares/${recordId}`, { fields: { downloads: (rec.fields.downloads||0)+1 } }); const sw = softwares.find(s=>s.id===recordId); if(sw) sw.downloads = (sw.downloads||0)+1; } catch(e){} }
+    // ★★★ 修复：404 错误，仅当 recordId 有效时才请求 ★★★
+    async function incrementDownloadCount(recordId){
+        if(!recordId || recordId.toString().startsWith('temp')) return;
+        try {
+            const rec = await airtableRequest('GET', `softwares/${recordId}`);
+            await airtableRequest('PATCH', `softwares/${recordId}`, { fields: { downloads: (rec.fields.downloads||0)+1 } });
+            const sw = softwares.find(s=>s.id===recordId);
+            if(sw) sw.downloads = (sw.downloads||0)+1;
+        } catch(e) { console.warn('更新下载次数失败', e); }
+    }
 
-    function initSoftware(){ renderSkeleton(); softwares = DEFAULT_SOFTWARES.map(sw=>({...sw, icon: parseIcon(sw.icon)})); renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList(); updateSoftwaresFromAirtable(); }
+    function initSoftware(){ renderSkeleton(); updateSoftwaresFromAirtable().then(()=>{ renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList(); }); }
     // 用户系统
     let currentUser = null;
     let regEmail='', regCode='', regCodeExpire=0, resetEmail='', resetCode='', resetCodeExpire=0;
