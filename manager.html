@@ -30,16 +30,17 @@
         .add-section input { padding: 5px 10px; border-radius: 30px; border: 1px solid #cbdde9; background: white; min-width: 150px; font-size: 0.7rem; flex: 1; }
         .file-import { background: #eef2ff; }
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 0 0.5rem 0; }
-        .modern-table { min-width: 800px; width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        .modern-table { min-width: 1000px; width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         .modern-table th { text-align: left; padding: 0.6rem 0.4rem; background: #fefefe; font-weight: 600; color: #2c4c6c; border-bottom: 1px solid #e4e9f0; }
         .modern-table td { padding: 0.5rem 0.4rem; border-bottom: 1px solid #f0f3f9; vertical-align: middle; }
         .email-cell { font-family: monospace; font-weight: 500; word-break: break-all; max-width: 180px; }
         .date-input { padding: 4px 6px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.65rem; width: 100px; background: white; font-family: monospace; }
+        .team-input-inline { padding: 4px 6px; border-radius: 20px; border: 1px solid #cbdde9; font-size: 0.65rem; width: 110px; background: white; }
         .checkbox-smart { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
         .checkbox-smart input { width: 16px; height: 16px; accent-color: #1b6b5e; }
         .badge-team { background: #ddf3e8; color: #146b3a; border-radius: 30px; padding: 1px 6px; font-size: 0.6rem; font-weight: 600; margin-left: 4px; white-space: nowrap; }
         .delete-icon { background: none; border: none; font-size: 1rem; cursor: pointer; color: #9aaebf; padding: 2px 6px; border-radius: 30px; }
-        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 6px 16px; border-radius: 40px; font-size: 0.7rem; z-index: 1000; pointer-events: none; white-space: nowrap; z-index: 10000; }
+        .toast-message { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e2a36e6; backdrop-filter: blur(12px); color: white; padding: 6px 16px; border-radius: 40px; font-size: 0.7rem; z-index: 10000; pointer-events: none; white-space: nowrap; }
         .footer-note { padding: 0.6rem 1rem; background: #fafdff; border-top: 1px solid #eef2f8; font-size: 0.6rem; color: #6a7c8f; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; display: none; }
         .login-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px); z-index: 3000; display: flex; align-items: center; justify-content: center; }
@@ -134,7 +135,6 @@
             <span style="font-size:0.6rem; color:#6c86a3;">✔️ TXT每行一个邮箱</span>
         </div>
     </div>
-
     <div class="subadmin-section">
         <h3>👥 子账号管理</h3>
         <div style="margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
@@ -172,7 +172,18 @@
 
     <div class="table-container">
         <table class="modern-table" id="accountTable">
-            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></tr></thead>
+            <thead>
+                <tr>
+                    <th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th>
+                    <th>邮箱地址</th>
+                    <th>团队状态</th>
+                    <th>Adobe正版</th>
+                    <th>订阅起始</th>
+                    <th>到期时间</th>
+                    <th>所属团队</th>
+                    <th style="width:40px;"></th>
+                </tr>
+            </thead>
             <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
         </table>
     </div>
@@ -320,8 +331,7 @@
             }
             tbody.innerHTML = html;
         }
-
-        // 渲染账号表格
+        // 渲染账号表格（所属团队改为输入框）
         function renderAccountTable() {
             let tbody = document.getElementById('tableBody');
             if(!tbody) return;
@@ -338,15 +348,16 @@
                     <td><label class="checkbox-smart"><input type="checkbox" class="genuine-checkbox" data-index="${idx}" ${acc.isGenuine?'checked':''}><span>${genuineStatus}</span></label></td>
                     <td><input type="text" class="date-input" data-index="${idx}" data-field="subscriptionStart" value="${acc.subscriptionStart||''}" placeholder="YYYY-MM-DD"></td>
                     <td><input type="text" class="date-input" data-index="${idx}" data-field="subscriptionEnd" value="${acc.subscriptionEnd||''}" placeholder="YYYY-MM-DD"></td>
-                    <td>${escapeHtml(acc.teamName||currentTeam)}</td>
+                    <td><input type="text" class="team-input-inline" data-index="${idx}" data-field="teamName" value="${escapeHtml(acc.teamName||currentTeam)}" placeholder="团队名称"></td>
                     <td><button class="delete-icon" data-index="${idx}">🗑️</button></td>
                 </tr>`;
             });
             tbody.innerHTML = html;
             updateStats();
-            // 重新绑定事件
+            // 绑定事件
             document.querySelectorAll('.team-checkbox, .genuine-checkbox').forEach(cb => cb.addEventListener('change', onCheckboxChange));
             document.querySelectorAll('.date-input').forEach(inp => inp.addEventListener('blur', onDateBlur));
+            document.querySelectorAll('.team-input-inline').forEach(inp => inp.addEventListener('blur', onTeamBlur));
             document.querySelectorAll('.delete-icon').forEach(btn => btn.addEventListener('click', onDeleteClick));
             let selectAll = document.getElementById('selectAllCheckbox');
             if(selectAll) selectAll.onchange = (e) => document.querySelectorAll('.row-selector').forEach(cb => cb.checked = e.target.checked);
@@ -377,6 +388,7 @@
             document.getElementById('genuineCount').innerText = genuine;
             document.getElementById('expiringCount').innerText = expiring;
         }
+
         // 事件处理
         async function onCheckboxChange(e) {
             let idx = parseInt(e.target.dataset.index);
@@ -397,6 +409,20 @@
             if(std) accounts[idx][field] = std;
             renderAccountTable();
             try { await updateSingleRecord(accounts[idx]); } catch(err){ showToast("同步失败"); }
+        }
+        // ★★★ 单独修改团队 ★★★
+        async function onTeamBlur(e) {
+            let idx = parseInt(e.target.dataset.index);
+            if(isNaN(idx) || !accounts[idx]) return;
+            let newTeam = e.target.value.trim();
+            if(!newTeam) {
+                showToast("团队名称不能为空");
+                renderAccountTable();
+                return;
+            }
+            accounts[idx].teamName = newTeam;
+            renderAccountTable();
+            try { await updateSingleRecord(accounts[idx]); showToast("团队已更新"); } catch(err){ showToast("同步失败"); }
         }
         async function onDeleteClick(e) {
             let idx = parseInt(e.target.dataset.index);
@@ -554,53 +580,37 @@
             };
             reader.readAsText(file);
         }
-        // ★★★ 修复：修改团队名称时，同步更新所有账号的 teamName ★★★
+        // 修改主团队名称并同步所有账号
         async function setNewTeam(newTeam) {
             if(!newTeam.trim()) return;
-            const oldTeam = currentTeam;
             const newTeamTrimmed = newTeam.trim();
-            
-            // 显示加载提示
             document.getElementById('loadingOverlay').style.display = 'flex';
-            
             try {
-                // 1. 更新本地存储和界面变量
                 currentTeam = newTeamTrimmed;
                 localStorage.setItem(TEAM_KEY, currentTeam);
                 document.getElementById('teamNameInput').value = currentTeam;
                 document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`;
-                
-                // 2. 更新所有账号的 teamName
                 const updatePromises = [];
                 for (let acc of accounts) {
                     if (acc.teamName !== newTeamTrimmed) {
                         acc.teamName = newTeamTrimmed;
-                        // 只同步已存在的云端记录
                         if (acc.id && !acc.id.toString().startsWith('temp')) {
                             updatePromises.push(updateSingleRecord(acc));
                         }
                     }
                 }
-                
-                // 3. 等待所有云端更新完成
-                if (updatePromises.length > 0) {
-                    await Promise.all(updatePromises);
-                }
-                
-                // 4. 重新渲染表格
+                if (updatePromises.length > 0) await Promise.all(updatePromises);
                 renderAccountTable();
                 showToast(`主团队已更改为: ${currentTeam}，并同步更新了 ${updatePromises.length} 个账号`);
             } catch (error) {
                 console.error('更新团队名称失败:', error);
                 showToast('部分账号更新失败，请刷新后重试', 3000);
-                // 即使失败也刷新表格，保持界面一致性
                 renderAccountTable();
             } finally {
                 document.getElementById('loadingOverlay').style.display = 'none';
             }
         }
 
-        // 绑定主界面事件
         function bindEvents() {
             document.getElementById('batchJoinTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',true));
             document.getElementById('batchLeaveTeam')?.addEventListener('click',()=>batchUpdate('joinedTeam',false));
@@ -625,7 +635,6 @@
             updateStats();
         }
 
-        // 登录与初始化
         async function initApp() {
             let saved = localStorage.getItem(TEAM_KEY);
             if(saved && saved.trim()) currentTeam = saved;
