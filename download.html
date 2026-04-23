@@ -235,7 +235,7 @@
     const CONFIG = {
         AIRTABLE_TOKEN: 'patQOsg4fMjmbUb7V.70343dbb59364df780d2ed5deb71ad6f53f68e24aea3cae1103fd1c67a27f7ad',
         AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9',
-        RESEND_PROXY_URL: 'https://resproxy.810803788.workers.dev/'   // 您的 Cloudflare Worker URL
+        RESEND_PROXY_URL: 'https://resproxy.810803788.workers.dev/'
     };
 
     function showToast(msg, type='success') {
@@ -394,7 +394,7 @@
         const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
         const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
         const opts = { method, headers }; if(body) opts.body = JSON.stringify(body);
-        const resp = await fetch(url, opts).catch(e=>{ throw new Error('网络错误，请刷新重试'); });
+        const resp = await fetch(url).catch(e=>{ throw new Error('网络错误，请刷新重试'); });
         if(!resp.ok) throw new Error((await resp.json()).error?.message||`HTTP ${resp.status}`);
         return resp.json();
     }
@@ -550,7 +550,7 @@
         updateSoftwaresFromAirtable();
     }
 
-    // ---------- 用户系统，使用 Resend Worker 代理发送验证码 ----------
+    // ---------- 用户系统，使用 Resend Worker 代理发送验证码（立即开始倒计时，不等待响应）----------
     let currentUser = null;
     let regEmail='', regCode='', regCodeExpire=0;
     let resetEmail='', resetCode='', resetCodeExpire=0;
@@ -562,7 +562,7 @@
     async function fetchMessages(){ try{ const data = await airtableRequest('GET', 'Messages?maxRecords=50'); return data.records; }catch{ return []; } }
     async function submitMessage(name, message){ await airtableRequest('POST', 'Messages', { fields: { Name: name||'热心网友', Message: message } }); }
 
-    // 发送验证码函数：调用 Cloudflare Worker -> Resend
+    // 发送验证码（立即开始倒计时，异步发送请求）
     async function sendCodeWithFallback(email, type) {
         const code = Math.floor(100000+Math.random()*900000).toString();
         try {
@@ -584,6 +584,7 @@
         }
     }
 
+    // 倒计时辅助函数（立即开始）
     function startCountdown(btn, seconds=60) {
         if(btn.disabled) return;
         btn.disabled = true;
@@ -601,6 +602,34 @@
         return timer;
     }
 
+    // 处理发送按钮：先开始倒计时，再异步发送请求
+    function handleSendCode(btn, emailGetter, onSuccess) {
+        const email = emailGetter();
+        if(!email) { showToast('请输入邮箱','error'); return false; }
+        if(!/^\S+@\S+\.\S+$/.test(email)) { showToast('邮箱格式不正确','error'); return false; }
+        // 立即开始倒计时
+        startCountdown(btn, 60);
+        // 异步发送请求（不阻塞界面）
+        (async () => {
+            try {
+                const result = await sendCodeWithFallback(email, '');
+                if(result.success){
+                    onSuccess(email, result.code);
+                    showToast(result.fallback ? '验证码已通过弹窗显示' : '验证码已发送，请查收', result.fallback?'info':'success');
+                } else {
+                    showToast('发送失败，请重试','error');
+                    btn.disabled = false;
+                    btn.textContent = '发送';
+                }
+            } catch(err){
+                showToast('网络错误，请稍后重试','error');
+                btn.disabled = false;
+                btn.textContent = '发送';
+            }
+        })();
+        return true;
+    }
+
     function bindRegisterSendCode() {
         const btn = document.getElementById('sendRegCodeBtn');
         if(!btn) return;
@@ -608,31 +637,10 @@
         btn.parentNode.replaceChild(newBtn, btn);
         newBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('regEmail').value.trim();
-            if(!email) return showToast('请输入邮箱','error');
-            if(!/^\S+@\S+\.\S+$/.test(email)) return showToast('邮箱格式不正确','error');
-            try{
-                const exists = await findUserByEmail(email);
-                if(exists) return showToast('该邮箱已被注册','error');
-            } catch(err){ return showToast('验证失败','error'); }
-            startCountdown(this, 60);
-            try{
-                const result = await sendCodeWithFallback(email, 'register');
-                if(result.success){
-                    regEmail = email;
-                    regCode = result.code;
-                    regCodeExpire = Date.now() + 600000;
-                    showToast(result.fallback ? '验证码已通过弹窗显示' : '验证码已发送，请查收', result.fallback?'info':'success');
-                } else {
-                    showToast('发送失败','error');
-                    this.disabled = false;
-                    this.textContent = '发送';
-                }
-            } catch(err){
-                showToast('网络错误，请稍后重试','error');
-                this.disabled = false;
-                this.textContent = '发送';
-            }
+            handleSendCode(newBtn, 
+                () => document.getElementById('regEmail').value.trim(),
+                (email, code) => { regEmail = email; regCode = code; regCodeExpire = Date.now() + 600000; }
+            );
         });
     }
 
@@ -643,31 +651,10 @@
         btn.parentNode.replaceChild(newBtn, btn);
         newBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('forgotEmail').value.trim();
-            if(!email) return showToast('请输入邮箱','error');
-            if(!/^\S+@\S+\.\S+$/.test(email)) return showToast('邮箱格式不正确','error');
-            try{
-                const user = await findUserByEmail(email);
-                if(!user) return showToast('该邮箱未注册','error');
-            } catch(err){ return showToast('验证失败','error'); }
-            startCountdown(this, 60);
-            try{
-                const result = await sendCodeWithFallback(email, 'reset');
-                if(result.success){
-                    resetEmail = email;
-                    resetCode = result.code;
-                    resetCodeExpire = Date.now() + 600000;
-                    showToast(result.fallback ? '验证码已通过弹窗显示' : '验证码已发送，请查收', result.fallback?'info':'success');
-                } else {
-                    showToast('发送失败','error');
-                    this.disabled = false;
-                    this.textContent = '发送';
-                }
-            } catch(err){
-                showToast('网络错误，请稍后重试','error');
-                this.disabled = false;
-                this.textContent = '发送';
-            }
+            handleSendCode(newBtn,
+                () => document.getElementById('forgotEmail').value.trim(),
+                (email, code) => { resetEmail = email; resetCode = code; resetCodeExpire = Date.now() + 600000; }
+            );
         });
     }
 
