@@ -101,6 +101,7 @@
         <div id="loginError" class="login-error"></div>
     </div>
 </div>
+
 <div id="mainContent">
 <div class="admin-container">
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -359,6 +360,7 @@
     const loginPasswordInput = document.getElementById('loginPasswordInput');
     const loginError = document.getElementById('loginError');
 
+    // ★★★ 登录验证 ★★★
     function checkLogin() {
         if (loginPasswordInput.value === atob(ENCODED_PASSWORD)) {
             sessionStorage.setItem('admin_logged', 'true');
@@ -372,6 +374,13 @@
         }
     }
     loginBtn.addEventListener('click', checkLogin);
+    
+    // 回车登录
+    loginPasswordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') checkLogin();
+    });
+    
+    // 检查是否已登录
     if (sessionStorage.getItem('admin_logged') === 'true') {
         loginOverlay.style.display = 'none';
         mainContent.style.display = 'block';
@@ -404,11 +413,13 @@
         return resp.json();
     }
 
-    // ★★★ 行业标准缩写（与前端一致）★★★
+    // ★★★ 修复后的智能缩写函数 ★★★
     function getSmartAbbreviation(name) {
         if (!name) return 'SW';
         const lower = name.toLowerCase().trim();
-        const map = {
+        
+        // 精确匹配表
+        const exactMap = {
             'photoshop': 'PS', 'adobe photoshop': 'PS',
             'illustrator': 'AI', 'adobe illustrator': 'AI',
             'premiere pro': 'PR', 'adobe premiere pro': 'PR',
@@ -416,7 +427,8 @@
             'lightroom': 'LR', 'adobe lightroom': 'LR',
             'indesign': 'ID', 'adobe indesign': 'ID',
             'cinema 4d': 'C4D', 'c4d': 'C4D',
-            'autocad': 'AC', 'cad': 'AC',
+            'autocad': 'AC', 'cad': 'CAD', 'autodesk autocad': 'AC',
+            'autodesk cad': 'CAD',   // 修复点
             '3ds max': '3DS', '3d studio max': '3DS',
             'maya': 'MA', 'autodesk maya': 'MA',
             'sketchup': 'SU', '草图大师': 'SU',
@@ -432,17 +444,60 @@
             'dreamweaver': 'DW', 'adobe dreamweaver': 'DW',
             'animate': 'AN', 'adobe animate': 'AN',
             'bridge': 'BR', 'adobe bridge': 'BR',
-            '插件': 'PL', 'plugin': 'PL'
+            'adobe 插件全套': '插件', '插件全套': '插件', '插件': '插件',
+            'plugin': 'PL'
         };
-        if (map[lower]) return map[lower];
-        for (let key in map) {
-            if (lower.includes(key)) return map[key];
+        
+        if (exactMap[lower]) return exactMap[lower];
+        
+        // 包含匹配
+        const containsMap = {
+            'photoshop': 'PS',
+            'illustrator': 'AI',
+            'premiere': 'PR',
+            'after effects': 'AE',
+            'lightroom': 'LR',
+            'indesign': 'ID',
+            'cinema 4d': 'C4D',
+            'autocad': 'AC',
+            'cad': 'CAD',
+            '3ds max': '3DS',
+            'maya': 'MA',
+            'sketchup': 'SU',
+            'rhino': 'RH',
+            'camera raw': 'ACR',
+            'creative cloud': 'CC',
+            'blender': 'BL',
+            'resolve': 'DR',
+            'final cut': 'FCP',
+            'logic': 'LP',
+            'ableton': 'AL',
+            'fl studio': 'FL',
+            'media encoder': 'ME',
+            'audition': 'AU',
+            'character animator': 'CH',
+            'dreamweaver': 'DW',
+            'animate': 'AN',
+            'bridge': 'BR',
+            '插件': '插件'
+        };
+        
+        for (const [key, abbr] of Object.entries(containsMap)) {
+            if (lower.includes(key)) return abbr;
         }
-        if (/[\u4e00-\u9fa5]/.test(name)) return name.match(/[\u4e00-\u9fa5]/)[0];
-        const words = name.split(/[\s\-_]+/).filter(w=>w.length);
-        if (words.length >= 2) return words.map(w => w.charAt(0).toUpperCase()).slice(0,3).join('');
+        
+        if (/[\u4e00-\u9fa5]/.test(name)) {
+            const chineseMatch = name.match(/[\u4e00-\u9fa5]/);
+            return chineseMatch ? chineseMatch[0] : 'SW';
+        }
+        
+        const words = name.split(/[\s\-_]+/).filter(w => w.length);
+        if (words.length >= 2) {
+            return words.map(w => w.charAt(0).toUpperCase()).slice(0, 3).join('');
+        }
+        
         const letters = name.replace(/[^a-zA-Z]/g, '');
-        return letters.slice(0,2).toUpperCase() || name.charAt(0).toUpperCase();
+        return letters.slice(0, 2).toUpperCase() || name.charAt(0).toUpperCase();
     }
 
     function getColorFromName(name) {
@@ -457,7 +512,6 @@
         if (Array.isArray(icon) && icon[0]?.url) return `<img src="${icon[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
         if (typeof icon === 'string' && (icon.startsWith('http') || icon.startsWith('data:'))) return `<img src="${icon}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
         if (typeof icon === 'string' && icon.startsWith('fa-')) return `<i class="fas ${icon}"></i>`;
-        // 文本图标：优先用存储值，否则后备智能缩写
         const abbr = icon || getSmartAbbreviation(name);
         return `<div class="icon-text-badge" style="background: ${getColorFromName(name)};">${abbr}</div>`;
     }
@@ -514,7 +568,6 @@
             div.innerHTML = '💡 推荐: ' + unique.map(s => `<span onclick="selectPresetIcon('${s}')"><i class="fas ${s}"></i> ${s.replace('fa-','')}</span>`).join('');
         } else { div.innerHTML = ''; }
     };
-
     async function loadDashboard() {
         try {
             const [users, sw, msgs, visits] = await Promise.all([
@@ -678,56 +731,9 @@
             placeholder.style.display = 'block';
         }
     }
-
-    document.getElementById('adImageUrl').addEventListener('input', updateAdPreview);
-    document.getElementById('adImageFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        showToast('请上传到图床后复制URL填入', false);
-        const reader = new FileReader();
-        reader.onload = ev => {
-            document.getElementById('adImageUrl').value = ev.target.result;
-            updateAdPreview();
-        };
-        reader.readAsDataURL(file);
-    });
-    document.getElementById('saveAdBtn').addEventListener('click', async function() {
-        const title = document.getElementById('adTitle').value.trim();
-        const link = document.getElementById('adLink').value.trim();
-        const image = document.getElementById('adImageUrl').value.trim();
-        const position = document.getElementById('adPosition').value;
-        const enabled = document.getElementById('adEnabled').checked;
-        if (!link || !image) return showToast('链接和图片URL不能为空', true);
-        const fields = { 
-            Title: title, 
-            Link: link, 
-            Image: image, 
-            Position: position,
-            Enabled: enabled 
-        };
-        const id = document.getElementById('editingAdId').value;
-        try {
-            if (id) await airtableRequest('PATCH', `Ads/${id}`, { fields });
-            else await airtableRequest('POST', 'Ads', { fields });
-            showToast('广告保存成功'); 
-            loadAds();
-            document.getElementById('cancelAdBtn').click();
-        } catch (e) { showToast('保存失败: ' + e.message, true); }
-    });
-
-    document.getElementById('cancelAdBtn').addEventListener('click', function() {
-        document.getElementById('adTitle').value = '';
-        document.getElementById('adLink').value = '';
-        document.getElementById('adImageUrl').value = '';
-        document.getElementById('adPosition').value = 'sidebar';
-        document.getElementById('adEnabled').checked = true;
-        document.getElementById('editingAdId').value = '';
-        document.getElementById('adPreviewImage').style.display = 'none';
-        document.getElementById('adPreviewPlaceholder').style.display = 'block';
-    });
-
-    // ========== 其余事件绑定 ==========
+    // ========== 所有事件绑定 ==========
     setTimeout(() => {
+        // 图标面板
         document.getElementById('openIconPanel').addEventListener('click', e => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
         document.getElementById('iconSearchInput').addEventListener('input', e => {
             const val = e.target.value.toLowerCase();
@@ -773,7 +779,6 @@
                 noVerify: document.getElementById('swNoVerify').checked
             };
             
-            // 若最终图标为空，自动生成行业标准缩写
             if (!fields.icon) {
                 fields.icon = getSmartAbbreviation(fields.name);
             }
@@ -799,6 +804,57 @@
             refreshIconPreview();
         });
 
+        // 广告图片预览
+        document.getElementById('adImageUrl').addEventListener('input', updateAdPreview);
+        document.getElementById('adImageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            showToast('请上传到图床后复制URL填入', false);
+            const reader = new FileReader();
+            reader.onload = ev => {
+                document.getElementById('adImageUrl').value = ev.target.result;
+                updateAdPreview();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 保存广告
+        document.getElementById('saveAdBtn').addEventListener('click', async function() {
+            const title = document.getElementById('adTitle').value.trim();
+            const link = document.getElementById('adLink').value.trim();
+            const image = document.getElementById('adImageUrl').value.trim();
+            const position = document.getElementById('adPosition').value;
+            const enabled = document.getElementById('adEnabled').checked;
+            if (!link || !image) return showToast('链接和图片URL不能为空', true);
+            const fields = { 
+                Title: title, 
+                Link: link, 
+                Image: image, 
+                Position: position,
+                Enabled: enabled 
+            };
+            const id = document.getElementById('editingAdId').value;
+            try {
+                if (id) await airtableRequest('PATCH', `Ads/${id}`, { fields });
+                else await airtableRequest('POST', 'Ads', { fields });
+                showToast('广告保存成功'); 
+                loadAds();
+                document.getElementById('cancelAdBtn').click();
+            } catch (e) { showToast('保存失败: ' + e.message, true); }
+        });
+
+        document.getElementById('cancelAdBtn').addEventListener('click', function() {
+            document.getElementById('adTitle').value = '';
+            document.getElementById('adLink').value = '';
+            document.getElementById('adImageUrl').value = '';
+            document.getElementById('adPosition').value = 'sidebar';
+            document.getElementById('adEnabled').checked = true;
+            document.getElementById('editingAdId').value = '';
+            document.getElementById('adPreviewImage').style.display = 'none';
+            document.getElementById('adPreviewPlaceholder').style.display = 'block';
+        });
+
+        // 用户管理
         async function loadUsers() {
             const data = await airtableRequest('GET', 'Users?maxRecords=100');
             document.getElementById('usersTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Email}</td><td>${r.fields.Username}</td><td>${r.fields.Role||'user'}</td><td><button onclick="deleteUser('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
@@ -816,12 +872,15 @@
                 ['newUserEmail','newUsername','newUserPassword'].forEach(id => document.getElementById(id).value = '');
             } catch(e) { showToast('添加失败', true); }
         });
+
+        // 留言管理
         async function loadMessages() {
             const data = await airtableRequest('GET', 'messages?maxRecords=50');
             document.getElementById('messagesTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Name||'网友'}</td><td>${r.fields.Message||''}</td><td>${r.fields.CreatedAt||''}</td><td><button onclick="deleteMessage('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
         }
         window.deleteMessage = async (id) => { if(confirm('删除留言？')) { await airtableRequest('DELETE', `messages/${id}`); loadMessages(); loadDashboard(); } };
         
+        // 标签页切换
         document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -834,6 +893,7 @@
             if (tab==='messages') loadMessages();
         }));
         
+        // 初始加载
         if (mainContent.style.display === 'block') {
             initIconPanel();
             loadDashboard();
