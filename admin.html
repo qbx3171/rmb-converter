@@ -83,7 +83,6 @@
         .table .icon-text-badge { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
         .table i { font-size: 24px; color: #1e6bdf; }
         .table img { width: 32px; height: 32px; object-fit: contain; border-radius: 8px; }
-        /* 广告管理样式 */
         .ad-preview-img { max-width: 200px; max-height: 80px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .size-tip { background: #eef2ff; padding: 8px 16px; border-radius: 40px; font-size: 13px; color: #1e6bdf; display: inline-block; margin-bottom: 16px; }
         .position-badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 12px; font-weight: 500; }
@@ -102,7 +101,6 @@
         <div id="loginError" class="login-error"></div>
     </div>
 </div>
-
 <div id="mainContent">
 <div class="admin-container">
     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -248,7 +246,7 @@
             <tbody id="softwaresTbody"></tbody>
         </table>
     </div>
-    <!-- 广告管理面板（升级版：包含位置管理） -->
+    <!-- 广告管理面板 -->
     <div id="adsPanel" class="panel" style="display:none;">
         <h2 style="margin-bottom: 20px;"><i class="fas fa-ad"></i> 添加 / 编辑广告</h2>
         <div class="size-tip">
@@ -337,7 +335,6 @@
     </div>
 </div>
 </div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 <script>
     const CONFIG = {
@@ -407,23 +404,42 @@
         return resp.json();
     }
 
+    // ★★★ 行业标准缩写（与前端一致）★★★
     function getSmartAbbreviation(name) {
-        if (!name) return '软';
+        if (!name) return 'SW';
+        const lower = name.toLowerCase().trim();
+        const map = {
+            'photoshop': 'PS', 'adobe photoshop': 'PS',
+            'illustrator': 'AI', 'adobe illustrator': 'AI',
+            'premiere pro': 'PR', 'adobe premiere pro': 'PR',
+            'after effects': 'AE', 'adobe after effects': 'AE',
+            'lightroom': 'LR', 'adobe lightroom': 'LR',
+            'indesign': 'ID', 'adobe indesign': 'ID',
+            'cinema 4d': 'C4D', 'c4d': 'C4D',
+            'autocad': 'AC', 'cad': 'AC',
+            '3ds max': '3DS', '3d studio max': '3DS',
+            'maya': 'MA', 'autodesk maya': 'MA',
+            'sketchup': 'SU', '草图大师': 'SU',
+            'rhino': 'RH', 'rhinoceros': 'RH',
+            'adobe camera raw': 'ACR', 'camera raw': 'ACR',
+            'creative cloud': 'CC', 'adobe creative cloud': 'CC',
+            'blender': 'BL', 'da vinci resolve': 'DR', 'davinci resolve': 'DR',
+            'final cut pro': 'FCP', 'final cut': 'FCP',
+            'logic pro': 'LP', 'ableton live': 'AL', 'fl studio': 'FL',
+            'media encoder': 'ME', 'adobe media encoder': 'ME',
+            'audition': 'AU', 'adobe audition': 'AU',
+            'character animator': 'CH', 'adobe character animator': 'CH',
+            'dreamweaver': 'DW', 'adobe dreamweaver': 'DW',
+            'animate': 'AN', 'adobe animate': 'AN',
+            'bridge': 'BR', 'adobe bridge': 'BR',
+            '插件': 'PL', 'plugin': 'PL'
+        };
+        if (map[lower]) return map[lower];
+        for (let key in map) {
+            if (lower.includes(key)) return map[key];
+        }
         if (/[\u4e00-\u9fa5]/.test(name)) return name.match(/[\u4e00-\u9fa5]/)[0];
-        const lower = name.toLowerCase();
-        if (lower.includes('photoshop')) return 'PS';
-        if (lower.includes('illustrator')) return 'AI';
-        if (lower.includes('after effects')) return 'AE';
-        if (lower.includes('premiere')) return 'PR';
-        if (lower.includes('lightroom')) return 'LR';
-        if (lower.includes('indesign')) return 'ID';
-        if (lower.includes('acrobat')) return 'AC';
-        if (lower.includes('autocad')) return 'AC';
-        if (lower.includes('cinema 4d')) return 'C4';
-        if (lower.includes('sketchup')) return 'SU';
-        if (lower.includes('rhino')) return 'RH';
-        if (lower.includes('resolve') || lower.includes('达芬奇')) return 'DV';
-        const words = name.split(/[\s\-_]+/);
+        const words = name.split(/[\s\-_]+/).filter(w=>w.length);
         if (words.length >= 2) return words.map(w => w.charAt(0).toUpperCase()).slice(0,3).join('');
         const letters = name.replace(/[^a-zA-Z]/g, '');
         return letters.slice(0,2).toUpperCase() || name.charAt(0).toUpperCase();
@@ -441,7 +457,8 @@
         if (Array.isArray(icon) && icon[0]?.url) return `<img src="${icon[0].url}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
         if (typeof icon === 'string' && (icon.startsWith('http') || icon.startsWith('data:'))) return `<img src="${icon}" style="width:32px;height:32px;object-fit:contain;border-radius:8px;">`;
         if (typeof icon === 'string' && icon.startsWith('fa-')) return `<i class="fas ${icon}"></i>`;
-        const abbr = getSmartAbbreviation(name);
+        // 文本图标：优先用存储值，否则后备智能缩写
+        const abbr = icon || getSmartAbbreviation(name);
         return `<div class="icon-text-badge" style="background: ${getColorFromName(name)};">${abbr}</div>`;
     }
 
@@ -595,7 +612,7 @@
         document.getElementById('iconPanel').classList.remove('show');
     };
 
-    // ========== 广告管理（增强版：位置字段） ==========
+    // ========== 广告管理 ==========
     async function loadAds() {
         try {
             const data = await airtableRequest('GET', 'Ads?maxRecords=50');
@@ -610,7 +627,7 @@
                 const title = f.Title || f.title || f['A Title'] || '';
                 const link = f.Link || f.link || f.OLink || '';
                 const enabled = f.Enabled !== undefined ? f.Enabled : true;
-                const position = f.Position || f.position || 'sidebar'; // 默认侧边栏
+                const position = f.Position || f.position || 'sidebar';
                 const posMap = { 'top': '顶部横幅', 'banner': '分类上方', 'sidebar': '侧边栏' };
                 const posText = posMap[position] || position;
                 return `<tr>
@@ -674,7 +691,6 @@
         };
         reader.readAsDataURL(file);
     });
-
     document.getElementById('saveAdBtn').addEventListener('click', async function() {
         const title = document.getElementById('adTitle').value.trim();
         const link = document.getElementById('adLink').value.trim();
@@ -710,7 +726,7 @@
         document.getElementById('adPreviewPlaceholder').style.display = 'block';
     });
 
-    // ========== 原有事件绑定 ==========
+    // ========== 其余事件绑定 ==========
     setTimeout(() => {
         document.getElementById('openIconPanel').addEventListener('click', e => { e.stopPropagation(); document.getElementById('iconPanel').classList.toggle('show'); });
         document.getElementById('iconSearchInput').addEventListener('input', e => {
@@ -733,14 +749,18 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // ★★★ 保存软件（自动补充图标） ★★★
         document.getElementById('saveSoftwareBtn').addEventListener('click', async () => {
             let finalIcon = document.getElementById('swIcon').value;
             const custom = document.getElementById('swIconCustom').value.trim();
             if (custom) finalIcon = custom;
+            
             const os = [];
             if (document.getElementById('osWindows').checked) os.push('Windows');
             if (document.getElementById('osMac').checked) os.push('Mac');
             if (!os.length) return showToast('请至少选择一个系统', true);
+            
             const fields = {
                 name: document.getElementById('swName').value.trim(),
                 category: document.getElementById('swCategory').value,
@@ -752,7 +772,14 @@
                 addedDate: document.getElementById('swAddedDate').value,
                 noVerify: document.getElementById('swNoVerify').checked
             };
+            
+            // 若最终图标为空，自动生成行业标准缩写
+            if (!fields.icon) {
+                fields.icon = getSmartAbbreviation(fields.name);
+            }
+            
             if (!fields.name || !fields.url) return showToast('名称和链接必填', true);
+            
             const id = document.getElementById('editingId').value;
             try {
                 if (id) await airtableRequest('PATCH', `softwares/${id}`, { fields });
@@ -761,6 +788,7 @@
                 document.getElementById('cancelEditBtn').click();
             } catch (e) { showToast('保存失败: ' + e.message, true); }
         });
+
         document.getElementById('cancelEditBtn').addEventListener('click', () => {
             ['swName','swVersion','swURL','swDescription','swIcon','swIconCustom'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('swIconType').value = 'text';
@@ -770,6 +798,7 @@
             document.getElementById('swNoVerify').checked = false;
             refreshIconPreview();
         });
+
         async function loadUsers() {
             const data = await airtableRequest('GET', 'Users?maxRecords=100');
             document.getElementById('usersTbody').innerHTML = data.records.map(r => `<tr><td>${r.fields.Email}</td><td>${r.fields.Username}</td><td>${r.fields.Role||'user'}</td><td><button onclick="deleteUser('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`).join('');
