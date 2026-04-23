@@ -718,6 +718,11 @@
         return { type:'text', value:'' };
     }
 
+    // ★★★ 随机生成下载量（50~5000）★★★
+    function getRandomDownloads(){
+        return Math.floor(Math.random() * 4951) + 50; // 50 ~ 5000
+    }
+
     async function fetchAirtableSoftwares(){
         try{
             const data = await airtableRequest('GET', 'softwares?maxRecords=100');
@@ -731,7 +736,9 @@
                 const url = getField(f, ['url','URL'], '#');
                 const noVerify = getField(f, ['noVerify','NoVerify'], false);
                 const addedDate = getField(f, ['addedDate','AddedDate'], new Date().toISOString().split('T')[0]);
-                const downloads = Number(getField(f, ['downloads','Downloads'], 0));
+                // 优先使用云端已有下载量，否则随机生成
+                let downloads = Number(getField(f, ['downloads','Downloads'], -1));
+                if(downloads === -1) downloads = getRandomDownloads();
                 let osArray = ['Windows','Mac']; const osField = getField(f, ['os','OS'], null);
                 if(osField){ if(Array.isArray(osField)) osArray = osField; else if(typeof osField==='string') osArray = osField.split(',').map(s=>s.trim()); }
                 return { id: rec.id, name, category, os: osArray, version, description, icon: iconParsed, url, noVerify: !!noVerify, addedDate, downloads };
