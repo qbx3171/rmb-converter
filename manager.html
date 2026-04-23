@@ -172,7 +172,7 @@
 
     <div class="table-container">
         <table class="modern-table" id="accountTable">
-            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th>}</thead>
+            <thead><tr><th style="width:30px;"><input type="checkbox" id="selectAllCheckbox"></th><th>邮箱地址</th><th>团队状态</th><th>Adobe正版</th><th>订阅起始</th><th>到期时间</th><th>所属团队</th><th style="width:40px;"></th></tr></thead>
             <tbody id="tableBody"><tr><td colspan="8" style="text-align:center; padding:40px;">⏳ 加载中...</td></tr></tbody>
         </table>
     </div>
@@ -183,7 +183,6 @@
 </div>
 <div id="loadingOverlay" class="loading-overlay"><div>⏳ 处理中...</div></div>
 </div>
-
 <script>
     (function(){
         // ================= 配置 =================
@@ -378,8 +377,7 @@
             document.getElementById('genuineCount').innerText = genuine;
             document.getElementById('expiringCount').innerText = expiring;
         }
-
-        // 事件处理（主管理员对账号的操作，保持原有逻辑，简化版）
+        // 事件处理
         async function onCheckboxChange(e) {
             let idx = parseInt(e.target.dataset.index);
             if(isNaN(idx) || !accounts[idx]) return;
@@ -425,7 +423,7 @@
             return await resp.json();
         }
 
-        // 子账号管理操作（主管理员操作，也会记录日志，但为简化，仅保留基础功能）
+        // 子账号管理操作
         async function optimisticAddSubAdmin(username, password) {
             if(!username.trim()||!password.trim()) { showToast('用户名/密码不能为空'); return; }
             let tempId = `temp_sub_${Date.now()}`;
@@ -470,7 +468,7 @@
             }
         }
 
-        // 批量操作（主管理员）
+        // 批量操作
         function getSelectedIndices() { return Array.from(document.querySelectorAll('.row-selector:checked')).map(cb=>parseInt(cb.dataset.index)).filter(i=>!isNaN(i) && accounts[i]); }
         async function batchUpdate(prop, val) {
             let indices = getSelectedIndices();
@@ -556,7 +554,51 @@
             };
             reader.readAsText(file);
         }
-        function setNewTeam(newTeam) { if(!newTeam.trim()) return; currentTeam = newTeam.trim(); localStorage.setItem(TEAM_KEY, currentTeam); document.getElementById('teamNameInput').value = currentTeam; document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`; renderAccountTable(); showToast(`主团队已更改为: ${currentTeam}`); }
+        // ★★★ 修复：修改团队名称时，同步更新所有账号的 teamName ★★★
+        async function setNewTeam(newTeam) {
+            if(!newTeam.trim()) return;
+            const oldTeam = currentTeam;
+            const newTeamTrimmed = newTeam.trim();
+            
+            // 显示加载提示
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            try {
+                // 1. 更新本地存储和界面变量
+                currentTeam = newTeamTrimmed;
+                localStorage.setItem(TEAM_KEY, currentTeam);
+                document.getElementById('teamNameInput').value = currentTeam;
+                document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`;
+                
+                // 2. 更新所有账号的 teamName
+                const updatePromises = [];
+                for (let acc of accounts) {
+                    if (acc.teamName !== newTeamTrimmed) {
+                        acc.teamName = newTeamTrimmed;
+                        // 只同步已存在的云端记录
+                        if (acc.id && !acc.id.toString().startsWith('temp')) {
+                            updatePromises.push(updateSingleRecord(acc));
+                        }
+                    }
+                }
+                
+                // 3. 等待所有云端更新完成
+                if (updatePromises.length > 0) {
+                    await Promise.all(updatePromises);
+                }
+                
+                // 4. 重新渲染表格
+                renderAccountTable();
+                showToast(`主团队已更改为: ${currentTeam}，并同步更新了 ${updatePromises.length} 个账号`);
+            } catch (error) {
+                console.error('更新团队名称失败:', error);
+                showToast('部分账号更新失败，请刷新后重试', 3000);
+                // 即使失败也刷新表格，保持界面一致性
+                renderAccountTable();
+            } finally {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        }
 
         // 绑定主界面事件
         function bindEvents() {
@@ -591,7 +633,6 @@
             document.getElementById('currentTeamDisplay').innerText = `🏷️ 主团队: ${currentTeam}`;
             await refreshAllData();
             bindEvents();
-            // 自动刷新日志间隔15秒
             if(autoRefreshInterval) clearInterval(autoRefreshInterval);
             autoRefreshInterval = setInterval(() => { loadLogsFromCloud().catch(console.warn); }, 15000);
         }
