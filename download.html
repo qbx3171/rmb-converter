@@ -569,7 +569,7 @@
         return url.includes('?') ? `${url}&${size}&fit=crop` : `${url}?${size}&fit=crop`;
     }
 
-    // 默认广告（使用绝对可访问的图片）
+    // 默认广告
     const DEFAULT_BANNER_ADS = [
         { image:'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb', link:'https://www.adobe.com/', title:'Adobe Creative Cloud' },
         { image:'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb', link:'https://www.autodesk.com/', title:'Autodesk' }
@@ -691,7 +691,7 @@
     document.getElementById('nextMonth').addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
     renderCalendar();
 
-    // 软件数据（仅从 Airtable 加载，无默认软件）
+    // 软件数据（仅从 Airtable 加载）
     const CATEGORY_DISPLAY = { 'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他' };
     let softwares = [];
     let currentCategory="all", searchKeyword="", showAll=false;
@@ -718,9 +718,8 @@
         return { type:'text', value:'' };
     }
 
-    // ★★★ 随机生成下载量（50~5000）★★★
     function getRandomDownloads(){
-        return Math.floor(Math.random() * 4951) + 50; // 50 ~ 5000
+        return Math.floor(Math.random() * 4951) + 50;
     }
 
     async function fetchAirtableSoftwares(){
@@ -736,7 +735,6 @@
                 const url = getField(f, ['url','URL'], '#');
                 const noVerify = getField(f, ['noVerify','NoVerify'], false);
                 const addedDate = getField(f, ['addedDate','AddedDate'], new Date().toISOString().split('T')[0]);
-                // 优先使用云端已有下载量，否则随机生成
                 let downloads = Number(getField(f, ['downloads','Downloads'], -1));
                 if(downloads === -1) downloads = getRandomDownloads();
                 let osArray = ['Windows','Mac']; const osField = getField(f, ['os','OS'], null);
@@ -754,7 +752,49 @@
         renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles();
     }
 
-    function getSmartAbbreviation(name){ if(!name) return '软'; const chineseMatch = name.match(/[\u4e00-\u9fa5]/); if(chineseMatch) return chineseMatch[0]; const words = name.split(/[\s\-_]+/).filter(w=>w.length); if(words.length>=2) return words.map(w=>w.charAt(0).toUpperCase()).slice(0,3).join(''); const letters = name.replace(/[^a-zA-Z]/g,''); return letters.slice(0,2).toUpperCase()||name.charAt(0).toUpperCase(); }
+    // ★★★ 修复图标缩写算法，确保 Photoshop 显示 PS，Lightroom 显示 LR 等 ★★★
+    function getSmartAbbreviation(name){
+        if(!name) return '软';
+        const lower = name.toLowerCase();
+        // Adobe 系列特殊处理
+        if(lower.includes('photoshop')) return 'PS';
+        if(lower.includes('illustrator')) return 'AI';
+        if(lower.includes('after effects')) return 'AE';
+        if(lower.includes('premiere')) return 'PR';
+        if(lower.includes('lightroom')) return 'LR';
+        if(lower.includes('indesign')) return 'ID';
+        if(lower.includes('acrobat')) return 'AC';
+        if(lower.includes('audition')) return 'AU';
+        if(lower.includes('animate')) return 'AN';
+        if(lower.includes('dreamweaver')) return 'DW';
+        if(lower.includes('autocad')) return 'AC';
+        if(lower.includes('3ds max')) return '3D';
+        if(lower.includes('maya')) return 'MA';
+        if(lower.includes('cinema 4d')) return 'C4';
+        if(lower.includes('sketchup')) return 'SU';
+        if(lower.includes('rhino')) return 'RH';
+        if(lower.includes('blender')) return 'BL';
+        if(lower.includes('resolve')||lower.includes('达芬奇')) return 'DV';
+        
+        // 中文名直接取首字
+        const chineseMatch = name.match(/[\u4e00-\u9fa5]/);
+        if(chineseMatch) return chineseMatch[0];
+        
+        // 按单词拆分取首字母
+        const words = name.split(/[\s\-_]+/).filter(w=>w.length>0);
+        if(words.length >= 2){
+            return words.map(w=>w.charAt(0).toUpperCase()).slice(0,3).join('');
+        }
+        
+        // 单个单词：取前两个字母大写（若全大写则保持原样）
+        const letters = name.replace(/[^a-zA-Z]/g,'');
+        if(letters.length === 0) return name.substring(0,2).toUpperCase();
+        // 若全是大写字母则直接返回前两个
+        if(letters === letters.toUpperCase() && letters.length >= 2) return letters.slice(0,2);
+        // 否则取前两个字母并大写
+        return letters.slice(0,2).toUpperCase() || name.charAt(0).toUpperCase();
+    }
+
     function getColorFromName(name){ let hash=0; for(let i=0;i<name.length;i++) hash=name.charCodeAt(i)+((hash<<5)-hash); return `hsl(${Math.abs(hash)%360}, 70%, 55%)`; }
 
     // 点赞收藏
@@ -792,7 +832,7 @@
         }
     }
 
-    // 核心：下载函数（需要登录）
+    // 下载函数
     function downloadSoftware(sw){
         if(!currentUser){
             openAuthModal('login');
@@ -804,7 +844,7 @@
         incrementDownloadCount(sw.id);
     }
 
-    // 热门推荐自动滚动（带箭头）
+    // 热门推荐自动滚动
     let hotScrollInterval = null;
     const hotScroll = document.getElementById('hotScroll');
     function startHotAutoScroll(){
@@ -948,7 +988,6 @@
         renderRandomArticles();
     }
 
-    // ★★★ 修复：404 错误，仅当 recordId 有效时才请求 ★★★
     async function incrementDownloadCount(recordId){
         if(!recordId || recordId.toString().startsWith('temp')) return;
         try {
