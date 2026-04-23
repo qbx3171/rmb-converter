@@ -569,7 +569,7 @@
         return url.includes('?') ? `${url}&${size}&fit=crop` : `${url}?${size}&fit=crop`;
     }
 
-    // 默认广告
+    // 默认广告（使用绝对可访问的图片）
     const DEFAULT_BANNER_ADS = [
         { image:'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb', link:'https://www.adobe.com/', title:'Adobe Creative Cloud' },
         { image:'https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg?auto=compress&cs=tinysrgb', link:'https://www.autodesk.com/', title:'Autodesk' }
@@ -691,9 +691,20 @@
     document.getElementById('nextMonth').addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
     renderCalendar();
 
-    // 软件数据（仅从 Airtable 加载）
+    // ★★★ 内置默认软件数据（立即显示）★★★
+    const BUILTIN_SOFTWARES = [
+        { id: 'builtin1', name: 'Photoshop', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '专业图像编辑与设计', icon: { type:'text', value:'PS' }, url: 'https://www.adobe.com/products/photoshop.html', noVerify: false, addedDate: '2024-01-01', downloads: 3420 },
+        { id: 'builtin2', name: 'Illustrator', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '矢量图形设计', icon: { type:'text', value:'AI' }, url: 'https://www.adobe.com/products/illustrator.html', noVerify: false, addedDate: '2024-01-01', downloads: 2180 },
+        { id: 'builtin3', name: 'Premiere Pro', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '专业视频剪辑', icon: { type:'text', value:'PR' }, url: 'https://www.adobe.com/products/premiere.html', noVerify: false, addedDate: '2024-01-01', downloads: 3100 },
+        { id: 'builtin4', name: 'After Effects', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '视觉特效与动态图形', icon: { type:'text', value:'AE' }, url: 'https://www.adobe.com/products/aftereffects.html', noVerify: false, addedDate: '2024-01-01', downloads: 2890 },
+        { id: 'builtin5', name: 'Lightroom', category: 'adobe', os: ['Windows','Mac'], version: '2024', description: '摄影后期调色与管理', icon: { type:'text', value:'LR' }, url: 'https://www.adobe.com/products/photoshop-lightroom.html', noVerify: false, addedDate: '2024-01-01', downloads: 1560 },
+        { id: 'builtin6', name: 'AutoCAD', category: 'autodesk', os: ['Windows','Mac'], version: '2025', description: '计算机辅助设计', icon: { type:'text', value:'AC' }, url: 'https://www.autodesk.com/products/autocad/', noVerify: false, addedDate: '2024-01-01', downloads: 1950 },
+        { id: 'builtin7', name: 'Cinema 4D', category: 'c4d', os: ['Windows','Mac'], version: '2024', description: '三维建模渲染', icon: { type:'text', value:'C4D' }, url: 'https://www.maxon.net/cinema-4d', noVerify: false, addedDate: '2024-01-01', downloads: 1750 }
+    ];
+
     const CATEGORY_DISPLAY = { 'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他' };
-    let softwares = [];
+    
+    let softwares = [...BUILTIN_SOFTWARES];
     let currentCategory="all", searchKeyword="", showAll=false;
     const DEFAULT_LIMIT=12;
 
@@ -718,9 +729,7 @@
         return { type:'text', value:'' };
     }
 
-    function getRandomDownloads(){
-        return Math.floor(Math.random() * 4951) + 50;
-    }
+    function getRandomDownloads(){ return Math.floor(Math.random() * 4951) + 50; }
 
     async function fetchAirtableSoftwares(){
         try{
@@ -748,51 +757,39 @@
         const airtableSoftwares = await fetchAirtableSoftwares();
         if(airtableSoftwares.length){
             softwares = airtableSoftwares;
+            localStorage.setItem('cachedSoftwares', JSON.stringify(softwares));
+        } else {
+            const cached = localStorage.getItem('cachedSoftwares');
+            if(cached) softwares = JSON.parse(cached);
         }
         renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles();
     }
 
-    // ★★★ 修复图标缩写算法，确保 Photoshop 显示 PS，Lightroom 显示 LR 等 ★★★
+    // ★★★ 核心修复：智能缩写函数，与后台行为一致 ★★★
     function getSmartAbbreviation(name){
         if(!name) return '软';
         const lower = name.toLowerCase();
-        // Adobe 系列特殊处理
-        if(lower.includes('photoshop')) return 'PS';
-        if(lower.includes('illustrator')) return 'AI';
-        if(lower.includes('after effects')) return 'AE';
-        if(lower.includes('premiere')) return 'PR';
-        if(lower.includes('lightroom')) return 'LR';
-        if(lower.includes('indesign')) return 'ID';
-        if(lower.includes('acrobat')) return 'AC';
-        if(lower.includes('audition')) return 'AU';
-        if(lower.includes('animate')) return 'AN';
-        if(lower.includes('dreamweaver')) return 'DW';
-        if(lower.includes('autocad')) return 'AC';
-        if(lower.includes('3ds max')) return '3D';
-        if(lower.includes('maya')) return 'MA';
-        if(lower.includes('cinema 4d')) return 'C4';
-        if(lower.includes('sketchup')) return 'SU';
-        if(lower.includes('rhino')) return 'RH';
-        if(lower.includes('blender')) return 'BL';
-        if(lower.includes('resolve')||lower.includes('达芬奇')) return 'DV';
-        
-        // 中文名直接取首字
+        // 已知软件映射（精确匹配）
+        const knownMap = {
+            'photoshop': 'PS', 'illustrator': 'AI', 'premiere pro': 'PR', 'after effects': 'AE',
+            'lightroom': 'LR', 'autocad': 'AC', 'cinema 4d': 'C4D', '3ds max': '3D',
+            'maya': 'MA', 'sketchup': 'SU', 'rhino': 'RH', 'adobe插件全套': 'PL',
+            'creative cloud': 'CC', 'indesign': 'ID', 'acrobat': 'AC'
+        };
+        if(knownMap[lower]) return knownMap[lower];
+        // 提取所有大写字母（如 "Cinema4D" → "C4D"）
+        const upperChars = name.replace(/[^A-Z]/g, '');
+        if(upperChars.length >= 2) return upperChars;
+        // 按空格/连字符分词取首字母
+        const words = name.split(/[\s\-_]+/).filter(w=>w.length);
+        if(words.length >= 2) return words.map(w=>w.charAt(0).toUpperCase()).join('');
+        // 中文取首字
         const chineseMatch = name.match(/[\u4e00-\u9fa5]/);
         if(chineseMatch) return chineseMatch[0];
-        
-        // 按单词拆分取首字母
-        const words = name.split(/[\s\-_]+/).filter(w=>w.length>0);
-        if(words.length >= 2){
-            return words.map(w=>w.charAt(0).toUpperCase()).slice(0,3).join('');
-        }
-        
-        // 单个单词：取前两个字母大写（若全大写则保持原样）
-        const letters = name.replace(/[^a-zA-Z]/g,'');
-        if(letters.length === 0) return name.substring(0,2).toUpperCase();
-        // 若全是大写字母则直接返回前两个
-        if(letters === letters.toUpperCase() && letters.length >= 2) return letters.slice(0,2);
-        // 否则取前两个字母并大写
-        return letters.slice(0,2).toUpperCase() || name.charAt(0).toUpperCase();
+        // 单个英文单词取前2个字母（如 "Photoshop" → "PH" 已修正，优先映射已处理，这里作为后备）
+        const letters = name.replace(/[^a-zA-Z]/g, '');
+        if(letters.length >= 2) return letters.slice(0,2).toUpperCase();
+        return letters.slice(0,1).toUpperCase() || '软';
     }
 
     function getColorFromName(name){ let hash=0; for(let i=0;i<name.length;i++) hash=name.charCodeAt(i)+((hash<<5)-hash); return `hsl(${Math.abs(hash)%360}, 70%, 55%)`; }
@@ -832,7 +829,7 @@
         }
     }
 
-    // 下载函数
+    // 核心：下载函数（需要登录）
     function downloadSoftware(sw){
         if(!currentUser){
             openAuthModal('login');
@@ -844,7 +841,7 @@
         incrementDownloadCount(sw.id);
     }
 
-    // 热门推荐自动滚动
+    // 热门推荐自动滚动（带箭头）
     let hotScrollInterval = null;
     const hotScroll = document.getElementById('hotScroll');
     function startHotAutoScroll(){
@@ -989,7 +986,7 @@
     }
 
     async function incrementDownloadCount(recordId){
-        if(!recordId || recordId.toString().startsWith('temp')) return;
+        if(!recordId || recordId.toString().startsWith('temp') || recordId.toString().startsWith('builtin')) return;
         try {
             const rec = await airtableRequest('GET', `softwares/${recordId}`);
             await airtableRequest('PATCH', `softwares/${recordId}`, { fields: { downloads: (rec.fields.downloads||0)+1 } });
@@ -998,7 +995,18 @@
         } catch(e) { console.warn('更新下载次数失败', e); }
     }
 
-    function initSoftware(){ renderSkeleton(); updateSoftwaresFromAirtable().then(()=>{ renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList(); }); }
+    function initSoftware(){
+        const cached = localStorage.getItem('cachedSoftwares');
+        if(cached){
+            try {
+                const parsed = JSON.parse(cached);
+                if(Array.isArray(parsed) && parsed.length) softwares = parsed;
+            } catch(e){}
+        }
+        renderSkeleton();
+        renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
+        updateSoftwaresFromAirtable();
+    }
     // 用户系统
     let currentUser = null;
     let regEmail='', regCode='', regCodeExpire=0, resetEmail='', resetCode='', resetCodeExpire=0;
@@ -1040,7 +1048,7 @@
     }
     function openProfileModal(){ document.getElementById('profileUsername').value = currentUser?.username||''; document.getElementById('profileNewPassword').value = ''; document.getElementById('profileConfirmPassword').value = ''; document.getElementById('profileModal').classList.add('active'); }
     async function openAdminModal(){ document.getElementById('adminModal').classList.add('active'); const users = await getAllUsers(); const tbody = document.getElementById('adminUsersTbody'); tbody.innerHTML = users.map(u => { const f = u.fields; return `<tr><td>${escapeHtml(f.Email||'')}</td><td>${escapeHtml(f.Username||'')}</td><td>${escapeHtml(f.Role||'user')}</td><td><button class="toggle-role" data-id="${u.id}" data-role="${f.Role==='admin'?'user':'admin'}">${f.Role==='admin'?'降级':'升为管理员'}</button><button class="delete" data-id="${u.id}">删除</button></td></tr>`; }).join(''); }
-    async function renderFeedbackList(){ /* 同上，完整版保留 */ }
+    async function renderFeedbackList(){ /* 完整版保留 */ }
 
     function initAuthEvents(){
         const modal = document.getElementById('authModal');
