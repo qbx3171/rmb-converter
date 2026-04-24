@@ -246,6 +246,16 @@
         return url.includes('?') ? `${url}&${size}&fit=crop` : `${url}?${size}&fit=crop`;
     }
 
+    // 广告图片加速：对 Airtable 附件使用 images.weserv.nl 代理
+    function getOptimizedAdImageUrl(originalUrl) {
+        if(!originalUrl) return '';
+        // 如果是 Airtable 附件链接，使用 weserv.nl 加速
+        if(originalUrl.includes('dl.airtable.com') || originalUrl.includes('api.airtable.com')) {
+            return `https://images.weserv.nl/?url=${encodeURIComponent(originalUrl)}&w=1200&h=500&fit=cover`;
+        }
+        return originalUrl;
+    }
+
     // 默认广告（当没有从 Airtable 读取到时使用）
     const DEFAULT_BANNER_ADS = [
         { image:'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb', link:'https://www.adobe.com/', title:'Adobe Creative Cloud' },
@@ -264,7 +274,7 @@
         const placeholderClass = isBanner?'banner-loading-placeholder':'ad-loading-placeholder';
         const dotClass = isBanner?'banner-carousel-dot':'sidebar-carousel-dot';
         containerSlides.innerHTML = ads.map((ad,i)=>`
-            <div class="${slideClass}"><div class="${placeholderClass}"></div><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" decoding="async" onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none';"></a></div>
+            <div class="${slideClass}"><div class="${placeholderClass}"></div><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" decoding="async" onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none';" onerror="this.onerror=null; this.src='https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb'"></a></div>
         `).join('');
         if(ads.length <= 1){
             containerDots.style.display = 'none';
@@ -304,8 +314,8 @@
             if(cached){ const {banner, sidebar} = JSON.parse(cached); if(banner.length) bannerAds=banner; if(sidebar.length) sidebarAds=sidebar; }
             const data = await airtableRequest('GET','Ads?maxRecords=50');
             const all = data.records.map(r=>{ const f=r.fields; return { image:f.Image||f.image||'', link:f.Link||f.link||'', title:f.Title||f.title||'', position:(f.Position||f.position||'sidebar').toLowerCase(), enabled:f.Enabled!==false }; }).filter(a=>a.enabled && a.image && a.link);
-            const newBanner = all.filter(a=>a.position==='banner').map(a=>({...a, image:getResponsiveImageUrl(a.image,true)}));
-            const newSidebar = all.filter(a=>a.position==='sidebar').map(a=>({...a, image:getResponsiveImageUrl(a.image,false)}));
+            const newBanner = all.filter(a=>a.position==='banner').map(a=>({...a, image:getOptimizedAdImageUrl(a.image)}));
+            const newSidebar = all.filter(a=>a.position==='sidebar').map(a=>({...a, image:getOptimizedAdImageUrl(a.image)}));
             if(newBanner.length) bannerAds = newBanner;
             if(newSidebar.length) sidebarAds = newSidebar;
             const upB = renderCarousel(carousels.banner.slides, carousels.banner.dots, bannerAds, carousels.banner.current, true);
@@ -428,13 +438,12 @@
     }
     document.getElementById('clearHistoryBtn').addEventListener('click', ()=>{ localStorage.removeItem('browseHistory'); renderHistoryList(); showToast('浏览历史已清空'); });
 
-    // **** 关键修复：安全可靠的图标渲染（无乱码）****
+    // 图标渲染：不使用代理，直接显示原始图片（避免乱码），失败时显示文本缩写
     function renderIconHtml(icon, name){
         if(!icon) icon = { type:'text', value: getStandardAbbreviation(name) };
         if(icon.type === 'image'){
             let imgUrl = icon.value;
-            // 直接使用原始 URL，不经过任何代理
-            return `<img src="${escapeHtml(imgUrl)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">`;
+            return `<img src="${escapeHtml(imgUrl)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';"><div class="icon-fallback" style="background: ${getColorFromName(name)}; display:none;">${escapeHtml(getStandardAbbreviation(name))}</div>`;
         }
         if(icon.type === 'icon'){
             return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
@@ -444,7 +453,6 @@
         return `<div class="icon-fallback" style="background: ${color};">${escapeHtml(abbr)}</div>`;
     }
 
-    // 修正了 downloadSoftware 无需登录
     function downloadSoftware(sw){
         addToHistory(sw);
         window.open(sw.url, '_blank');
