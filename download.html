@@ -246,7 +246,24 @@
     }
     function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
 
-    // 汉堡菜单
+    // 算术验证码
+    function generateCaptcha(){
+        let a = Math.floor(Math.random()*10)+1, b = Math.floor(Math.random()*10)+1;
+        let op = Math.random()>0.5 ? '+' : '-';
+        let ans = op==='+' ? a+b : a-b;
+        if(ans<0) return generateCaptcha();
+        return { question: `${a} ${op} ${b} = ?`, answer: ans };
+    }
+    function refreshCaptcha(qId, iId){
+        let c = generateCaptcha();
+        currentCaptcha = c;
+        let q = document.getElementById(qId);
+        if(q) q.innerText = c.question;
+        let inp = document.getElementById(iId);
+        if(inp) inp.value = '';
+    }
+
+    // ---------- 汉堡菜单 ----------
     const hamburger = document.getElementById('hamburgerBtn');
     const navLinks = document.getElementById('navLinks');
     if(hamburger && navLinks) {
@@ -288,7 +305,7 @@
     if(nextMonth) nextMonth.addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
     renderCalendar();
 
-    // ---------- Airtable 请求封装 ----------
+    // ---------- Airtable 请求 ----------
     async function fetchWithTimeout(url, options, timeout=10000) {
         const controller = new AbortController();
         const id = setTimeout(()=>controller.abort(), timeout);
@@ -311,7 +328,7 @@
         }
     }
 
-    // ---------- 软件图标与数据处理 ----------
+    // 解析图标
     function getStandardAbbreviation(name) {
         if(!name) return 'SW';
         const lower = name.toLowerCase();
@@ -347,7 +364,6 @@
         return { type:'text', value: getStandardAbbreviation(name) };
     }
 
-    // ---------- 获取真实数据（优先缓存）----------
     async function fetchAirtableSoftwares() {
         try{
             const data=await airtableRequest('GET','softwares?maxRecords=100');
@@ -387,80 +403,7 @@
         }catch(e){ console.warn(e); return []; }
     }
 
-    // ---------- 核心：加载数据并渲染（无闪烁）----------
-    function showSkeleton() {
-        const grid = document.getElementById('softwareGridContainer');
-        if(grid) grid.innerHTML = `<div class="loading-container"><div class="loading-spinner-large"></div><div class="loading-text">正在加载软件库...</div></div>`;
-        if(bannerSlides) bannerSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
-        if(sidebarSlides) sidebarSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
-    }
-
-    // 广告轮播渲染器
-    let bannerCarouselInterval=null, sidebarCarouselInterval=null;
-    let currentBannerIndex=0, currentSidebarIndex=0;
-    const bannerSlides=document.getElementById('categoryBannerSlides'), bannerDots=document.getElementById('categoryBannerDots');
-    const sidebarSlides=document.getElementById('sidebarCarouselSlides'), sidebarDots=document.getElementById('sidebarCarouselDots');
-    function renderCarousel(containerSlides, containerDots, ads, isBanner=true){
-        if(!containerSlides||!containerDots) return;
-        const slideClass=isBanner?'banner-carousel-slide':'sidebar-carousel-slide', dotClass=isBanner?'banner-carousel-dot':'sidebar-carousel-dot';
-        containerSlides.innerHTML=ads.map((ad,i)=>`
-            <div class="${slideClass}"><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" onload="this.classList.add('loaded');" onerror="this.onerror=null; this.src='https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb';"></a></div>
-        `).join('');
-        if(ads.length<=1){ containerDots.style.display='none'; return; }
-        containerDots.style.display='flex';
-        containerDots.innerHTML=ads.map((_,i)=>`<div class="${dotClass} ${i===0?'active':''}" data-index="${i}"></div>`).join('');
-        const update=(idx)=>{
-            if(isBanner) currentBannerIndex=idx; else currentSidebarIndex=idx;
-            containerSlides.style.transform=`translateX(-${idx*100}%)`;
-            const dots=containerDots.querySelectorAll(`.${dotClass}`);
-            dots.forEach((d,ii)=>d.classList.toggle('active',ii===idx));
-        };
-        containerDots.querySelectorAll(`.${dotClass}`).forEach(dot=>{
-            dot.addEventListener('click',(e)=>{
-                const idx=parseInt(e.target.dataset.index);
-                update(idx);
-                resetAutoPlay(isBanner);
-            });
-        });
-        return update;
-    }
-    function startAutoPlay(isBanner){
-        const ref=isBanner?bannerCarouselInterval:sidebarCarouselInterval;
-        if(ref) clearInterval(ref);
-        const ads=isBanner?bannerAds:sidebarAds;
-        if(ads.length<=1) return;
-        const iv=setInterval(()=>{
-            const cur=isBanner?currentBannerIndex:currentSidebarIndex;
-            const nxt=(cur+1)%ads.length;
-            if(isBanner) currentBannerIndex=nxt; else currentSidebarIndex=nxt;
-            const slides=isBanner?bannerSlides:sidebarSlides;
-            slides.style.transform=`translateX(-${nxt*100}%)`;
-            const dotClass=isBanner?'banner-carousel-dot':'sidebar-carousel-dot';
-            const dots=isBanner?bannerDots:sidebarDots;
-            const dts=dots.querySelectorAll(`.${dotClass}`);
-            dts.forEach((d,i)=>d.classList.toggle('active',i===nxt));
-        },4000);
-        if(isBanner) bannerCarouselInterval=iv; else sidebarCarouselInterval=iv;
-    }
-    function resetAutoPlay(isBanner){
-        if(isBanner&&bannerCarouselInterval) clearInterval(bannerCarouselInterval);
-        else if(!isBanner&&sidebarCarouselInterval) clearInterval(sidebarCarouselInterval);
-        startAutoPlay(isBanner);
-    }
-
-    // 算术验证码相关函数
-    function generateCaptcha(){
-        let a=Math.floor(Math.random()*10)+1,b=Math.floor(Math.random()*10)+1,op=Math.random()>0.5?'+':'-',ans=op==='+'?a+b:a-b;
-        if(ans<0) return generateCaptcha();
-        return { question:`${a} ${op} ${b} = ?`, answer:ans };
-    }
-    function refreshCaptcha(qId,iId){
-        let c=generateCaptcha(); currentCaptcha=c;
-        let q=document.getElementById(qId); if(q) q.innerText=c.question;
-        let inp=document.getElementById(iId); if(inp) inp.value='';
-    }
-
-    // 用户系统（算术验证码）
+    // ---------- 用户系统 ----------
     async function findUserByEmail(email) {
         const data = await airtableRequest('GET', `Users?filterByFormula={Email}="${encodeURIComponent(email)}"`);
         return data.records.length ? data.records[0] : null;
@@ -481,19 +424,17 @@
         await airtableRequest('PATCH', `Users/${rec.id}`, { fields: { Password: CryptoJS.SHA256(newPass).toString() } });
     }
 
-    // 更新用户区域UI（关键修复：使用事件委托确保按钮可点）
+    // 更新用户UI（关键：使用事件委托或直接绑定，确保按钮可点）
     function updateUserUI(){
         const area = document.getElementById('userArea');
         if(!area) return;
         if(currentUser){
-            const dropdown = `<div style="position:relative;"><button class="user-name-btn" id="userMenuBtn"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.username)} <i class="fas fa-chevron-down"></i></button><div class="dropdown-content" id="userDropdown"><button id="profileBtn">个人中心</button>${currentUser.role==='admin'?'<button id="adminBtn">管理后台</button>':''}<button id="logoutBtn">退出登录</button></div></div>`;
-            area.innerHTML = dropdown;
-            // 绑定下拉菜单和退出事件
+            area.innerHTML = `<div style="position:relative;"><button class="user-name-btn" id="userMenuBtn"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.username)} <i class="fas fa-chevron-down"></i></button><div class="dropdown-content" id="userDropdown"><button id="profileBtn">个人中心</button>${currentUser.role==='admin'?'<button id="adminBtn">管理后台</button>':''}<button id="logoutBtn">退出登录</button></div></div>`;
             const userMenuBtn = document.getElementById('userMenuBtn');
+            const dropdown = document.getElementById('userDropdown');
             if(userMenuBtn){
                 userMenuBtn.addEventListener('click', (e)=>{
                     e.stopPropagation();
-                    const dropdown = document.getElementById('userDropdown');
                     if(dropdown) dropdown.classList.toggle('show');
                 });
             }
@@ -506,15 +447,12 @@
                     showToast('已退出');
                 });
             }
-            const profileBtn = document.getElementById('profileBtn');
-            if(profileBtn) profileBtn.addEventListener('click', ()=> showToast('个人中心开发中'));
+            document.getElementById('profileBtn')?.addEventListener('click', ()=>showToast('个人中心开发中'));
             if(currentUser.role==='admin'){
-                const adminBtn = document.getElementById('adminBtn');
-                if(adminBtn) adminBtn.addEventListener('click', ()=> showToast('管理后台开发中'));
+                document.getElementById('adminBtn')?.addEventListener('click', ()=>showToast('管理后台开发中'));
             }
             // 点击其他地方关闭下拉菜单
             window.addEventListener('click', function closeDrop(e){
-                const dropdown = document.getElementById('userDropdown');
                 if(dropdown && !dropdown.contains(e.target) && e.target !== userMenuBtn){
                     dropdown.classList.remove('show');
                     window.removeEventListener('click', closeDrop);
@@ -522,7 +460,7 @@
             });
         } else {
             area.innerHTML = '<button class="auth-btn" id="showAuthBtn"><i class="fas fa-user-lock"></i> 登录 / 注册</button>';
-            // 使用事件委托在父级监听，确保动态生成后仍然有效
+            // 重要：直接绑定事件（不使用委托，确保生效）
             const showAuthBtn = document.getElementById('showAuthBtn');
             if(showAuthBtn){
                 showAuthBtn.addEventListener('click', (e)=>{
@@ -538,16 +476,16 @@
         const modal = document.getElementById('authModal');
         if(!modal) return;
         const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
+        const regForm = document.getElementById('registerForm');
         const forgotForm = document.getElementById('forgotForm');
         if(loginForm) loginForm.style.display = 'none';
-        if(registerForm) registerForm.style.display = 'none';
+        if(regForm) regForm.style.display = 'none';
         if(forgotForm) forgotForm.style.display = 'none';
         if(tab === 'login' && loginForm) loginForm.style.display = 'block';
-        else if(tab === 'register' && registerForm) registerForm.style.display = 'block';
+        else if(tab === 'register' && regForm) regForm.style.display = 'block';
         else if(tab === 'forgot' && forgotForm) forgotForm.style.display = 'block';
         const tabs = document.querySelectorAll('.auth-tab');
-        tabs.forEach(t => {
+        tabs.forEach(t=>{
             if(t.dataset.tab === tab) t.classList.add('active');
             else t.classList.remove('active');
         });
@@ -557,20 +495,23 @@
         else if(tab === 'forgot') refreshCaptcha('forgotCaptchaQuestion', 'forgotCaptchaInput');
     }
 
-    // 绑定模态框内事件
     function bindModalEvents(){
         document.getElementById('refreshLoginCaptcha')?.addEventListener('click',()=>refreshCaptcha('loginCaptchaQuestion','loginCaptchaInput'));
         document.getElementById('refreshRegCaptcha')?.addEventListener('click',()=>refreshCaptcha('regCaptchaQuestion','regCaptchaInput'));
         document.getElementById('refreshForgotCaptcha')?.addEventListener('click',()=>refreshCaptcha('forgotCaptchaQuestion','forgotCaptchaInput'));
         document.getElementById('registerBtn')?.addEventListener('click',async function(){
-            const username=document.getElementById('regUsername').value.trim(), email=document.getElementById('regEmail').value.trim(), pwd=document.getElementById('regPassword').value, conf=document.getElementById('regConfirm').value, cap=document.getElementById('regCaptchaInput').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const pwd = document.getElementById('regPassword').value;
+            const conf = document.getElementById('regConfirm').value;
+            const cap = document.getElementById('regCaptchaInput').value.trim();
             if(!username) return showToast('请输入用户名','error');
             if(!email) return showToast('请输入邮箱','error');
-            if(pwd!==conf) return showToast('两次密码不一致','error');
-            if(pwd.length<6) return showToast('密码至少6位','error');
-            if(!cap||parseInt(cap)!==currentCaptcha.answer) return showToast('验证码错误','error');
+            if(pwd !== conf) return showToast('两次密码不一致','error');
+            if(pwd.length < 6) return showToast('密码至少6位','error');
+            if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
             try{
-                const exists=await findUserByEmail(email);
+                const exists = await findUserByEmail(email);
                 if(exists) return showToast('该邮箱已被注册','error');
                 await registerUser(email,pwd,username);
                 showToast('注册成功，请登录');
@@ -578,10 +519,12 @@
             }catch(e){ showToast('注册失败: '+e.message,'error'); }
         });
         document.getElementById('loginBtn')?.addEventListener('click',async function(){
-            const email=document.getElementById('loginEmail').value.trim(), pwd=document.getElementById('loginPassword').value, cap=document.getElementById('loginCaptchaInput').value.trim();
-            if(!cap||parseInt(cap)!==currentCaptcha.answer) return showToast('验证码错误','error');
+            const email = document.getElementById('loginEmail').value.trim();
+            const pwd = document.getElementById('loginPassword').value;
+            const cap = document.getElementById('loginCaptchaInput').value.trim();
+            if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
             try{
-                currentUser=await loginUser(email,pwd);
+                currentUser = await loginUser(email,pwd);
                 localStorage.setItem('lezhe_user',JSON.stringify(currentUser));
                 updateUserUI();
                 document.getElementById('authModal').classList.remove('active');
@@ -589,11 +532,14 @@
             }catch(e){ showToast(e.message,'error'); }
         });
         document.getElementById('resetPasswordBtn')?.addEventListener('click',async function(){
-            const email=document.getElementById('forgotEmail').value.trim(), newPwd=document.getElementById('newPassword').value, conf=document.getElementById('confirmNewPassword').value, cap=document.getElementById('forgotCaptchaInput').value.trim();
+            const email = document.getElementById('forgotEmail').value.trim();
+            const newPwd = document.getElementById('newPassword').value;
+            const conf = document.getElementById('confirmNewPassword').value;
+            const cap = document.getElementById('forgotCaptchaInput').value.trim();
             if(!email) return showToast('请输入邮箱','error');
-            if(newPwd!==conf) return showToast('两次密码不一致','error');
-            if(newPwd.length<6) return showToast('密码至少6位','error');
-            if(!cap||parseInt(cap)!==currentCaptcha.answer) return showToast('验证码错误','error');
+            if(newPwd !== conf) return showToast('两次密码不一致','error');
+            if(newPwd.length < 6) return showToast('密码至少6位','error');
+            if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
             try{
                 await updatePassword(email,newPwd);
                 showToast('密码已重置，请登录');
@@ -605,31 +551,171 @@
         document.getElementById('closeAuthModal')?.addEventListener('click',()=>document.getElementById('authModal').classList.remove('active'));
     }
 
-    // 喜欢的存储
-    function getLiked(){ try{ return JSON.parse(localStorage.getItem('likedSoftwares'))||[]; } catch{ return []; } }
-    function toggleLike(name){
-        let liked=getLiked();
-        if(liked.includes(name)) liked=liked.filter(n=>n!==name);
-        else liked.push(name);
-        localStorage.setItem('likedSoftwares',JSON.stringify(liked));
-        renderGrid();
+    // ---------- 广告轮播 ----------
+    let bannerInterval=null, sidebarInterval=null;
+    let curBanner=0, curSidebar=0;
+    const bannerSlides = document.getElementById('categoryBannerSlides');
+    const bannerDots = document.getElementById('categoryBannerDots');
+    const sidebarSlides = document.getElementById('sidebarCarouselSlides');
+    const sidebarDots = document.getElementById('sidebarCarouselDots');
+    function renderCarousel(containerSlides, containerDots, ads, isBanner=true){
+        if(!containerSlides || !containerDots) return;
+        const slideClass = isBanner ? 'banner-carousel-slide' : 'sidebar-carousel-slide';
+        const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
+        containerSlides.innerHTML = ads.map((ad,i)=>`
+            <div class="${slideClass}"><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" onload="this.classList.add('loaded');" onerror="this.onerror=null; this.src='https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb';"></a></div>
+        `).join('');
+        if(ads.length <= 1){
+            containerDots.style.display = 'none';
+            return;
+        }
+        containerDots.style.display = 'flex';
+        containerDots.innerHTML = ads.map((_,i)=>`<div class="${dotClass} ${i===0?'active':''}" data-index="${i}"></div>`).join('');
+        const update = (idx)=>{
+            if(isBanner) curBanner = idx;
+            else curSidebar = idx;
+            containerSlides.style.transform = `translateX(-${idx*100}%)`;
+            const dots = containerDots.querySelectorAll(`.${dotClass}`);
+            dots.forEach((d,ii)=>d.classList.toggle('active',ii===idx));
+        };
+        containerDots.querySelectorAll(`.${dotClass}`).forEach(dot=>{
+            dot.addEventListener('click',(e)=>{
+                const idx = parseInt(e.target.dataset.index);
+                update(idx);
+                resetCarousel(isBanner);
+            });
+        });
+        return update;
+    }
+    function startCarousel(isBanner){
+        const ref = isBanner ? bannerInterval : sidebarInterval;
+        if(ref) clearInterval(ref);
+        const ads = isBanner ? bannerAds : sidebarAds;
+        if(ads.length <= 1) return;
+        const interval = setInterval(()=>{
+            const cur = isBanner ? curBanner : curSidebar;
+            const nxt = (cur+1) % ads.length;
+            if(isBanner) curBanner = nxt;
+            else curSidebar = nxt;
+            const slides = isBanner ? bannerSlides : sidebarSlides;
+            slides.style.transform = `translateX(-${nxt*100}%)`;
+            const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
+            const dots = isBanner ? bannerDots : sidebarDots;
+            const dts = dots.querySelectorAll(`.${dotClass}`);
+            dts.forEach((d,i)=>d.classList.toggle('active',i===nxt));
+        },4000);
+        if(isBanner) bannerInterval = interval;
+        else sidebarInterval = interval;
+    }
+    function resetCarousel(isBanner){
+        if(isBanner && bannerInterval) clearInterval(bannerInterval);
+        else if(!isBanner && sidebarInterval) clearInterval(sidebarInterval);
+        startCarousel(isBanner);
+    }
+
+    // ---------- 软件网格及辅助功能 ----------
+    const CATEGORY_DISPLAY = {'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他'};
+    function renderCategories(){
+        const catEl = document.getElementById('categoryTabs');
+        if(!catEl) return;
+        const catMap = new Map();
+        softwares.forEach(s=>catMap.set(CATEGORY_DISPLAY[s.category]||s.category, s.category));
+        let html = `<button class="cat-chip ${currentCategory==='all'?'active':''}" data-cat="all">全部</button>`;
+        Array.from(catMap.entries()).sort().forEach(([d,k])=>{
+            html += `<button class="cat-chip ${currentCategory===k?'active':''}" data-cat="${k}">${d}</button>`;
+        });
+        catEl.innerHTML = html;
+        catEl.querySelectorAll('.cat-chip').forEach(btn=>{
+            btn.addEventListener('click',()=>{
+                currentCategory = btn.dataset.cat;
+                showAll = false;
+                renderCategories();
+                renderGrid();
+            });
+        });
+    }
+    function renderGrid(){
+        const filtered = softwares.filter(s=>(currentCategory==='all'||s.category===currentCategory) && s.name.toLowerCase().includes(searchKeyword.toLowerCase()));
+        const items = showAll ? filtered : filtered.slice(0,DEFAULT_LIMIT);
+        const container = document.getElementById('softwareGridContainer');
+        if(!container) return;
+        if(!items.length){
+            container.innerHTML = '<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件</div>';
+            document.getElementById('loadMoreContainer').style.display = 'none';
+            return;
+        }
+        const liked = JSON.parse(localStorage.getItem('likedSoftwares')) || [];
+        container.innerHTML = items.map(sw=>{
+            const osTags = sw.os.map(o=>`<span class="os-badge">${o==='Windows'?'<i class="fab fa-windows"></i>':'<i class="fab fa-apple"></i>'} ${o}</span>`).join('');
+            const isNew = (new Date() - new Date(sw.addedDate||'2024-01-01')) < 7*86400000;
+            const isHot = sw.downloads > 2000;
+            const badge = isNew ? '<span class="new-badge">✨ 新</span>' : (isHot ? '<span class="hot-badge">🔥 热门</span>' : '');
+            const isLiked = liked.includes(sw.name);
+            const iconHtml = renderIconHtml(sw.icon, sw.name);
+            return `<div class="software-card" data-name="${escapeHtml(sw.name)}">
+                ${badge}
+                <div class="card-header"><div class="card-icon">${iconHtml}</div><div class="software-name">${escapeHtml(sw.name)}</div></div>
+                <div class="version">版本 ${escapeHtml(sw.version)}</div>
+                <div class="description">${escapeHtml(sw.description)}</div>
+                <div class="os-tags">${osTags}</div>
+                <div class="card-footer">
+                    <div class="added-date"><i class="far fa-calendar-alt"></i> ${escapeHtml(sw.addedDate)}</div>
+                    <div><span class="download-count"><i class="fas fa-download"></i> ${sw.downloads||0}</span><button class="like-btn" data-name="${escapeHtml(sw.name)}"><i class="${isLiked?'fas':'far'} fa-heart"></i></button></div>
+                </div>
+            </div>`;
+        }).join('');
+        const loadDiv = document.getElementById('loadMoreContainer');
+        if(loadDiv) loadDiv.style.display = (!showAll && filtered.length>DEFAULT_LIMIT) ? 'block' : 'none';
+        container.querySelectorAll('.software-card').forEach(card=>{
+            card.addEventListener('click',(e)=>{
+                if(e.target.closest('.like-btn')) return;
+                const sw = softwares.find(s=>s.name===card.dataset.name);
+                if(sw){
+                    if(!currentUser){
+                        openAuthModal('login');
+                        showToast('请先登录','error');
+                        return;
+                    }
+                    downloadSoftware(sw);
+                }
+            });
+        });
+        container.querySelectorAll('.like-btn').forEach(btn=>{
+            btn.addEventListener('click',(e)=>{
+                e.stopPropagation();
+                let likedArr = JSON.parse(localStorage.getItem('likedSoftwares')) || [];
+                if(likedArr.includes(btn.dataset.name)) likedArr = likedArr.filter(n=>n!==btn.dataset.name);
+                else likedArr.push(btn.dataset.name);
+                localStorage.setItem('likedSoftwares', JSON.stringify(likedArr));
+                renderGrid();
+            });
+        });
+    }
+    function downloadSoftware(sw){
+        addToHistory(sw);
+        window.open(sw.url, '_blank');
+        if(sw.id && !sw.id.startsWith('b')) incrementDownloadCount(sw.id);
     }
     function addToHistory(sw){
-        let h=JSON.parse(localStorage.getItem('browseHistory'))||[];
-        h=h.filter(i=>i.name!==sw.name);
+        let h = JSON.parse(localStorage.getItem('browseHistory')) || [];
+        h = h.filter(i=>i.name!==sw.name);
         h.unshift({name:sw.name, icon:sw.icon, category:sw.category});
         if(h.length>10) h.pop();
-        localStorage.setItem('browseHistory',JSON.stringify(h));
+        localStorage.setItem('browseHistory', JSON.stringify(h));
         renderHistoryList();
     }
     function renderHistoryList(){
-        const history=JSON.parse(localStorage.getItem('browseHistory'))||[];
-        const container=document.getElementById('historyList'); if(!container) return;
-        if(!history.length){ container.innerHTML='<div style="color:#94a3b8; padding:8px 0;">暂无浏览记录</div>'; return; }
-        container.innerHTML=history.map(h=>`<div class="history-item" data-name="${escapeHtml(h.name)}"><i class="fas fa-clock"></i> ${escapeHtml(h.name)}</div>`).join('');
+        const history = JSON.parse(localStorage.getItem('browseHistory')) || [];
+        const container = document.getElementById('historyList');
+        if(!container) return;
+        if(!history.length){
+            container.innerHTML = '<div style="color:#94a3b8; padding:8px 0;">暂无浏览记录</div>';
+            return;
+        }
+        container.innerHTML = history.map(h=>`<div class="history-item" data-name="${escapeHtml(h.name)}"><i class="fas fa-clock"></i> ${escapeHtml(h.name)}</div>`).join('');
         container.querySelectorAll('.history-item').forEach(item=>{
             item.addEventListener('click',()=>{
-                const sw=softwares.find(s=>s.name===item.dataset.name);
+                const sw = softwares.find(s=>s.name===item.dataset.name);
                 if(sw) downloadSoftware(sw);
             });
         });
@@ -639,74 +725,47 @@
         renderHistoryList();
         showToast('浏览历史已清空');
     });
-
-    // 软件渲染函数
-    const CATEGORY_DISPLAY={'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他'};
-    function renderCategories(){
-        const catEl=document.getElementById('categoryTabs'); if(!catEl) return;
-        const catMap=new Map(); softwares.forEach(s=>catMap.set(CATEGORY_DISPLAY[s.category]||s.category, s.category));
-        let html=`<button class="cat-chip ${currentCategory==='all'?'active':''}" data-cat="all">全部</button>`;
-        Array.from(catMap.entries()).sort().forEach(([d,k])=>{ html+=`<button class="cat-chip ${currentCategory===k?'active':''}" data-cat="${k}">${d}</button>`; });
-        catEl.innerHTML=html;
-        catEl.querySelectorAll('.cat-chip').forEach(b=>{ b.addEventListener('click',()=>{ currentCategory=b.dataset.cat; showAll=false; renderCategories(); renderGrid(); }); });
-    }
-    function renderGrid(){
-        const filtered=softwares.filter(s=>(currentCategory==='all'||s.category===currentCategory) && s.name.toLowerCase().includes(searchKeyword.toLowerCase()));
-        const items=showAll?filtered:filtered.slice(0,DEFAULT_LIMIT);
-        const container=document.getElementById('softwareGridContainer'); if(!container) return;
-        if(!items.length){ container.innerHTML='<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件</div>'; document.getElementById('loadMoreContainer').style.display='none'; return; }
-        const liked=getLiked();
-        container.innerHTML=items.map(sw=>{
-            const osTags=sw.os.map(o=>`<span class="os-badge">${o==='Windows'?'<i class="fab fa-windows"></i>':'<i class="fab fa-apple"></i>'} ${o}</span>`).join('');
-            const isNew=(new Date()-new Date(sw.addedDate||'2024-01-01'))<7*86400000;
-            const isHot=sw.downloads>2000;
-            const badge=isNew?'<span class="new-badge">✨ 新</span>':(isHot?'<span class="hot-badge">🔥 热门</span>':'');
-            const isLiked=liked.includes(sw.name);
-            const iconHtml=renderIconHtml(sw.icon, sw.name);
-            return `<div class="software-card" data-name="${escapeHtml(sw.name)}">${badge}<div class="card-header"><div class="card-icon">${iconHtml}</div><div class="software-name">${escapeHtml(sw.name)}</div></div><div class="version">版本 ${escapeHtml(sw.version)}</div><div class="description">${escapeHtml(sw.description)}</div><div class="os-tags">${osTags}</div><div class="card-footer"><div class="added-date"><i class="far fa-calendar-alt"></i> ${escapeHtml(sw.addedDate)}</div><div><span class="download-count"><i class="fas fa-download"></i> ${sw.downloads||0}</span><button class="like-btn" data-name="${escapeHtml(sw.name)}"><i class="${isLiked?'fas':'far'} fa-heart"></i></button></div></div></div>`;
-        }).join('');
-        const loadDiv=document.getElementById('loadMoreContainer'); if(loadDiv) loadDiv.style.display=(!showAll && filtered.length>DEFAULT_LIMIT)?'block':'none';
-        container.querySelectorAll('.software-card').forEach(card=>{
-            card.addEventListener('click',(e)=>{ if(e.target.closest('.like-btn')) return; const sw=softwares.find(s=>s.name===card.dataset.name); if(sw) downloadSoftware(sw); });
-        });
-        container.querySelectorAll('.like-btn').forEach(btn=>{ btn.addEventListener('click',(e)=>{ e.stopPropagation(); toggleLike(btn.dataset.name); }); });
-        renderRandomArticles();
-    }
-    function downloadSoftware(sw){
-        addToHistory(sw);
-        window.open(sw.url,'_blank');
-        if(sw.id && !sw.id.startsWith('b')) incrementDownloadCount(sw.id);
-    }
     async function incrementDownloadCount(id){
-        if(!id||id.startsWith('b')) return;
+        if(!id || id.startsWith('b')) return;
         try{
-            const rec=await airtableRequest('GET',`softwares/${id}`);
-            await airtableRequest('PATCH',`softwares/${id}`,{fields:{downloads:(rec.fields.downloads||0)+1}});
-            const sw=softwares.find(s=>s.id===id);
-            if(sw) sw.downloads=(sw.downloads||0)+1;
+            const rec = await airtableRequest('GET', `softwares/${id}`);
+            await airtableRequest('PATCH', `softwares/${id}`, { fields: { downloads: (rec.fields.downloads||0)+1 } });
+            const sw = softwares.find(s=>s.id===id);
+            if(sw) sw.downloads = (sw.downloads||0)+1;
             renderRankList(); renderHotSection();
         }catch(e){ console.warn(e); }
     }
+
     // 热门推荐滚动
-    const hotScroll=document.getElementById('hotScroll'); let hotInterval=null;
+    const hotScroll = document.getElementById('hotScroll');
+    let hotInterval = null;
     function startHotAutoScroll(){
         if(!hotScroll) return;
         if(hotInterval) clearInterval(hotInterval);
-        hotInterval=setInterval(()=>{
-            const max=hotScroll.scrollWidth-hotScroll.clientWidth;
-            if(hotScroll.scrollLeft>=max-10) hotScroll.scrollTo({left:0,behavior:'smooth'});
-            else hotScroll.scrollBy({left:220,behavior:'smooth'});
+        hotInterval = setInterval(()=>{
+            const max = hotScroll.scrollWidth - hotScroll.clientWidth;
+            if(hotScroll.scrollLeft >= max-10) hotScroll.scrollTo({ left: 0, behavior: 'smooth' });
+            else hotScroll.scrollBy({ left: 220, behavior: 'smooth' });
         },2000);
     }
     function stopHotAutoScroll(){ if(hotInterval){ clearInterval(hotInterval); hotInterval=null; } }
-    document.getElementById('hotArrowLeft')?.addEventListener('click',()=>{ if(hotScroll) hotScroll.scrollBy({left:-220,behavior:'smooth'}); stopHotAutoScroll(); startHotAutoScroll(); });
-    document.getElementById('hotArrowRight')?.addEventListener('click',()=>{ if(hotScroll) hotScroll.scrollBy({left:220,behavior:'smooth'}); stopHotAutoScroll(); startHotAutoScroll(); });
+    document.getElementById('hotArrowLeft')?.addEventListener('click',()=>{ hotScroll.scrollBy({ left: -220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
+    document.getElementById('hotArrowRight')?.addEventListener('click',()=>{ hotScroll.scrollBy({ left: 220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
     function renderHotSection(){
-        if(!hotScroll||!softwares.length) return;
-        const sorted=[...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
-        const top6=sorted.slice(0,6);
-        hotScroll.innerHTML=top6.map(sw=>`<div class="hot-card" data-name="${escapeHtml(sw.name)}"><div class="hot-icon">${renderIconHtml(sw.icon, sw.name)}</div><div class="hot-name">${escapeHtml(sw.name)}</div><div class="hot-meta"><span>${sw.os.join(' · ')}</span><span class="hot-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</span></div></div>`).join('');
-        hotScroll.querySelectorAll('.hot-card').forEach(card=>{ card.addEventListener('click',()=>{ const sw=softwares.find(s=>s.name===card.dataset.name); if(sw) downloadSoftware(sw); }); });
+        if(!hotScroll || !softwares.length) return;
+        const sorted = [...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
+        const top6 = sorted.slice(0,6);
+        hotScroll.innerHTML = top6.map(sw=>`<div class="hot-card" data-name="${escapeHtml(sw.name)}">
+            <div class="hot-icon">${renderIconHtml(sw.icon, sw.name)}</div>
+            <div class="hot-name">${escapeHtml(sw.name)}</div>
+            <div class="hot-meta"><span>${sw.os.join(' · ')}</span><span class="hot-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</span></div>
+        </div>`).join('');
+        hotScroll.querySelectorAll('.hot-card').forEach(card=>{
+            card.addEventListener('click',()=>{
+                const sw = softwares.find(s=>s.name===card.dataset.name);
+                if(sw) downloadSoftware(sw);
+            });
+        });
         if(hotScroll){
             hotScroll.removeEventListener('mouseenter',stopHotAutoScroll);
             hotScroll.removeEventListener('mouseleave',startHotAutoScroll);
@@ -716,32 +775,51 @@
         startHotAutoScroll();
     }
     function renderRankList(){
-        const rankEl=document.getElementById('rankList'); if(!rankEl) return;
-        const sorted=[...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
-        const top5=sorted.slice(0,5);
-        rankEl.innerHTML=top5.map((sw,i)=>`<div class="rank-item" data-name="${escapeHtml(sw.name)}"><div class="rank-index ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div><div class="rank-info"><div class="rank-name">${escapeHtml(sw.name)}</div><div class="rank-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</div></div></div>`).join('');
-        rankEl.querySelectorAll('.rank-item').forEach(item=>{ item.addEventListener('click',()=>{ const sw=softwares.find(s=>s.name===item.dataset.name); if(sw) downloadSoftware(sw); }); });
+        const rankEl = document.getElementById('rankList');
+        if(!rankEl) return;
+        const sorted = [...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
+        const top5 = sorted.slice(0,5);
+        rankEl.innerHTML = top5.map((sw,i)=>`<div class="rank-item" data-name="${escapeHtml(sw.name)}">
+            <div class="rank-index ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div>
+            <div class="rank-info"><div class="rank-name">${escapeHtml(sw.name)}</div><div class="rank-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</div></div>
+        </div>`).join('');
+        rankEl.querySelectorAll('.rank-item').forEach(item=>{
+            item.addEventListener('click',()=>{
+                const sw = softwares.find(s=>s.name===item.dataset.name);
+                if(sw) downloadSoftware(sw);
+            });
+        });
     }
     function renderRandomArticles(){
-        const randomEl=document.getElementById('randomArticles'); if(!randomEl||!softwares.length) return;
-        const shuffled=[...softwares].sort(()=>0.5-Math.random()).slice(0,5);
-        randomEl.innerHTML=shuffled.map(sw=>`<div class="random-article-item" data-name="${escapeHtml(sw.name)}"><div class="random-article-icon">${renderIconHtml(sw.icon, sw.name)}</div><div class="random-article-info"><div class="random-article-name">${escapeHtml(sw.name)}</div><div class="random-article-os">${sw.os.join(' · ')}</div></div></div>`).join('');
-        randomEl.querySelectorAll('.random-article-item').forEach(item=>{ item.addEventListener('click',()=>{ const sw=softwares.find(s=>s.name===item.dataset.name); if(sw) downloadSoftware(sw); }); });
+        const randomEl = document.getElementById('randomArticles');
+        if(!randomEl || !softwares.length) return;
+        const shuffled = [...softwares].sort(()=>0.5-Math.random()).slice(0,5);
+        randomEl.innerHTML = shuffled.map(sw=>`<div class="random-article-item" data-name="${escapeHtml(sw.name)}">
+            <div class="random-article-icon">${renderIconHtml(sw.icon, sw.name)}</div>
+            <div class="random-article-info"><div class="random-article-name">${escapeHtml(sw.name)}</div><div class="random-article-os">${sw.os.join(' · ')}</div></div>
+        </div>`).join('');
+        randomEl.querySelectorAll('.random-article-item').forEach(item=>{
+            item.addEventListener('click',()=>{
+                const sw = softwares.find(s=>s.name===item.dataset.name);
+                if(sw) downloadSoftware(sw);
+            });
+        });
     }
 
-    // ---------- 留言功能 ----------
+    // 留言
     async function fetchMessages(){ try{ const data=await airtableRequest('GET','Messages?maxRecords=50'); return data.records; } catch{ return []; } }
     async function submitMessage(name,msg){ await airtableRequest('POST','Messages',{fields:{Name:name||'热心网友',Message:msg}}); }
     async function renderFeedbackList(){
         try{
             const msgs=await fetchMessages();
-            const cont=document.getElementById('feedbackListContainer'); if(!cont) return;
+            const cont=document.getElementById('feedbackListContainer');
+            if(!cont) return;
             if(!msgs.length){ cont.innerHTML='<div style="text-align:center; padding:20px;">暂无留言，快来抢沙发~</div>'; return; }
             cont.innerHTML=msgs.slice().reverse().slice(0,20).map(m=>`<div style="padding:16px 0; border-bottom:1px solid rgba(0,0,0,0.05);"><strong>${escapeHtml(m.fields.Name||'匿名')}</strong><span style="font-size:12px; color:#94a3b8; margin-left:12px;">${m.fields.CreatedAt?new Date(m.fields.CreatedAt).toLocaleString('zh-CN'):''}</span><div style="margin-top:6px;">${escapeHtml(m.fields.Message||'')}</div></div>`).join('');
         }catch(e){ console.warn(e); }
     }
 
-    // 搜索等事件
+    // 搜索等
     document.getElementById('searchInput')?.addEventListener('input',e=>{ searchKeyword=e.target.value; renderGrid(); });
     document.getElementById('searchBtn')?.addEventListener('click',()=>renderGrid());
     document.getElementById('closeDetailModal')?.addEventListener('click',()=>document.getElementById('detailModal').classList.remove('active'));
@@ -763,24 +841,30 @@
     const backTop=document.getElementById('backToTop'); window.addEventListener('scroll',()=>backTop?.classList.toggle('show',window.scrollY>300)); if(backTop) backTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
     function addBaiduPush(){ const bp=document.createElement('script'); bp.async=true; bp.src='https://zz.bdstatic.com/linksubmit/push.js'; document.head.appendChild(bp); }
 
-    // ---------- 初始化：先显示骨架，再加载真实数据 ----------
+    // ---------- 初始化 ----------
+    function showSkeleton(){
+        const grid = document.getElementById('softwareGridContainer');
+        if(grid) grid.innerHTML = `<div class="loading-container"><div class="loading-spinner-large"></div><div class="loading-text">正在加载软件库...</div></div>`;
+        if(bannerSlides) bannerSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
+        if(sidebarSlides) sidebarSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
+    }
     async function initData(){
         showSkeleton();
-        // 优先使用缓存瞬间渲染
-        const cachedSoft=localStorage.getItem('cachedSoftwares');
-        const cachedBanner=localStorage.getItem('cachedBannerAds');
-        const cachedSidebar=localStorage.getItem('cachedSidebarAds');
+        // 优先从缓存读取
+        const cachedSoft = localStorage.getItem('cachedSoftwares');
+        const cachedBanner = localStorage.getItem('cachedBannerAds');
+        const cachedSidebar = localStorage.getItem('cachedSidebarAds');
         if(cachedSoft && cachedBanner && cachedSidebar){
             try{
-                softwares=JSON.parse(cachedSoft);
-                bannerAds=JSON.parse(cachedBanner);
-                sidebarAds=JSON.parse(cachedSidebar);
+                softwares = JSON.parse(cachedSoft);
+                bannerAds = JSON.parse(cachedBanner);
+                sidebarAds = JSON.parse(cachedSidebar);
                 renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
-                if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); startAutoPlay(true); }
-                if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); startAutoPlay(false); }
+                if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); startCarousel(true); }
+                if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); startCarousel(false); }
             }catch(e){}
         }
-        // 后台拉取最新并更新缓存和界面
+        // 后台拉取最新
         try{
             const [softData, adsData] = await Promise.all([fetchAirtableSoftwares(), fetchAirtableAds()]);
             if(softData.length){
@@ -796,27 +880,25 @@
                 localStorage.setItem('cachedSidebarAds', JSON.stringify(sidebarAds));
             }
             renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
-            if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); resetAutoPlay(true); }
-            if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); resetAutoPlay(false); }
+            if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); resetCarousel(true); }
+            if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); resetCarousel(false); }
         }catch(e){
-            console.error('后台拉取失败', e);
-            if(!cachedSoft){
-                document.getElementById('softwareGridContainer').innerHTML = '<div class="no-results">加载失败，请检查网络后刷新</div>';
-            }
+            console.warn('后台更新失败', e);
+            if(!cachedSoft) document.getElementById('softwareGridContainer').innerHTML = '<div class="no-results">加载失败，请稍后刷新</div>';
         }
     }
     async function initAll(){
         await initData();
         addBaiduPush();
         await renderFeedbackList();
-        const saved=localStorage.getItem('lezhe_user');
-        if(saved){ try{ currentUser=JSON.parse(saved); }catch(e){} }
+        const saved = localStorage.getItem('lezhe_user');
+        if(saved){ try{ currentUser = JSON.parse(saved); }catch(e){} }
         updateUserUI();
-        bindModalEvents();   // 绑定模态框内各种事件
-        // 预生成验证码
-        let initCap=generateCaptcha(); currentCaptcha=initCap;
-        let loginCap=document.getElementById('loginCaptchaQuestion');
-        if(loginCap) loginCap.innerText=initCap.question;
+        bindModalEvents();
+        let initCap = generateCaptcha();
+        currentCaptcha = initCap;
+        let loginCap = document.getElementById('loginCaptchaQuestion');
+        if(loginCap) loginCap.innerText = initCap.question;
     }
     initAll();
 })();
