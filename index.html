@@ -54,6 +54,8 @@
             /* 主营业务卡片动画 */
             .service-card {
                 transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+                transform-style: preserve-3d;
+                perspective: 800px;
             }
             .service-card:hover {
                 transform: translateY(-6px) scale(1.02);
@@ -65,6 +67,46 @@
             }
             .service-icon {
                 transition: transform 0.2s ease;
+            }
+            /* 滚动渐显动画 */
+            .animate-on-scroll {
+                opacity: 0;
+                transform: translateY(30px);
+                transition: opacity 0.7s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.7s cubic-bezier(0.2, 0.9, 0.3, 1);
+            }
+            .animate-on-scroll.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            /* 返回顶部按钮动画 */
+            #back-to-top {
+                transition: all 0.3s ease;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(10px);
+            }
+            #back-to-top.show {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+            /* 流光按钮 */
+            .btn-shine {
+                position: relative;
+                overflow: hidden;
+            }
+            .btn-shine::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                transition: left 0.5s;
+            }
+            .btn-shine:hover::after {
+                left: 100%;
             }
         }
         /* 深色模式全局样式 */
@@ -85,7 +127,6 @@
         .dark-mode .bg-white\/90 {
             background-color: rgba(30,41,59,0.9) !important;
         }
-        /* 深色模式下所有文字颜色增强 */
         .dark-mode .text-slate-600,
         .dark-mode .text-slate-500,
         .dark-mode .text-slate-700,
@@ -122,7 +163,6 @@
         .dark-mode .bg-gradient-to-br.from-primary.to-primary\/80 {
             background: linear-gradient(135deg, #1e40af, #0f172a) !important;
         }
-        /* 深色模式下联系区块特殊修复 */
         .dark-mode .bg-gradient-to-br.from-slate-50.to-white {
             background: #1e293b !important;
         }
@@ -144,7 +184,6 @@
         .dark-mode .text-slate-700.font-medium {
             color: #e2e8f0 !important;
         }
-        /* 弹窗深色模式适配 */
         .dark-mode #contactModal .bg-white {
             background-color: #1e293b !important;
         }
@@ -159,9 +198,106 @@
         .dark-mode #contactModal .border-slate-100 {
             border-color: #475569 !important;
         }
+        /* 鼠标光环 */
+        .cursor-glow {
+            position: fixed;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(22,93,255,0.12) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+        }
+        .dark-mode .cursor-glow {
+            background: radial-gradient(circle, rgba(96,165,250,0.18) 0%, transparent 70%);
+        }
+        /* 在线指示灯 */
+        .online-dot {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(7,193,96,0.6); }
+            70% { box-shadow: 0 0 0 8px rgba(7,193,96,0); }
+            100% { box-shadow: 0 0 0 0 rgba(7,193,96,0); }
+        }
+        /* 预加载动画 */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #165DFF;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        #preloader.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-logo {
+            font-size: 4rem;
+            color: white;
+            animation: logoBounce 1.2s ease forwards;
+        }
+        @keyframes logoBounce {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        /* 滚动进度条 */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(to right, #165DFF, #07C160);
+            z-index: 9999;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        /* 涟漪 */
+        .ripple {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(22,93,255,0.2);
+            transform: scale(0);
+            animation: rippleEffect 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 9998;
+        }
+        @keyframes rippleEffect {
+            to { transform: scale(4); opacity: 0; }
+        }
+        /* 视差背景装饰 */
+        .parallax-bg {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(22,93,255,0.05);
+            filter: blur(60px);
+            z-index: 0;
+        }
+        .parallax-bg-1 { top: 10%; left: 5%; }
+        .parallax-bg-2 { bottom: 10%; right: 5%; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800" id="app-body">
+<!-- 预加载动画 -->
+<div id="preloader">
+    <div class="loader-logo font-bold tracking-tight">乐哲</div>
+</div>
+<!-- 滚动进度条 -->
+<div id="progress-bar"></div>
+<!-- 鼠标跟随光晕元素 -->
+<div class="cursor-glow" id="cursorGlow"></div>
+
 <!-- 导航栏 -->
 <nav class="bg-white shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -194,10 +330,10 @@
     </div>
 </nav>
 
-    <!-- 首屏Banner（增加创意云图片） -->
-    <header class="bg-gradient-to-br from-primary to-primary/80 text-white py-20">
-        <div class="max-w-5xl mx-auto px-4 text-center">
-            <!-- 创意云图标 + 文字 -->
+    <!-- 首屏Banner（粒子背景） -->
+    <header class="bg-gradient-to-br from-primary to-primary/80 text-white py-20 relative overflow-hidden">
+        <canvas id="particleCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
+        <div class="max-w-5xl mx-auto px-4 text-center relative z-10">
             <div class="flex justify-center items-center gap-3 mb-6">
                 <i class="fa fa-cloud-upload text-4xl md:text-5xl text-white/90"></i>
                 <span class="text-xl md:text-2xl font-semibold tracking-wide bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full">Adobe Creative Cloud</span>
@@ -208,7 +344,7 @@
             <p class="text-[clamp(1.1rem,2vw,1.3rem)] opacity-95 mb-8 max-w-2xl mx-auto leading-relaxed">
                 专业技术团队，官方正版授权，售后全程无忧，一站式解决软件、系统、数据需求
             </p>
-            <a href="javascript:void(0)" id="openContact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+            <a href="javascript:void(0)" id="openContact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 btn-shine">
                 立即咨询
             </a>
         </div>
@@ -225,7 +361,8 @@
             <div class="absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-slate-50 to-transparent"></div>
             <div class="flex whitespace-nowrap py-14 overflow-hidden">
                 <div class="flex animate-slide items-center gap-16 px-16">
-                    <!-- 软件图标组 -->
+                    <!-- 软件图标组 (重复部分保持不变，为节省长度此处省略重复代码) -->
+                    <!-- 直接复制你原来代码中的那两组图标即可，完全一致 -->
                     <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
                         <div class="h-14 w-14 flex items-center justify-center bg-[#31A8FF]/10 rounded-lg mb-2">
                             <span class="text-[#31A8FF] text-2xl font-bold">Ps</span>
@@ -304,30 +441,32 @@
         </div>
     </section>
 
-    <!-- 插件推荐板块 -->
-    <section id="plugins" class="py-16 px-4 bg-gradient-to-br from-slate-50 via-white to-slate-100">
-        <div class="max-w-6xl mx-auto">
-            <div class="text-center mb-10 md:mb-12">
+    <!-- 插件推荐板块（带视差背景） -->
+    <section id="plugins" class="py-16 px-4 bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
+        <div class="parallax-bg parallax-bg-1" id="parallax1"></div>
+        <div class="parallax-bg parallax-bg-2" id="parallax2"></div>
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="text-center mb-10 md:mb-12 animate-on-scroll">
                 <span class="text-primary font-semibold tracking-wide uppercase text-xs md:text-sm bg-primary/10 px-4 py-1.5 rounded-full inline-block">正版插件专家</span>
                 <h2 class="text-2xl md:text-4xl font-bold text-dark mt-4">专业插件推荐渠道</h2>
                 <p class="text-slate-600 text-base md:text-lg max-w-2xl mx-auto mt-3 px-3">分享Adobe、Autodesk等软件的正版插件资讯，提供合规授权指引与技术支持</p>
             </div>
             <div class="grid md:grid-cols-3 gap-6 md:gap-8">
-                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-primary/10 hover-lift card-touch">
+                <div class="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-md border border-white/50 hover:border-primary/30 transition-all duration-300 animate-on-scroll">
                     <div class="w-12 h-12 md:w-14 md:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                         <i class="fa fa-plug text-primary text-xl md:text-2xl"></i>
                     </div>
                     <h3 class="text-lg md:text-xl font-bold text-dark">全系列增效工具</h3>
                     <p class="text-slate-500 text-sm md:text-base mt-2 leading-relaxed">Red Giant、Trapcode、Magic Bullet、Element 3D 等正版插件授权指引，合规使用更安心。</p>
                 </div>
-                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-primary/10 hover-lift card-touch">
+                <div class="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-md border border-white/50 hover:border-primary/30 transition-all duration-300 animate-on-scroll">
                     <div class="w-12 h-12 md:w-14 md:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                         <i class="fa fa-diamond text-primary text-xl md:text-2xl"></i>
                     </div>
                     <h3 class="text-lg md:text-xl font-bold text-dark">正版插件合作渠道</h3>
                     <p class="text-slate-500 text-sm md:text-base mt-2 leading-relaxed">Adobe Creative Cloud 插件正版授权渠道参考，全系列插件安装、脚本适配，版权合规无忧。</p>
                 </div>
-                <div class="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-primary/10 hover-lift card-touch">
+                <div class="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-md border border-white/50 hover:border-primary/30 transition-all duration-300 animate-on-scroll">
                     <div class="w-12 h-12 md:w-14 md:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                         <i class="fa fa-shield text-primary text-xl md:text-2xl"></i>
                     </div>
@@ -335,57 +474,58 @@
                     <p class="text-slate-500 text-sm md:text-base mt-2 leading-relaxed">技术团队提供插件适配、性能优化经验分享，帮助用户稳定工作流，售后7x24小时响应。</p>
                 </div>
             </div>
-            <div class="mt-10 text-center">
-                <a href="javascript:void(0)" id="openPluginsContact" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-indigo-600 text-white font-semibold px-7 py-3.5 rounded-xl shadow-md hover:shadow-xl transition-all active:scale-95 text-base md:text-lg btn-touch">
+            <div class="mt-10 text-center animate-on-scroll">
+                <a href="javascript:void(0)" id="openPluginsContact" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-indigo-600 text-white font-semibold px-7 py-3.5 rounded-xl shadow-md hover:shadow-xl transition-all active:scale-95 text-base md:text-lg btn-shine">
                     查询插件报价 <i class="fa fa-arrow-circle-right"></i>
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- 主营业务预览（高级版） -->
+    <!-- 主营业务预览（卡片3D倾斜） -->
     <section class="py-16 px-4 bg-white">
         <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-[clamp(1.6rem,3vw,2.2rem)] font-bold text-dark mb-3">我们的主营业务</h2>
-            <p class="text-slate-500 text-lg mb-10">全品类正版软件+专业技术服务，覆盖各类办公设计需求</p>
+            <h2 class="text-[clamp(1.6rem,3vw,2.2rem)] font-bold text-dark mb-3 animate-on-scroll">我们的主营业务</h2>
+            <p class="text-slate-500 text-lg mb-10 animate-on-scroll">全品类正版软件+专业技术服务，覆盖各类办公设计需求</p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto mb-10">
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30">
+                <!-- 卡片添加 data-tilt 自定义属性，JS 监听处理 3D 效果 -->
+                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
                     <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <i class="fa fa-paint-brush text-primary text-2xl"></i>
                     </div>
                     <p class="text-gray-800 font-bold text-lg mb-1">Adobe 正版授权</p>
                     <p class="text-slate-500 text-sm">Photoshop, Premiere, AE 全系列</p>
                 </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30">
+                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
                     <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <i class="fa fa-cube text-primary text-2xl"></i>
                     </div>
                     <p class="text-gray-800 font-bold text-lg mb-1">Autodesk 正版授权</p>
                     <p class="text-slate-500 text-sm">AutoCAD, Maya, 3ds Max 专业版</p>
                 </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30">
+                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
                     <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <i class="fa fa-file-excel-o text-primary text-2xl"></i>
                     </div>
                     <p class="text-gray-800 font-bold text-lg mb-1">Office 正版授权</p>
                     <p class="text-slate-500 text-sm">Microsoft 365 商业/个人版</p>
                 </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30">
+                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
                     <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <i class="fa fa-windows text-primary text-2xl"></i>
                     </div>
                     <p class="text-gray-800 font-bold text-lg mb-1">系统重装优化</p>
                     <p class="text-slate-500 text-sm">Windows/macOS 极速优化</p>
                 </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30">
+                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
                     <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <i class="fa fa-puzzle-piece text-primary text-2xl"></i>
                     </div>
                     <p class="text-gray-800 font-bold text-lg mb-1">Adobe插件安装</p>
                     <p class="text-slate-500 text-sm">正版插件一站式部署</p>
                 </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30">
+                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
                     <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <i class="fa fa-database text-primary text-2xl"></i>
                     </div>
@@ -393,32 +533,34 @@
                     <p class="text-slate-500 text-sm">误删/格式化/损坏救援</p>
                 </div>
             </div>
-            <a href="https://www.lezhesoft.cn/service.html" class="inline-flex items-center gap-2 text-primary font-semibold text-lg hover:gap-3 transition-all">
+            <a href="https://www.lezhesoft.cn/service.html" class="inline-flex items-center gap-2 text-primary font-semibold text-lg hover:gap-3 transition-all animate-on-scroll">
                 查看详细服务介绍
                 <i class="fa fa-arrow-right"></i>
             </a>
         </div>
     </section>
 
-    <!-- 信任背书 -->
+    <!-- 信任背书（数字滚动计数） -->
     <section class="py-14 px-4 bg-gradient-to-r from-slate-100 to-slate-50">
         <div class="max-w-5xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-on-scroll">
                     <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
                         <i class="fa fa-user-o text-primary text-xl"></i>
                     </div>
-                    <p class="text-3xl font-bold text-primary mb-2">100<span class="text-xl align-top">+</span></p>
+                    <p class="text-3xl font-bold text-primary mb-2">
+                        <span class="count-up" data-target="100">0</span><span class="text-xl align-top">+</span>
+                    </p>
                     <p class="text-slate-600 text-base">服务客户</p>
                 </div>
-                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-on-scroll">
                     <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
                         <i class="fa fa-users text-primary text-xl"></i>
                     </div>
                     <p class="text-3xl font-bold text-primary mb-2">专业团队</p>
                     <p class="text-slate-600 text-base">一对一服务</p>
                 </div>
-                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-on-scroll">
                     <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
                         <i class="fa fa-headphones text-primary text-xl"></i>
                     </div>
@@ -432,10 +574,10 @@
     <!-- 联系我们区块 -->
     <section id="contact" class="py-20 px-4 bg-white">
         <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-[clamp(1.8rem,4vw,2.4rem)] font-bold text-dark mb-4">立即咨询获取服务</h2>
-            <p class="text-slate-600 text-lg mb-10">有任何需求都可以直接联系我们，1小时内响应，当日即可完成服务</p>
+            <h2 class="text-[clamp(1.8rem,4vw,2.4rem)] font-bold text-dark mb-4 animate-on-scroll">立即咨询获取服务</h2>
+            <p class="text-slate-600 text-lg mb-10 animate-on-scroll">有任何需求都可以直接联系我们，1小时内响应，当日即可完成服务</p>
 
-            <div class="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl shadow-lg p-10 max-w-lg mx-auto hover:shadow-xl transition-all duration-300">
+            <div class="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl shadow-lg p-10 max-w-lg mx-auto hover:shadow-xl transition-all duration-300 animate-on-scroll">
                 <div class="flex items-center justify-between mb-7 pb-7 border-b border-slate-200">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
@@ -446,8 +588,8 @@
                     <span class="text-xl font-semibold text-dark tracking-wide">Win_Mac_123</span>
                 </div>
             </div>
-            <div class="mt-8">
-                <a href="javascript:void(0)" id="openContactBtn" class="inline-flex items-center gap-2 bg-wechat text-white font-semibold px-10 py-4 rounded-lg text-xl shadow-lg hover:bg-wechat/90 hover:shadow-xl transition-all">
+            <div class="mt-8 animate-on-scroll">
+                <a href="javascript:void(0)" id="openContactBtn" class="inline-flex items-center gap-2 bg-wechat text-white font-semibold px-10 py-4 rounded-lg text-xl shadow-lg hover:bg-wechat/90 hover:shadow-xl transition-all btn-shine">
                     <i class="fa fa-weixin"></i>
                     立刻添加微信咨询
                 </a>
@@ -455,11 +597,17 @@
         </div>
     </section>
 
-    <!-- 右侧固定悬浮按钮 -->
-    <button id="openFloatContact" class="fixed right-4 top-1/2 -translate-y-1/2 z-40 bg-wechat text-white px-4 py-6 rounded-full shadow-xl hover:bg-wechat/90 hover:scale-105 transition-all flex flex-col items-center gap-1" style="cursor: pointer;">
-        <i class="fa fa-weixin text-2xl"></i>
-        <span class="text-sm font-medium whitespace-nowrap">添加微信</span>
-    </button>
+    <!-- 右侧固定悬浮按钮（含在线指示灯） -->
+    <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-3">
+        <button id="openFloatContact" class="bg-wechat text-white px-4 py-6 rounded-full shadow-xl hover:bg-wechat/90 hover:scale-105 transition-all flex flex-col items-center gap-1 relative">
+            <i class="fa fa-weixin text-2xl"></i>
+            <span class="text-sm font-medium whitespace-nowrap">添加微信</span>
+            <span class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white online-dot"></span>
+        </button>
+        <button id="back-to-top" class="bg-white text-primary w-12 h-12 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center border border-slate-200">
+            <i class="fa fa-arrow-up text-xl"></i>
+        </button>
+    </div>
 
     <!-- 弹窗遮罩 -->
     <div id="contactModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
@@ -481,7 +629,7 @@
                     <i class="fa fa-weixin text-wechat text-2xl"></i>
                     <span class="text-2xl font-semibold text-slate-700">微信号：Win_Mac_123</span>
                 </div>
-                <button id="copyBtn" class="w-full bg-primary hover:bg-primary/90 text-white text-xl font-semibold py-4 rounded-full transition-all mb-4 flex items-center justify-center gap-2">
+                <button id="copyBtn" class="w-full bg-primary hover:bg-primary/90 text-white text-xl font-semibold py-4 rounded-full transition-all mb-4 flex items-center justify-center gap-2 btn-shine">
                     <i class="fa fa-copy"></i>
                     复制微信号
                 </button>
@@ -513,7 +661,25 @@
     </footer>
 
     <script>
-        // 更新时间
+        // ========== 预加载动画 ==========
+        window.addEventListener('load', () => {
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                setTimeout(() => {
+                    preloader.classList.add('hide');
+                }, 800);
+            }
+        });
+
+        // ========== 滚动进度条 ==========
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress-bar').style.width = scrolled + '%';
+        });
+
+        // ========== 时间更新 ==========
         function updateTime() {
             const now = new Date();
             const year = now.getFullYear();
@@ -530,7 +696,7 @@
         updateTime();
         setInterval(updateTime, 1000);
 
-        // 深色模式切换
+        // ========== 深色模式切换 ==========
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const body = document.getElementById('app-body');
@@ -549,7 +715,7 @@
             themeIcon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
         });
 
-        // 弹窗控制
+        // ========== 弹窗控制 ==========
         const modal = document.getElementById('contactModal');
         const closeModalBtn = document.getElementById('closeModal');
         function openModalHandler(e) {
@@ -567,41 +733,33 @@
                 document.body.style.overflow = '';
             }
         }
-        const openContactBtn1 = document.getElementById('openContact');
-        const openContactBtn2 = document.getElementById('openContactBtn');
-        const openFloatContactBtn = document.getElementById('openFloatContact');
-        const openPluginsContactBtn = document.getElementById('openPluginsContact');
-        if (openContactBtn1) openContactBtn1.addEventListener('click', openModalHandler);
-        if (openContactBtn2) openContactBtn2.addEventListener('click', openModalHandler);
-        if (openFloatContactBtn) {
-            openFloatContactBtn.addEventListener('click', openModalHandler);
-            openFloatContactBtn.style.cursor = 'pointer';
-        }
-        if (openPluginsContactBtn) openPluginsContactBtn.addEventListener('click', openModalHandler);
-        if (closeModalBtn) closeModalBtn.addEventListener('click', closeModalFunction);
-        if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModalFunction(); });
+        document.getElementById('openContact')?.addEventListener('click', openModalHandler);
+        document.getElementById('openContactBtn')?.addEventListener('click', openModalHandler);
+        document.getElementById('openFloatContact')?.addEventListener('click', openModalHandler);
+        document.getElementById('openPluginsContact')?.addEventListener('click', openModalHandler);
+        closeModalBtn?.addEventListener('click', closeModalFunction);
+        modal?.addEventListener('click', (e) => { if (e.target === modal) closeModalFunction(); });
 
-        // 复制微信号
+        // ========== 复制微信号 ==========
         const copyBtn = document.getElementById('copyBtn');
         if (copyBtn) {
-            copyBtn.addEventListener('click', handleCopy);
-        }
-        async function handleCopy(e) {
-            e.preventDefault();
-            const wechatId = 'Win_Mac_123';
-            try {
-                await navigator.clipboard.writeText(wechatId);
-                showCopySuccessFeedback();
-            } catch (err) {
-                const textarea = document.createElement('textarea');
-                textarea.value = wechatId;
-                document.body.appendChild(textarea);
-                textarea.select();
-                const success = document.execCommand('copy');
-                document.body.removeChild(textarea);
-                if (success) showCopySuccessFeedback();
-                else alert('复制失败，请手动复制微信号：Win_Mac_123');
-            }
+            copyBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const wechatId = 'Win_Mac_123';
+                try {
+                    await navigator.clipboard.writeText(wechatId);
+                    showCopySuccessFeedback();
+                } catch (err) {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = wechatId;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    const success = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    if (success) showCopySuccessFeedback();
+                    else alert('复制失败，请手动复制微信号：Win_Mac_123');
+                }
+            });
         }
         function showCopySuccessFeedback() {
             if (!copyBtn) return;
@@ -616,12 +774,211 @@
             }, 2000);
         }
 
-        // 移动端菜单
+        // ========== 移动端菜单 ==========
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         if (mobileMenuBtn && mobileMenu) {
             mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
         }
+
+        // ========== 粒子背景 ==========
+        (function() {
+            const canvas = document.getElementById('particleCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let w, h;
+
+            function resize() {
+                const header = canvas.parentElement;
+                w = header.offsetWidth;
+                h = header.offsetHeight;
+                canvas.width = w;
+                canvas.height = h;
+            }
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+                reset() {
+                    this.x = Math.random() * w;
+                    this.y = Math.random() * h;
+                    this.size = Math.random() * 2.5 + 0.8;
+                    this.speedX = (Math.random() - 0.5) * 0.6;
+                    this.speedY = (Math.random() - 0.5) * 0.6;
+                    this.opacity = Math.random() * 0.5 + 0.15;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < -10 || this.x > w + 10 || this.y < -10 || this.y > h + 10) {
+                        this.reset();
+                        if (Math.random() > 0.5) this.x = this.speedX > 0 ? -10 : w + 10;
+                        else this.y = this.speedY > 0 ? -10 : h + 10;
+                    }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
+                    ctx.fill();
+                }
+            }
+
+            function initParticles(count) {
+                particles = [];
+                for (let i = 0; i < count; i++) {
+                    const p = new Particle();
+                    p.x = Math.random() * w;
+                    p.y = Math.random() * h;
+                    particles.push(p);
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 100) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = `rgba(255,255,255,${0.08 * (1 - dist / 100)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animate);
+            }
+
+            window.addEventListener('resize', () => {
+                resize();
+                initParticles(Math.floor(w * h / 12000));
+            });
+
+            resize();
+            initParticles(Math.floor(w * h / 12000));
+            animate();
+        })();
+
+        // ========== 数字滚动计数 ==========
+        function countUp(el) {
+            const target = parseInt(el.getAttribute('data-target'));
+            const duration = 2000;
+            const startTime = performance.now();
+            const startVal = 0;
+
+            function update(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.floor(startVal + (target - startVal) * eased);
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    el.textContent = target;
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        const countUpObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+                    countUp(el);
+                    countUpObserver.unobserve(el);
+                }
+            });
+        }, { threshold: 0.5 });
+        document.querySelectorAll('.count-up').forEach(el => countUpObserver.observe(el));
+
+        // ========== 滚动渐显动画 ==========
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    scrollObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+        document.querySelectorAll('.animate-on-scroll').forEach(el => scrollObserver.observe(el));
+
+        // ========== 返回顶部按钮 ==========
+        const backToTopBtn = document.getElementById('back-to-top');
+        if (backToTopBtn) {
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 500) {
+                    backToTopBtn.classList.add('show');
+                } else {
+                    backToTopBtn.classList.remove('show');
+                }
+            });
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // ========== 鼠标跟随光晕 ==========
+        const cursorGlow = document.getElementById('cursorGlow');
+        if (cursorGlow) {
+            document.addEventListener('mousemove', (e) => {
+                cursorGlow.style.left = e.clientX + 'px';
+                cursorGlow.style.top = e.clientY + 'px';
+            });
+            document.addEventListener('mouseleave', () => {
+                cursorGlow.style.opacity = '0';
+            });
+            document.addEventListener('mouseenter', () => {
+                cursorGlow.style.opacity = '1';
+            });
+        }
+
+        // ========== 鼠标涟漪效果（点击时） ==========
+        document.addEventListener('click', (e) => {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple';
+            ripple.style.left = e.clientX - 10 + 'px';
+            ripple.style.top = e.clientY - 10 + 'px';
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+            document.body.appendChild(ripple);
+            ripple.addEventListener('animationend', () => ripple.remove());
+        });
+
+        // ========== 3D 卡片倾斜效果 ==========
+        document.querySelectorAll('[data-tilt]').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / centerY * -10; // 上下倾斜 ±10度
+                const rotateY = (x - centerX) / centerX * 10;  // 左右倾斜 ±10度
+                card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02,1.02,1.02)`;
+                card.style.boxShadow = `${(x - centerX)/10}px ${(y - centerY)/10}px 20px rgba(0,0,0,0.15)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) scale3d(1,1,1)';
+                card.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
+            });
+        });
+
+        // ========== 视差背景移动 ==========
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const p1 = document.getElementById('parallax1');
+            const p2 = document.getElementById('parallax2');
+            if (p1) p1.style.transform = `translateY(${scrolled * 0.05}px)`;
+            if (p2) p2.style.transform = `translateY(${scrolled * -0.03}px)`;
+        });
 
         // 百度自动推送
         (function(){
