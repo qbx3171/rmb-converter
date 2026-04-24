@@ -454,13 +454,23 @@
     }
     document.getElementById('clearHistoryBtn').addEventListener('click', ()=>{ localStorage.removeItem('browseHistory'); renderHistoryList(); showToast('浏览历史已清空'); });
 
+    // 增强版图标渲染：支持 Airtable 附件加速 + 降级为文字
     function renderIconHtml(icon, name){
         if(!icon) icon = { type:'text', value: getStandardAbbreviation(name) };
-        if(icon.type === 'image') return `<img src="${escapeHtml(icon.value)}" style="width:100%;height:100%;object-fit:cover;">`;
-        if(icon.type === 'icon') return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
+        if(icon.type === 'image'){
+            let imgUrl = icon.value;
+            // 使用 images.weserv.nl 加速 Airtable 附件
+            if(imgUrl && (imgUrl.includes('dl.airtable.com') || imgUrl.includes('api.airtable.com'))) {
+                imgUrl = `https://images.weserv.nl/?url=${encodeURIComponent(imgUrl)}&w=48&h=48&fit=cover`;
+            }
+            return `<img src="${escapeHtml(imgUrl)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\"icon-fallback\" style=\"background: ${getColorFromName(name)};\">${getStandardAbbreviation(name)}</div>';">`;
+        }
+        if(icon.type === 'icon'){
+            return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
+        }
         const abbr = icon.value || getStandardAbbreviation(name);
         const color = getColorFromName(name);
-        return `<div class="icon-fallback" style="background: ${color};">${abbr}</div>`;
+        return `<div class="icon-fallback" style="background: ${color};">${escapeHtml(abbr)}</div>`;
     }
 
     function downloadSoftware(sw){
@@ -550,7 +560,7 @@
         updateSoftwaresFromAirtable();
     }
 
-    // ---------- 用户系统，使用 Resend Worker 代理发送验证码（立即开始倒计时，不等待响应）----------
+    // ---------- 用户系统，使用 Mailtrap Worker 代理发送验证码（立即开始倒计时，不等待响应）----------
     let currentUser = null;
     let regEmail='', regCode='', regCodeExpire=0;
     let resetEmail='', resetCode='', resetCodeExpire=0;
