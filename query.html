@@ -3,60 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Adobe 订阅查询 – 跳转助手</title>
+    <title>跳转至订阅查询 | Adobe 团队加入指引</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, 'Inter', sans-serif; }
         body {
-            min-height: 100vh;
             background: linear-gradient(145deg, #eef2f9 0%, #d9e2ef 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: system-ui, 'Inter', sans-serif;
             padding: 1.5rem;
         }
-
-        /* 卡片容器 */
-        .redirect-card {
-            max-width: 560px;
+        .card {
+            max-width: 520px;
             width: 100%;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(4px);
+            background: rgba(255,255,255,0.98);
             border-radius: 2rem;
-            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.25);
             overflow: hidden;
-            transition: transform 0.2s ease;
             text-align: center;
         }
-
-        /* 头部渐变区域 */
         .card-header {
             background: linear-gradient(135deg, #0a2b3c 0%, #1b5a6e 100%);
             padding: 2rem 1.5rem;
             color: white;
         }
-
         .card-header h1 {
             font-size: 1.8rem;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            gap: 10px;
         }
-
         .card-header p {
             opacity: 0.85;
             font-size: 0.95rem;
         }
-
         .badge {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255,255,255,0.2);
             backdrop-filter: blur(4px);
             display: inline-block;
             padding: 4px 14px;
@@ -64,15 +49,11 @@
             font-size: 0.7rem;
             margin-top: 1rem;
         }
-
-        /* 内容区域 */
         .card-body {
-            padding: 2rem 2rem 2rem 2rem;
+            padding: 2rem 1.8rem;
             background: white;
         }
-
-        /* 主要的跳转按钮 */
-        .jump-button {
+        .jump-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -84,44 +65,47 @@
             font-weight: 700;
             font-size: 1.1rem;
             text-decoration: none;
-            transition: all 0.25s ease;
-            box-shadow: 0 8px 18px rgba(27, 107, 94, 0.3);
-            border: none;
-            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 8px 18px rgba(27,107,94,0.3);
             width: 100%;
             max-width: 280px;
             margin: 0 auto;
+            cursor: pointer;
+            border: none;
         }
-
-        .jump-button:hover {
+        .jump-btn:hover {
             background: #0f554a;
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(27, 107, 94, 0.4);
+            box-shadow: 0 12px 24px rgba(27,107,94,0.4);
         }
-
-        .jump-button:active {
+        .jump-btn:active {
             transform: translateY(1px);
         }
-
-        /* 提示文字 */
-        .info-text {
-            margin-top: 2rem;
-            color: #4a627a;
+        .info-box {
+            margin-top: 1.8rem;
+            background: #fef7e0;
+            border-radius: 1.2rem;
+            padding: 1rem 1.2rem;
+            text-align: left;
+            border-left: 4px solid #e67e22;
+        }
+        .info-box h3 {
+            font-size: 1rem;
+            color: #a16207;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .info-box ul {
+            padding-left: 1.2rem;
             font-size: 0.85rem;
-            border-top: 1px solid #eef2f8;
-            padding-top: 1.5rem;
+            color: #2d3e50;
+            line-height: 1.5;
         }
-
-        .info-text a {
-            color: #1b6b5e;
-            text-decoration: none;
-            font-weight: 500;
+        .info-box li {
+            margin: 8px 0;
         }
-
-        .info-text a:hover {
-            text-decoration: underline;
-        }
-
         .footer-note {
             background: #fafcff;
             border-top: 1px solid #eef2f8;
@@ -130,33 +114,38 @@
             color: #6a7c8f;
             text-align: center;
         }
-
         @media (max-width: 550px) {
             .card-header h1 { font-size: 1.4rem; }
-            .jump-button { padding: 12px 24px; font-size: 1rem; }
+            .jump-btn { padding: 12px 24px; font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-<div class="redirect-card">
+<div class="card">
     <div class="card-header">
-        <h1>🔍 Adobe 订阅查询</h1>
-        <p>前往官方查询平台，实时查看团队授权与订阅状态</p>
-        <div class="badge">⚡ 数据同步 · 安全快捷</div>
+        <h1>🔍 Adobe 订阅与团队查询</h1>
+        <p>点击下方按钮，进入官方查询页面</p>
+        <div class="badge">⚡ 实时同步 · 安全可靠</div>
     </div>
     <div class="card-body">
-        <a href="https://reseller.ado-besoft.com/status" target="_blank" rel="noopener noreferrer" class="jump-button">
-            <span>🚀 前往查询</span>
+        <a href="https://reseller.ado-besoft.com/status" target="_blank" rel="noopener noreferrer" class="jump-btn">
+            <span>🚀 前往查询我的订阅</span>
             <span>→</span>
         </a>
-        <div class="info-text">
-            💡 点击后将在新标签页打开 <strong>Adobe 授权查询系统</strong><br>
-            无需重复输入，页面由官方提供，信息实时可靠。
+        <div class="info-box">
+            <h3>📘 加入 Creative Cloud 团队指引</h3>
+            <ul>
+                <li><strong>1️⃣ 查询团队名称</strong> — 点击上方按钮，输入您的 Adobe 账号邮箱，查看 <strong>所属的英文团队名称</strong>（例如 "Team Alpha"）。</li>
+                <li><strong>2️⃣ 注销并重新登录</strong> — 打开 Creative Cloud 桌面应用，点击右上角头像 → 注销。</li>
+                <li><strong>3️⃣ 加入团队</strong> — 使用同一账号重新登录，当出现<strong>“加入团队”</strong> 提示时，选择查询到的<strong>英文团队名称</strong> 加入。</li>
+                <li><strong>4️⃣ 完成配置</strong> — 根据提示选择文件迁移方式（推荐“移入个人云存储”），即可开始使用。</li>
+            </ul>
+            <p style="margin-top: 10px; font-size: 0.7rem; color:#b45a2e;">⚠️ 若未出现“加入团队”，请确认您的账号已被添加到该团队中，且订阅未过期。</p>
         </div>
     </div>
     <div class="footer-note">
-        ✨ 如有团队加入或续期问题，请联系您的经销商或管理员。<br>
-        本页面仅作为跳转入口，不保存任何个人数据。
+        ✨ 本页面仅提供跳转入口，所有订阅数据由官方平台提供。<br>
+        如有疑问，请联系您的经销商或管理员。
     </div>
 </div>
 </body>
