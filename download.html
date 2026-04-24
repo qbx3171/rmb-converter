@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
-        /* ========== 全局样式 ========== */
+        /* ========== 全局样式（保持不变） ========== */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; transition: background 0.4s ease, color 0.3s ease; min-height: 100vh; color: #1e293b; line-height: 1.5; background: #f0f4fa; position: relative; }
         body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(circle at 20% 30%, rgba(30,107,223,0.08) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(168,85,247,0.06) 0%, transparent 45%), radial-gradient(circle at 40% 80%, rgba(245,158,11,0.04) 0%, transparent 40%), repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px); z-index: -2; pointer-events: none; }
@@ -163,9 +163,10 @@
         .loading-spinner-large { width: 48px; height: 48px; border: 4px solid rgba(30,107,223,0.2); border-top-color: #1e6bdf; border-radius: 50%; animation: spin 0.8s linear infinite; }
         .loading-text { color: #1e6bdf; font-weight: 500; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .captcha-row { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
-        .captcha-question { background: rgba(0,0,0,0.05); padding: 8px 12px; border-radius: 30px; font-size: 14px; font-weight: 500; }
-        .captcha-refresh { background: none; border: none; color: #1e6bdf; cursor: pointer; font-size: 14px; }
+        .auth-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(12px); z-index: 2100; align-items: center; justify-content: center; }
+        .auth-modal.active { display: flex; }
+        .auth-card { border-radius: 32px; padding: 28px; max-width: 460px; width: 90%; max-height: 85vh; overflow-y: auto; background: rgba(255,255,255,0.85) !important; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); }
+        body.bg-night .auth-card { background: rgba(20,28,40,0.9) !important; }
         .auth-tabs { display: flex; gap: 20px; margin-bottom: 28px; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; }
         .auth-tab { background: none; border: none; font-size: 16px; font-weight: 600; color: #6c86a3; cursor: pointer; padding: 8px 0; }
         .auth-tab.active { color: #1e6bdf; border-bottom: 3px solid #1e6bdf; }
@@ -173,6 +174,13 @@
         .auth-input-group label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; }
         .auth-input { width: 100%; padding: 14px 18px; border: 1.5px solid rgba(0,0,0,0.1); border-radius: 30px; background: rgba(255,255,255,0.5); }
         .auth-submit { width: 100%; padding: 16px; background: #1e6bdf; color: white; border: none; border-radius: 40px; font-weight: 700; cursor: pointer; }
+        .captcha-row { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+        .captcha-question { background: rgba(0,0,0,0.05); padding: 8px 16px; border-radius: 30px; font-weight: 500; white-space: nowrap; }
+        .captcha-refresh { background: none; border: none; color: #1e6bdf; cursor: pointer; font-size: 16px; }
+        .toast-message { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 30px; z-index: 9999; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); animation: fadeInOut 3s ease forwards; font-size: 14px; font-weight: 500; }
+        .toast-message.success { background: #10b981; }
+        .toast-message.error { background: #ef4444; }
+        @keyframes fadeInOut { 0% { opacity: 0; transform: translate(-50%, -10px); } 10% { opacity: 1; transform: translate(-50%, 0); } 90% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -10px); } }
     </style>
 </head>
 <body>
@@ -215,693 +223,708 @@
     <footer>乐哲软件博客 · 原版安装包推荐，安全无捆绑<br>www.lezhesoft.cn | 个人技术分享</footer>
 </div>
 <div id="detailModal" class="detail-modal"><div class="detail-card"><div class="detail-header"><div class="detail-icon" id="detailIcon"><i class="fas fa-cube"></i></div><div style="flex:1"><div class="detail-name" id="detailName"></div></div><div class="detail-close" id="closeDetailModal"><i class="fas fa-times"></i></div></div><div class="detail-info-grid"><div class="detail-info-item"><div class="label">版本</div><div class="value" id="detailVersion"></div></div><div class="detail-info-item"><div class="label">支持系统</div><div class="value" id="detailOS"></div></div><div class="detail-info-item"><div class="label">添加日期</div><div class="value" id="detailDate"></div></div><div class="detail-info-item"><div class="label">下载次数</div><div class="value" id="detailDownloads"></div></div></div><div id="detailDescription" style="margin:16px 0;"></div><a href="#" id="detailDownloadBtn" class="detail-download-btn" target="_blank">前往下载 <i class="fas fa-external-link-alt"></i></a><div class="related-section"><h4><i class="fas fa-link"></i> 相关推荐</h4><div class="related-grid" id="relatedGrid"></div></div></div></div>
-<div id="authModal" class="auth-modal"><div class="auth-card"><div style="display:flex; justify-content:space-between; margin-bottom:24px;"><span class="auth-title" id="authModalTitle">登录</span><button id="closeAuthModal" style="background:none;border:none;font-size:22px;cursor:pointer;"><i class="fas fa-times"></i></button></div><div class="auth-tabs"><button class="auth-tab active" data-tab="login">登录</button><button class="auth-tab" data-tab="register">注册</button></div><div id="loginForm"><div class="auth-input-group"><label>邮箱</label><input type="email" id="loginEmail" class="auth-input" placeholder="your@email.com"></div><div class="auth-input-group"><label>密码</label><input type="password" id="loginPassword" class="auth-input" placeholder="••••••••"></div><div class="captcha-row"><div class="captcha-question" id="loginCaptchaQuestion"></div><button class="captcha-refresh" id="refreshLoginCaptcha"><i class="fas fa-sync-alt"></i></button><input type="text" id="loginCaptchaInput" class="auth-input captcha-input" placeholder="验证码"></div><button id="showForgotBtn" style="background:none;border:none;color:#1e6bdf;margin-bottom:20px;cursor:pointer;">忘记密码？</button><button class="auth-submit" id="loginBtn">登录</button></div><div id="registerForm" style="display:none;"><div class="auth-input-group"><label>用户名</label><input type="text" id="regUsername" class="auth-input"></div><div class="auth-input-group"><label>邮箱</label><input type="email" id="regEmail" class="auth-input"></div><div class="auth-input-group"><label>密码</label><input type="password" id="regPassword" class="auth-input"></div><div class="auth-input-group"><label>确认密码</label><input type="password" id="regConfirm" class="auth-input"></div><div class="captcha-row"><div class="captcha-question" id="regCaptchaQuestion"></div><button class="captcha-refresh" id="refreshRegCaptcha"><i class="fas fa-sync-alt"></i></button><input type="text" id="regCaptchaInput" class="auth-input captcha-input" placeholder="验证码"></div><button class="auth-submit" id="registerBtn">注册</button></div><div id="forgotForm" style="display:none;"><div class="auth-input-group"><label>邮箱</label><input type="email" id="forgotEmail" class="auth-input"></div><div class="auth-input-group"><label>新密码</label><input type="password" id="newPassword" class="auth-input"></div><div class="auth-input-group"><label>确认新密码</label><input type="password" id="confirmNewPassword" class="auth-input"></div><div class="captcha-row"><div class="captcha-question" id="forgotCaptchaQuestion"></div><button class="captcha-refresh" id="refreshForgotCaptcha"><i class="fas fa-sync-alt"></i></button><input type="text" id="forgotCaptchaInput" class="auth-input captcha-input" placeholder="验证码"></div><button class="auth-submit" id="resetPasswordBtn">重置密码</button><button id="backToLoginFromForgot" style="background:none;border:none;color:#1e6bdf;margin-top:12px;width:100%;cursor:pointer;">返回登录</button></div></div></div>
-<div id="profileModal" class="profile-modal">...</div>
-<div id="adminModal" class="admin-modal">...</div>
+<div id="authModal" class="auth-modal">
+    <div class="auth-card">
+        <div style="display:flex; justify-content:space-between; margin-bottom:24px;"><span class="auth-title" id="authModalTitle">登录</span><button id="closeAuthModal" style="background:none;border:none;font-size:22px;cursor:pointer;"><i class="fas fa-times"></i></button></div>
+        <div class="auth-tabs"><button class="auth-tab active" data-tab="login">登录</button><button class="auth-tab" data-tab="register">注册</button></div>
+        <div id="loginForm">
+            <div class="auth-input-group"><label>邮箱</label><input type="email" id="loginEmail" class="auth-input" placeholder="your@email.com"></div>
+            <div class="auth-input-group"><label>密码</label><input type="password" id="loginPassword" class="auth-input" placeholder="••••••••"></div>
+            <div class="captcha-row"><div class="captcha-question" id="loginCaptchaQuestion"></div><button class="captcha-refresh" id="refreshLoginCaptcha"><i class="fas fa-sync-alt"></i></button><input type="text" id="loginCaptchaInput" class="auth-input captcha-input" placeholder="验证码"></div>
+            <button id="showForgotBtn" style="background:none;border:none;color:#1e6bdf;margin-bottom:20px;cursor:pointer;">忘记密码？</button>
+            <button class="auth-submit" id="loginBtn">登录</button>
+        </div>
+        <div id="registerForm" style="display:none;">
+            <div class="auth-input-group"><label>用户名</label><input type="text" id="regUsername" class="auth-input"></div>
+            <div class="auth-input-group"><label>邮箱</label><input type="email" id="regEmail" class="auth-input"></div>
+            <div class="auth-input-group"><label>密码</label><input type="password" id="regPassword" class="auth-input"></div>
+            <div class="auth-input-group"><label>确认密码</label><input type="password" id="regConfirm" class="auth-input"></div>
+            <div class="captcha-row"><div class="captcha-question" id="regCaptchaQuestion"></div><button class="captcha-refresh" id="refreshRegCaptcha"><i class="fas fa-sync-alt"></i></button><input type="text" id="regCaptchaInput" class="auth-input captcha-input" placeholder="验证码"></div>
+            <button class="auth-submit" id="registerBtn">注册</button>
+        </div>
+        <div id="forgotForm" style="display:none;">
+            <div class="auth-input-group"><label>邮箱</label><input type="email" id="forgotEmail" class="auth-input"></div>
+            <div class="auth-input-group"><label>新密码</label><input type="password" id="newPassword" class="auth-input"></div>
+            <div class="auth-input-group"><label>确认新密码</label><input type="password" id="confirmNewPassword" class="auth-input"></div>
+            <div class="captcha-row"><div class="captcha-question" id="forgotCaptchaQuestion"></div><button class="captcha-refresh" id="refreshForgotCaptcha"><i class="fas fa-sync-alt"></i></button><input type="text" id="forgotCaptchaInput" class="auth-input captcha-input" placeholder="验证码"></div>
+            <button class="auth-submit" id="resetPasswordBtn">重置密码</button>
+            <button id="backToLoginFromForgot" style="background:none;border:none;color:#1e6bdf;margin-top:12px;width:100%;cursor:pointer;">返回登录</button>
+        </div>
+    </div>
+</div>
 <div class="back-to-top" id="backToTop"><i class="fas fa-arrow-up"></i></div>
 <script>
-(function(){
-    // ---------- 配置 ----------
-    const CONFIG = {
-        AIRTABLE_TOKEN: 'pat9BdIPuJKKqjBps.608e5055b9a5171435f172928c955a1bf67c8f10e6b42c34cc623f49cf1d5e43',
-        AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9'
-    };
-
-    // ---------- 全局变量 ----------
-    let softwares = [];
-    let bannerAds = [];
-    let sidebarAds = [];
-    let currentCategory = "all";
-    let searchKeyword = "";
-    let showAll = false;
-    const DEFAULT_LIMIT = 12;
-    let currentUser = null;
-    let currentCaptcha = { question: '', answer: 0 };
-
-    // ---------- 辅助函数 ----------
-    function showToast(msg, type='success') {
-        const t = document.createElement('div'); t.className = `toast-message ${type}`;
-        t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-triangle'}"></i> ${msg}`;
-        document.body.appendChild(t); setTimeout(()=>t.remove(), 3000);
-    }
-    function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-
-    // 算术验证码
-    function generateCaptcha(){
-        let a = Math.floor(Math.random()*10)+1, b = Math.floor(Math.random()*10)+1;
-        let op = Math.random()>0.5 ? '+' : '-';
-        let ans = op==='+' ? a+b : a-b;
-        if(ans<0) return generateCaptcha();
-        return { question: `${a} ${op} ${b} = ?`, answer: ans };
-    }
-    function refreshCaptcha(qId, iId){
-        let c = generateCaptcha();
-        currentCaptcha = c;
-        let q = document.getElementById(qId);
-        if(q) q.innerText = c.question;
-        let inp = document.getElementById(iId);
-        if(inp) inp.value = '';
-    }
-
-    // ---------- 汉堡菜单 ----------
-    const hamburger = document.getElementById('hamburgerBtn');
-    const navLinks = document.getElementById('navLinks');
-    if(hamburger && navLinks) {
-        hamburger.addEventListener('click', ()=>{ hamburger.classList.toggle('active'); navLinks.classList.toggle('show'); });
-        navLinks.querySelectorAll('a').forEach(l=> l.addEventListener('click', ()=>{ hamburger.classList.remove('active'); navLinks.classList.remove('show'); }));
-    }
-
-    // 主题切换
-    const themeClasses = ['bg-dawn','bg-morning','bg-afternoon','bg-evening','bg-night',''];
-    const themeIcons = ['fa-sun','fa-sun','fa-cloud-sun','fa-cloud-sun','fa-moon','fa-sun'];
-    let currentTheme = parseInt(localStorage.getItem('manualTheme')) || 2;
-    function applyTheme(i) { document.body.className = themeClasses[i]; const icon = document.querySelector('#themeToggleBtn i'); if(icon) icon.className = `fas ${themeIcons[i]}`; localStorage.setItem('manualTheme', i); }
-    applyTheme(currentTheme);
-    const themeBtn = document.getElementById('themeToggleBtn');
-    if(themeBtn) themeBtn.addEventListener('click', ()=>{ currentTheme = (currentTheme+1)%themeClasses.length; applyTheme(currentTheme); });
-
-    // 日历
-    let currentDate = new Date();
-    function renderCalendar() {
-        const y=currentDate.getFullYear(), m=currentDate.getMonth();
-        const firstDay=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
-        const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
-        const monthYearEl = document.getElementById('calendarMonthYear');
-        const daysEl = document.getElementById('calendarDays');
-        if(monthYearEl) monthYearEl.innerText=`${y}年 ${monthNames[m]}`;
-        if(!daysEl) return;
-        let html='<div class="calendar-day-name">一</div><div class="calendar-day-name">二</div><div class="calendar-day-name">三</div><div class="calendar-day-name">四</div><div class="calendar-day-name">五</div><div class="calendar-day-name">六</div><div class="calendar-day-name">日</div>';
-        let day=1;
-        for(let i=0;i<6;i++) for(let j=0;j<7;j++){
-            if(i===0 && j<(firstDay===0?6:firstDay-1)) html+='<div class="calendar-day"></div>';
-            else if(day>days) html+='<div class="calendar-day"></div>';
-            else{ const isToday=day===new Date().getDate()&&m===new Date().getMonth()&&y===new Date().getFullYear(); html+=`<div class="calendar-day ${isToday?'today':''}">${day}</div>`; day++; }
-        }
-        daysEl.innerHTML=html;
-    }
-    const prevMonth = document.getElementById('prevMonth');
-    const nextMonth = document.getElementById('nextMonth');
-    if(prevMonth) prevMonth.addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()-1); renderCalendar(); });
-    if(nextMonth) nextMonth.addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
-    renderCalendar();
-
-    // ---------- Airtable 请求 ----------
-    async function fetchWithTimeout(url, options, timeout=10000) {
-        const controller = new AbortController();
-        const id = setTimeout(()=>controller.abort(), timeout);
-        try { const resp = await fetch(url, {...options, signal: controller.signal}); clearTimeout(id); return resp; }
-        catch(e){ clearTimeout(id); throw e; }
-    }
-    async function airtableRequest(method, path, body=null, retries=2) {
-        const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
-        const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
-        const opts = { method, headers }; if(body) opts.body = JSON.stringify(body);
-        for(let i=0;i<=retries;i++) {
-            try {
-                const resp = await fetchWithTimeout(url, opts, 10000);
-                if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-                return await resp.json();
-            } catch(e) {
-                if(i===retries) throw e;
-                await new Promise(r=>setTimeout(r, 1000*(i+1)));
-            }
-        }
-    }
-
-    // 解析图标
-    function getStandardAbbreviation(name) {
-        if(!name) return 'SW';
-        const lower = name.toLowerCase();
-        const map = { 'photoshop':'PS','illustrator':'AI','premiere pro':'PR','after effects':'AE','lightroom':'LR','indesign':'ID','cinema 4d':'C4D','c4d':'C4D','autocad':'AC','cad':'CAD','3ds max':'3DS','maya':'MA','sketchup':'SU','rhino':'RH','blender':'BL' };
-        if(map[lower]) return map[lower];
-        for(let k in map) if(lower.includes(k)) return map[k];
-        if(/[\u4e00-\u9fa5]/.test(name)) return name[0];
-        const words = name.split(/[\s\-_]+/).filter(w=>w.length);
-        if(words.length>=2) return words.map(w=>w[0].toUpperCase()).slice(0,3).join('');
-        return name.slice(0,2).toUpperCase();
-    }
-    function getColorFromName(name) { let hash=0; for(let i=0;i<name.length;i++) hash=name.charCodeAt(i)+((hash<<5)-hash); return `hsl(${Math.abs(hash)%360},70%,55%)`; }
-    function renderIconHtml(icon, name) {
-        if(!icon) return `<div class="icon-fallback" style="background: ${getColorFromName(name)};">${getStandardAbbreviation(name)}</div>`;
-        if(icon.type === 'image') {
-            const imgUrl = icon.value;
-            return `<img src="${escapeHtml(imgUrl)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';"><div class="icon-fallback" style="background: ${getColorFromName(name)}; display:none;">${escapeHtml(getStandardAbbreviation(name))}</div>`;
-        }
-        if(icon.type === 'icon') return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
-        const abbr = icon.value || getStandardAbbreviation(name);
-        const color = getColorFromName(name);
-        return `<div class="icon-fallback" style="background: ${color};">${escapeHtml(abbr)}</div>`;
-    }
-    function getField(fields, possible, def=''){ for(let n of possible) if(fields[n]!==undefined) return fields[n]; return def; }
-    function parseIcon(iconField, name){
-        if(!iconField) return { type:'text', value: getStandardAbbreviation(name) };
-        if(Array.isArray(iconField)&&iconField[0]?.url) return { type:'image', value: iconField[0].url };
-        if(typeof iconField==='string'){
-            if(iconField.startsWith('http')||iconField.startsWith('data:image')) return { type:'image', value: iconField };
-            if(iconField.startsWith('fa-')||iconField.startsWith('fas ')) return { type:'icon', value: iconField };
-            return { type:'text', value: iconField };
-        }
-        return { type:'text', value: getStandardAbbreviation(name) };
-    }
-
-    async function fetchAirtableSoftwares() {
-        try{
-            const data=await airtableRequest('GET','softwares?maxRecords=100');
-            return data.records.map(rec=>{
-                const f=rec.fields;
-                const name=getField(f,['A name','name','Name'],'未命名');
-                const cat=getField(f,['A category','category','Category'],'other');
-                const ver=getField(f,['version','Version'],'');
-                const desc=getField(f,['description','Description'],'');
-                const iconParsed=parseIcon(getField(f,['icon','Icon'],null),name);
-                const url=getField(f,['url','URL'],'#');
-                const added=getField(f,['addedDate','AddedDate'],new Date().toISOString().split('T')[0]);
-                let downloads=Number(getField(f,['downloads','Downloads'],-1));
-                if(downloads===-1) downloads=Math.floor(Math.random()*4951)+50;
-                let osArr=['Windows','Mac']; const osField=getField(f,['os','OS'],null);
-                if(osField){ if(Array.isArray(osField)) osArr=osField; else if(typeof osField==='string') osArr=osField.split(',').map(s=>s.trim()); }
-                return { id:rec.id, name, category:cat, os:osArr, version:ver, description:desc, icon:iconParsed, url, noVerify:!!getField(f,['noVerify','NoVerify'],false), addedDate:added, downloads };
-            });
-        }catch(e){ console.warn(e); return []; }
-    }
-    function getOptimizedAdImageUrl(originalUrl) {
-        if(!originalUrl) return '';
-        if(originalUrl.includes('dl.airtable.com')||originalUrl.includes('api.airtable.com')) {
-            return `https://images.weserv.nl/?url=${encodeURIComponent(originalUrl)}&w=1200&h=500&fit=cover&we&q=80`;
-        }
-        return originalUrl;
-    }
-    async function fetchAirtableAds() {
-        try{
-            const data=await airtableRequest('GET','Ads?maxRecords=50');
-            return data.records.map(r=>{
-                const f=r.fields;
-                let img=f.Image||f.image||'';
-                if(Array.isArray(img)&&img[0]&&img[0].url) img=img[0].url;
-                return { image: img, link: f.Link||f.link||'#', title: f.Title||f.title||'', position: (f.Position||f.position||'sidebar').toLowerCase(), enabled: f.Enabled!==false };
-            }).filter(a=>a.enabled && a.image && a.link);
-        }catch(e){ console.warn(e); return []; }
-    }
-
-    // ---------- 用户系统 ----------
-    async function findUserByEmail(email) {
-        const data = await airtableRequest('GET', `Users?filterByFormula={Email}="${encodeURIComponent(email)}"`);
-        return data.records.length ? data.records[0] : null;
-    }
-    async function registerUser(email, password, username, role='user') {
-        const hash = CryptoJS.SHA256(password).toString();
-        await airtableRequest('POST', 'Users', { fields: { Email: email, Password: hash, Username: username, Role: role } });
-    }
-    async function loginUser(email, password) {
-        const rec = await findUserByEmail(email);
-        if(!rec) throw new Error('邮箱未注册');
-        if(rec.fields.Password !== CryptoJS.SHA256(password).toString()) throw new Error('密码错误');
-        return { id: rec.id, email: rec.fields.Email, username: rec.fields.Username||email.split('@')[0], role: rec.fields.Role||'user' };
-    }
-    async function updatePassword(email, newPass) {
-        const rec = await findUserByEmail(email);
-        if(!rec) throw new Error('邮箱不存在');
-        await airtableRequest('PATCH', `Users/${rec.id}`, { fields: { Password: CryptoJS.SHA256(newPass).toString() } });
-    }
-
-    // 更新用户UI（关键：使用事件委托或直接绑定，确保按钮可点）
-    function updateUserUI(){
-        const area = document.getElementById('userArea');
-        if(!area) return;
-        if(currentUser){
-            area.innerHTML = `<div style="position:relative;"><button class="user-name-btn" id="userMenuBtn"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.username)} <i class="fas fa-chevron-down"></i></button><div class="dropdown-content" id="userDropdown"><button id="profileBtn">个人中心</button>${currentUser.role==='admin'?'<button id="adminBtn">管理后台</button>':''}<button id="logoutBtn">退出登录</button></div></div>`;
-            const userMenuBtn = document.getElementById('userMenuBtn');
-            const dropdown = document.getElementById('userDropdown');
-            if(userMenuBtn){
-                userMenuBtn.addEventListener('click', (e)=>{
-                    e.stopPropagation();
-                    if(dropdown) dropdown.classList.toggle('show');
-                });
-            }
-            const logoutBtn = document.getElementById('logoutBtn');
-            if(logoutBtn){
-                logoutBtn.addEventListener('click', ()=>{
-                    currentUser = null;
-                    localStorage.removeItem('lezhe_user');
-                    updateUserUI();
-                    showToast('已退出');
-                });
-            }
-            document.getElementById('profileBtn')?.addEventListener('click', ()=>showToast('个人中心开发中'));
-            if(currentUser.role==='admin'){
-                document.getElementById('adminBtn')?.addEventListener('click', ()=>showToast('管理后台开发中'));
-            }
-            // 点击其他地方关闭下拉菜单
-            window.addEventListener('click', function closeDrop(e){
-                if(dropdown && !dropdown.contains(e.target) && e.target !== userMenuBtn){
-                    dropdown.classList.remove('show');
-                    window.removeEventListener('click', closeDrop);
-                }
-            });
-        } else {
-            area.innerHTML = '<button class="auth-btn" id="showAuthBtn"><i class="fas fa-user-lock"></i> 登录 / 注册</button>';
-            // 重要：直接绑定事件（不使用委托，确保生效）
-            const showAuthBtn = document.getElementById('showAuthBtn');
-            if(showAuthBtn){
-                showAuthBtn.addEventListener('click', (e)=>{
-                    e.preventDefault();
-                    openAuthModal('login');
-                });
-            }
-        }
-    }
-
-    // 打开模态框
-    function openAuthModal(tab='login'){
-        const modal = document.getElementById('authModal');
-        if(!modal) return;
-        const loginForm = document.getElementById('loginForm');
-        const regForm = document.getElementById('registerForm');
-        const forgotForm = document.getElementById('forgotForm');
-        if(loginForm) loginForm.style.display = 'none';
-        if(regForm) regForm.style.display = 'none';
-        if(forgotForm) forgotForm.style.display = 'none';
-        if(tab === 'login' && loginForm) loginForm.style.display = 'block';
-        else if(tab === 'register' && regForm) regForm.style.display = 'block';
-        else if(tab === 'forgot' && forgotForm) forgotForm.style.display = 'block';
-        const tabs = document.querySelectorAll('.auth-tab');
-        tabs.forEach(t=>{
-            if(t.dataset.tab === tab) t.classList.add('active');
-            else t.classList.remove('active');
-        });
-        modal.classList.add('active');
-        if(tab === 'login') refreshCaptcha('loginCaptchaQuestion', 'loginCaptchaInput');
-        else if(tab === 'register') refreshCaptcha('regCaptchaQuestion', 'regCaptchaInput');
-        else if(tab === 'forgot') refreshCaptcha('forgotCaptchaQuestion', 'forgotCaptchaInput');
-    }
-
-    function bindModalEvents(){
-        document.getElementById('refreshLoginCaptcha')?.addEventListener('click',()=>refreshCaptcha('loginCaptchaQuestion','loginCaptchaInput'));
-        document.getElementById('refreshRegCaptcha')?.addEventListener('click',()=>refreshCaptcha('regCaptchaQuestion','regCaptchaInput'));
-        document.getElementById('refreshForgotCaptcha')?.addEventListener('click',()=>refreshCaptcha('forgotCaptchaQuestion','forgotCaptchaInput'));
-        document.getElementById('registerBtn')?.addEventListener('click',async function(){
-            const username = document.getElementById('regUsername').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const pwd = document.getElementById('regPassword').value;
-            const conf = document.getElementById('regConfirm').value;
-            const cap = document.getElementById('regCaptchaInput').value.trim();
-            if(!username) return showToast('请输入用户名','error');
-            if(!email) return showToast('请输入邮箱','error');
-            if(pwd !== conf) return showToast('两次密码不一致','error');
-            if(pwd.length < 6) return showToast('密码至少6位','error');
-            if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
-            try{
-                const exists = await findUserByEmail(email);
-                if(exists) return showToast('该邮箱已被注册','error');
-                await registerUser(email,pwd,username);
-                showToast('注册成功，请登录');
-                openAuthModal('login');
-            }catch(e){ showToast('注册失败: '+e.message,'error'); }
-        });
-        document.getElementById('loginBtn')?.addEventListener('click',async function(){
-            const email = document.getElementById('loginEmail').value.trim();
-            const pwd = document.getElementById('loginPassword').value;
-            const cap = document.getElementById('loginCaptchaInput').value.trim();
-            if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
-            try{
-                currentUser = await loginUser(email,pwd);
-                localStorage.setItem('lezhe_user',JSON.stringify(currentUser));
-                updateUserUI();
-                document.getElementById('authModal').classList.remove('active');
-                showToast('登录成功');
-            }catch(e){ showToast(e.message,'error'); }
-        });
-        document.getElementById('resetPasswordBtn')?.addEventListener('click',async function(){
-            const email = document.getElementById('forgotEmail').value.trim();
-            const newPwd = document.getElementById('newPassword').value;
-            const conf = document.getElementById('confirmNewPassword').value;
-            const cap = document.getElementById('forgotCaptchaInput').value.trim();
-            if(!email) return showToast('请输入邮箱','error');
-            if(newPwd !== conf) return showToast('两次密码不一致','error');
-            if(newPwd.length < 6) return showToast('密码至少6位','error');
-            if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
-            try{
-                await updatePassword(email,newPwd);
-                showToast('密码已重置，请登录');
-                openAuthModal('login');
-            }catch(e){ showToast('重置失败: '+e.message,'error'); }
-        });
-        document.getElementById('showForgotBtn')?.addEventListener('click',()=>openAuthModal('forgot'));
-        document.getElementById('backToLoginFromForgot')?.addEventListener('click',()=>openAuthModal('login'));
-        document.getElementById('closeAuthModal')?.addEventListener('click',()=>document.getElementById('authModal').classList.remove('active'));
-    }
-
-    // ---------- 广告轮播 ----------
-    let bannerInterval=null, sidebarInterval=null;
-    let curBanner=0, curSidebar=0;
-    const bannerSlides = document.getElementById('categoryBannerSlides');
-    const bannerDots = document.getElementById('categoryBannerDots');
-    const sidebarSlides = document.getElementById('sidebarCarouselSlides');
-    const sidebarDots = document.getElementById('sidebarCarouselDots');
-    function renderCarousel(containerSlides, containerDots, ads, isBanner=true){
-        if(!containerSlides || !containerDots) return;
-        const slideClass = isBanner ? 'banner-carousel-slide' : 'sidebar-carousel-slide';
-        const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
-        containerSlides.innerHTML = ads.map((ad,i)=>`
-            <div class="${slideClass}"><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" onload="this.classList.add('loaded');" onerror="this.onerror=null; this.src='https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb';"></a></div>
-        `).join('');
-        if(ads.length <= 1){
-            containerDots.style.display = 'none';
-            return;
-        }
-        containerDots.style.display = 'flex';
-        containerDots.innerHTML = ads.map((_,i)=>`<div class="${dotClass} ${i===0?'active':''}" data-index="${i}"></div>`).join('');
-        const update = (idx)=>{
-            if(isBanner) curBanner = idx;
-            else curSidebar = idx;
-            containerSlides.style.transform = `translateX(-${idx*100}%)`;
-            const dots = containerDots.querySelectorAll(`.${dotClass}`);
-            dots.forEach((d,ii)=>d.classList.toggle('active',ii===idx));
+    (function(){
+        // ---------- 配置 ----------
+        const CONFIG = {
+            AIRTABLE_TOKEN: 'pat9BdIPuJKKqjBps.608e5055b9a5171435f172928c955a1bf67c8f10e6b42c34cc623f49cf1d5e43',
+            AIRTABLE_BASE_ID: 'appM4Ty76lOlslpU9'
         };
-        containerDots.querySelectorAll(`.${dotClass}`).forEach(dot=>{
-            dot.addEventListener('click',(e)=>{
-                const idx = parseInt(e.target.dataset.index);
-                update(idx);
-                resetCarousel(isBanner);
-            });
-        });
-        return update;
-    }
-    function startCarousel(isBanner){
-        const ref = isBanner ? bannerInterval : sidebarInterval;
-        if(ref) clearInterval(ref);
-        const ads = isBanner ? bannerAds : sidebarAds;
-        if(ads.length <= 1) return;
-        const interval = setInterval(()=>{
-            const cur = isBanner ? curBanner : curSidebar;
-            const nxt = (cur+1) % ads.length;
-            if(isBanner) curBanner = nxt;
-            else curSidebar = nxt;
-            const slides = isBanner ? bannerSlides : sidebarSlides;
-            slides.style.transform = `translateX(-${nxt*100}%)`;
-            const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
-            const dots = isBanner ? bannerDots : sidebarDots;
-            const dts = dots.querySelectorAll(`.${dotClass}`);
-            dts.forEach((d,i)=>d.classList.toggle('active',i===nxt));
-        },4000);
-        if(isBanner) bannerInterval = interval;
-        else sidebarInterval = interval;
-    }
-    function resetCarousel(isBanner){
-        if(isBanner && bannerInterval) clearInterval(bannerInterval);
-        else if(!isBanner && sidebarInterval) clearInterval(sidebarInterval);
-        startCarousel(isBanner);
-    }
 
-    // ---------- 软件网格及辅助功能 ----------
-    const CATEGORY_DISPLAY = {'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他'};
-    function renderCategories(){
-        const catEl = document.getElementById('categoryTabs');
-        if(!catEl) return;
-        const catMap = new Map();
-        softwares.forEach(s=>catMap.set(CATEGORY_DISPLAY[s.category]||s.category, s.category));
-        let html = `<button class="cat-chip ${currentCategory==='all'?'active':''}" data-cat="all">全部</button>`;
-        Array.from(catMap.entries()).sort().forEach(([d,k])=>{
-            html += `<button class="cat-chip ${currentCategory===k?'active':''}" data-cat="${k}">${d}</button>`;
-        });
-        catEl.innerHTML = html;
-        catEl.querySelectorAll('.cat-chip').forEach(btn=>{
-            btn.addEventListener('click',()=>{
-                currentCategory = btn.dataset.cat;
-                showAll = false;
-                renderCategories();
-                renderGrid();
-            });
-        });
-    }
-    function renderGrid(){
-        const filtered = softwares.filter(s=>(currentCategory==='all'||s.category===currentCategory) && s.name.toLowerCase().includes(searchKeyword.toLowerCase()));
-        const items = showAll ? filtered : filtered.slice(0,DEFAULT_LIMIT);
-        const container = document.getElementById('softwareGridContainer');
-        if(!container) return;
-        if(!items.length){
-            container.innerHTML = '<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件</div>';
-            document.getElementById('loadMoreContainer').style.display = 'none';
-            return;
+        // ---------- 全局变量 ----------
+        let softwares = [];
+        let bannerAds = [];
+        let sidebarAds = [];
+        let currentCategory = "all";
+        let searchKeyword = "";
+        let showAll = false;
+        const DEFAULT_LIMIT = 12;
+        let currentUser = null;
+        let currentCaptcha = { question: '', answer: 0 };
+
+        // ---------- 辅助函数 ----------
+        function showToast(msg, type='success') {
+            const t = document.createElement('div'); t.className = `toast-message ${type}`;
+            t.innerHTML = `<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-triangle'}"></i> ${msg}`;
+            document.body.appendChild(t); setTimeout(()=>t.remove(), 3000);
         }
-        const liked = JSON.parse(localStorage.getItem('likedSoftwares')) || [];
-        container.innerHTML = items.map(sw=>{
-            const osTags = sw.os.map(o=>`<span class="os-badge">${o==='Windows'?'<i class="fab fa-windows"></i>':'<i class="fab fa-apple"></i>'} ${o}</span>`).join('');
-            const isNew = (new Date() - new Date(sw.addedDate||'2024-01-01')) < 7*86400000;
-            const isHot = sw.downloads > 2000;
-            const badge = isNew ? '<span class="new-badge">✨ 新</span>' : (isHot ? '<span class="hot-badge">🔥 热门</span>' : '');
-            const isLiked = liked.includes(sw.name);
-            const iconHtml = renderIconHtml(sw.icon, sw.name);
-            return `<div class="software-card" data-name="${escapeHtml(sw.name)}">
-                ${badge}
-                <div class="card-header"><div class="card-icon">${iconHtml}</div><div class="software-name">${escapeHtml(sw.name)}</div></div>
-                <div class="version">版本 ${escapeHtml(sw.version)}</div>
-                <div class="description">${escapeHtml(sw.description)}</div>
-                <div class="os-tags">${osTags}</div>
-                <div class="card-footer">
-                    <div class="added-date"><i class="far fa-calendar-alt"></i> ${escapeHtml(sw.addedDate)}</div>
-                    <div><span class="download-count"><i class="fas fa-download"></i> ${sw.downloads||0}</span><button class="like-btn" data-name="${escapeHtml(sw.name)}"><i class="${isLiked?'fas':'far'} fa-heart"></i></button></div>
-                </div>
-            </div>`;
-        }).join('');
-        const loadDiv = document.getElementById('loadMoreContainer');
-        if(loadDiv) loadDiv.style.display = (!showAll && filtered.length>DEFAULT_LIMIT) ? 'block' : 'none';
-        container.querySelectorAll('.software-card').forEach(card=>{
-            card.addEventListener('click',(e)=>{
-                if(e.target.closest('.like-btn')) return;
-                const sw = softwares.find(s=>s.name===card.dataset.name);
-                if(sw){
-                    if(!currentUser){
-                        openAuthModal('login');
-                        showToast('请先登录','error');
-                        return;
-                    }
-                    downloadSoftware(sw);
+        function escapeHtml(s) { return String(s).replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+
+        function generateCaptcha(){
+            let a = Math.floor(Math.random()*10)+1, b = Math.floor(Math.random()*10)+1;
+            let op = Math.random()>0.5 ? '+' : '-';
+            let ans = op==='+' ? a+b : a-b;
+            if(ans<0) return generateCaptcha();
+            return { question: `${a} ${op} ${b} = ?`, answer: ans };
+        }
+        function refreshCaptcha(qId, iId){
+            let c = generateCaptcha();
+            currentCaptcha = c;
+            let q = document.getElementById(qId);
+            if(q) q.innerText = c.question;
+            let inp = document.getElementById(iId);
+            if(inp) inp.value = '';
+        }
+
+        const hamburger = document.getElementById('hamburgerBtn');
+        const navLinks = document.getElementById('navLinks');
+        if(hamburger && navLinks) {
+            hamburger.addEventListener('click', ()=>{ hamburger.classList.toggle('active'); navLinks.classList.toggle('show'); });
+            navLinks.querySelectorAll('a').forEach(l=> l.addEventListener('click', ()=>{ hamburger.classList.remove('active'); navLinks.classList.remove('show'); }));
+        }
+
+        const themeClasses = ['bg-dawn','bg-morning','bg-afternoon','bg-evening','bg-night',''];
+        const themeIcons = ['fa-sun','fa-sun','fa-cloud-sun','fa-cloud-sun','fa-moon','fa-sun'];
+        let currentTheme = parseInt(localStorage.getItem('manualTheme')) || 2;
+        function applyTheme(i) { document.body.className = themeClasses[i]; const icon = document.querySelector('#themeToggleBtn i'); if(icon) icon.className = `fas ${themeIcons[i]}`; localStorage.setItem('manualTheme', i); }
+        applyTheme(currentTheme);
+        const themeBtn = document.getElementById('themeToggleBtn');
+        if(themeBtn) themeBtn.addEventListener('click', ()=>{ currentTheme = (currentTheme+1)%themeClasses.length; applyTheme(currentTheme); });
+
+        let currentDate = new Date();
+        function renderCalendar() {
+            const y=currentDate.getFullYear(), m=currentDate.getMonth();
+            const firstDay=new Date(y,m,1).getDay(), days=new Date(y,m+1,0).getDate();
+            const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+            const monthYearEl = document.getElementById('calendarMonthYear');
+            const daysEl = document.getElementById('calendarDays');
+            if(monthYearEl) monthYearEl.innerText=`${y}年 ${monthNames[m]}`;
+            if(!daysEl) return;
+            let html='<div class="calendar-day-name">一</div><div class="calendar-day-name">二</div><div class="calendar-day-name">三</div><div class="calendar-day-name">四</div><div class="calendar-day-name">五</div><div class="calendar-day-name">六</div><div class="calendar-day-name">日</div>';
+            let day=1;
+            for(let i=0;i<6;i++) for(let j=0;j<7;j++){
+                if(i===0 && j<(firstDay===0?6:firstDay-1)) html+='<div class="calendar-day"></div>';
+                else if(day>days) html+='<div class="calendar-day"></div>';
+                else{ const isToday=day===new Date().getDate()&&m===new Date().getMonth()&&y===new Date().getFullYear(); html+=`<div class="calendar-day ${isToday?'today':''}">${day}</div>`; day++; }
+            }
+            daysEl.innerHTML=html;
+        }
+        const prevMonth = document.getElementById('prevMonth');
+        const nextMonth = document.getElementById('nextMonth');
+        if(prevMonth) prevMonth.addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()-1); renderCalendar(); });
+        if(nextMonth) nextMonth.addEventListener('click', ()=>{ currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
+        renderCalendar();
+
+        async function fetchWithTimeout(url, options, timeout=10000) {
+            const controller = new AbortController();
+            const id = setTimeout(()=>controller.abort(), timeout);
+            try { const resp = await fetch(url, {...options, signal: controller.signal}); clearTimeout(id); return resp; }
+            catch(e){ clearTimeout(id); throw e; }
+        }
+        async function airtableRequest(method, path, body=null, retries=2) {
+            const url = `https://api.airtable.com/v0/${CONFIG.AIRTABLE_BASE_ID}/${path}`;
+            const headers = { 'Authorization': `Bearer ${CONFIG.AIRTABLE_TOKEN}`, 'Content-Type': 'application/json' };
+            const opts = { method, headers }; if(body) opts.body = JSON.stringify(body);
+            for(let i=0;i<=retries;i++) {
+                try {
+                    const resp = await fetchWithTimeout(url, opts, 10000);
+                    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    return await resp.json();
+                } catch(e) {
+                    if(i===retries) throw e;
+                    await new Promise(r=>setTimeout(r, 1000*(i+1)));
                 }
-            });
-        });
-        container.querySelectorAll('.like-btn').forEach(btn=>{
-            btn.addEventListener('click',(e)=>{
-                e.stopPropagation();
-                let likedArr = JSON.parse(localStorage.getItem('likedSoftwares')) || [];
-                if(likedArr.includes(btn.dataset.name)) likedArr = likedArr.filter(n=>n!==btn.dataset.name);
-                else likedArr.push(btn.dataset.name);
-                localStorage.setItem('likedSoftwares', JSON.stringify(likedArr));
-                renderGrid();
-            });
-        });
-    }
-    function downloadSoftware(sw){
-        addToHistory(sw);
-        window.open(sw.url, '_blank');
-        if(sw.id && !sw.id.startsWith('b')) incrementDownloadCount(sw.id);
-    }
-    function addToHistory(sw){
-        let h = JSON.parse(localStorage.getItem('browseHistory')) || [];
-        h = h.filter(i=>i.name!==sw.name);
-        h.unshift({name:sw.name, icon:sw.icon, category:sw.category});
-        if(h.length>10) h.pop();
-        localStorage.setItem('browseHistory', JSON.stringify(h));
-        renderHistoryList();
-    }
-    function renderHistoryList(){
-        const history = JSON.parse(localStorage.getItem('browseHistory')) || [];
-        const container = document.getElementById('historyList');
-        if(!container) return;
-        if(!history.length){
-            container.innerHTML = '<div style="color:#94a3b8; padding:8px 0;">暂无浏览记录</div>';
-            return;
+            }
         }
-        container.innerHTML = history.map(h=>`<div class="history-item" data-name="${escapeHtml(h.name)}"><i class="fas fa-clock"></i> ${escapeHtml(h.name)}</div>`).join('');
-        container.querySelectorAll('.history-item').forEach(item=>{
-            item.addEventListener('click',()=>{
-                const sw = softwares.find(s=>s.name===item.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
-    }
-    document.getElementById('clearHistoryBtn')?.addEventListener('click',()=>{
-        localStorage.removeItem('browseHistory');
-        renderHistoryList();
-        showToast('浏览历史已清空');
-    });
-    async function incrementDownloadCount(id){
-        if(!id || id.startsWith('b')) return;
-        try{
-            const rec = await airtableRequest('GET', `softwares/${id}`);
-            await airtableRequest('PATCH', `softwares/${id}`, { fields: { downloads: (rec.fields.downloads||0)+1 } });
-            const sw = softwares.find(s=>s.id===id);
-            if(sw) sw.downloads = (sw.downloads||0)+1;
-            renderRankList(); renderHotSection();
-        }catch(e){ console.warn(e); }
-    }
 
-    // 热门推荐滚动
-    const hotScroll = document.getElementById('hotScroll');
-    let hotInterval = null;
-    function startHotAutoScroll(){
-        if(!hotScroll) return;
-        if(hotInterval) clearInterval(hotInterval);
-        hotInterval = setInterval(()=>{
-            const max = hotScroll.scrollWidth - hotScroll.clientWidth;
-            if(hotScroll.scrollLeft >= max-10) hotScroll.scrollTo({ left: 0, behavior: 'smooth' });
-            else hotScroll.scrollBy({ left: 220, behavior: 'smooth' });
-        },2000);
-    }
-    function stopHotAutoScroll(){ if(hotInterval){ clearInterval(hotInterval); hotInterval=null; } }
-    document.getElementById('hotArrowLeft')?.addEventListener('click',()=>{ hotScroll.scrollBy({ left: -220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
-    document.getElementById('hotArrowRight')?.addEventListener('click',()=>{ hotScroll.scrollBy({ left: 220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
-    function renderHotSection(){
-        if(!hotScroll || !softwares.length) return;
-        const sorted = [...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
-        const top6 = sorted.slice(0,6);
-        hotScroll.innerHTML = top6.map(sw=>`<div class="hot-card" data-name="${escapeHtml(sw.name)}">
-            <div class="hot-icon">${renderIconHtml(sw.icon, sw.name)}</div>
-            <div class="hot-name">${escapeHtml(sw.name)}</div>
-            <div class="hot-meta"><span>${sw.os.join(' · ')}</span><span class="hot-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</span></div>
-        </div>`).join('');
-        hotScroll.querySelectorAll('.hot-card').forEach(card=>{
-            card.addEventListener('click',()=>{
-                const sw = softwares.find(s=>s.name===card.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
-        if(hotScroll){
-            hotScroll.removeEventListener('mouseenter',stopHotAutoScroll);
-            hotScroll.removeEventListener('mouseleave',startHotAutoScroll);
-            hotScroll.addEventListener('mouseenter',stopHotAutoScroll);
-            hotScroll.addEventListener('mouseleave',startHotAutoScroll);
+        function getStandardAbbreviation(name) {
+            if(!name) return 'SW';
+            const lower = name.toLowerCase();
+            const map = { 'photoshop':'PS','illustrator':'AI','premiere pro':'PR','after effects':'AE','lightroom':'LR','indesign':'ID','cinema 4d':'C4D','c4d':'C4D','autocad':'AC','cad':'CAD','3ds max':'3DS','maya':'MA','sketchup':'SU','rhino':'RH','blender':'BL' };
+            if(map[lower]) return map[lower];
+            for(let k in map) if(lower.includes(k)) return map[k];
+            if(/[\u4e00-\u9fa5]/.test(name)) return name[0];
+            const words = name.split(/[\s\-_]+/).filter(w=>w.length);
+            if(words.length>=2) return words.map(w=>w[0].toUpperCase()).slice(0,3).join('');
+            return name.slice(0,2).toUpperCase();
         }
-        startHotAutoScroll();
-    }
-    function renderRankList(){
-        const rankEl = document.getElementById('rankList');
-        if(!rankEl) return;
-        const sorted = [...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
-        const top5 = sorted.slice(0,5);
-        rankEl.innerHTML = top5.map((sw,i)=>`<div class="rank-item" data-name="${escapeHtml(sw.name)}">
-            <div class="rank-index ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div>
-            <div class="rank-info"><div class="rank-name">${escapeHtml(sw.name)}</div><div class="rank-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</div></div>
-        </div>`).join('');
-        rankEl.querySelectorAll('.rank-item').forEach(item=>{
-            item.addEventListener('click',()=>{
-                const sw = softwares.find(s=>s.name===item.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
-    }
-    function renderRandomArticles(){
-        const randomEl = document.getElementById('randomArticles');
-        if(!randomEl || !softwares.length) return;
-        const shuffled = [...softwares].sort(()=>0.5-Math.random()).slice(0,5);
-        randomEl.innerHTML = shuffled.map(sw=>`<div class="random-article-item" data-name="${escapeHtml(sw.name)}">
-            <div class="random-article-icon">${renderIconHtml(sw.icon, sw.name)}</div>
-            <div class="random-article-info"><div class="random-article-name">${escapeHtml(sw.name)}</div><div class="random-article-os">${sw.os.join(' · ')}</div></div>
-        </div>`).join('');
-        randomEl.querySelectorAll('.random-article-item').forEach(item=>{
-            item.addEventListener('click',()=>{
-                const sw = softwares.find(s=>s.name===item.dataset.name);
-                if(sw) downloadSoftware(sw);
-            });
-        });
-    }
+        function getColorFromName(name) { let hash=0; for(let i=0;i<name.length;i++) hash=name.charCodeAt(i)+((hash<<5)-hash); return `hsl(${Math.abs(hash)%360},70%,55%)`; }
+        function renderIconHtml(icon, name) {
+            if(!icon) return `<div class="icon-fallback" style="background: ${getColorFromName(name)};">${getStandardAbbreviation(name)}</div>`;
+            if(icon.type === 'image') {
+                const imgUrl = icon.value;
+                return `<img src="${escapeHtml(imgUrl)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';"><div class="icon-fallback" style="background: ${getColorFromName(name)}; display:none;">${escapeHtml(getStandardAbbreviation(name))}</div>`;
+            }
+            if(icon.type === 'icon') return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
+            const abbr = icon.value || getStandardAbbreviation(name);
+            const color = getColorFromName(name);
+            return `<div class="icon-fallback" style="background: ${color};">${escapeHtml(abbr)}</div>`;
+        }
+        function getField(fields, possible, def=''){ for(let n of possible) if(fields[n]!==undefined) return fields[n]; return def; }
+        function parseIcon(iconField, name){
+            if(!iconField) return { type:'text', value: getStandardAbbreviation(name) };
+            if(Array.isArray(iconField)&&iconField[0]?.url) return { type:'image', value: iconField[0].url };
+            if(typeof iconField==='string'){
+                if(iconField.startsWith('http')||iconField.startsWith('data:image')) return { type:'image', value: iconField };
+                if(iconField.startsWith('fa-')||iconField.startsWith('fas ')) return { type:'icon', value: iconField };
+                return { type:'text', value: iconField };
+            }
+            return { type:'text', value: getStandardAbbreviation(name) };
+        }
 
-    // 留言
-    async function fetchMessages(){ try{ const data=await airtableRequest('GET','Messages?maxRecords=50'); return data.records; } catch{ return []; } }
-    async function submitMessage(name,msg){ await airtableRequest('POST','Messages',{fields:{Name:name||'热心网友',Message:msg}}); }
-    async function renderFeedbackList(){
-        try{
-            const msgs=await fetchMessages();
-            const cont=document.getElementById('feedbackListContainer');
-            if(!cont) return;
-            if(!msgs.length){ cont.innerHTML='<div style="text-align:center; padding:20px;">暂无留言，快来抢沙发~</div>'; return; }
-            cont.innerHTML=msgs.slice().reverse().slice(0,20).map(m=>`<div style="padding:16px 0; border-bottom:1px solid rgba(0,0,0,0.05);"><strong>${escapeHtml(m.fields.Name||'匿名')}</strong><span style="font-size:12px; color:#94a3b8; margin-left:12px;">${m.fields.CreatedAt?new Date(m.fields.CreatedAt).toLocaleString('zh-CN'):''}</span><div style="margin-top:6px;">${escapeHtml(m.fields.Message||'')}</div></div>`).join('');
-        }catch(e){ console.warn(e); }
-    }
-
-    // 搜索等
-    document.getElementById('searchInput')?.addEventListener('input',e=>{ searchKeyword=e.target.value; renderGrid(); });
-    document.getElementById('searchBtn')?.addEventListener('click',()=>renderGrid());
-    document.getElementById('closeDetailModal')?.addEventListener('click',()=>document.getElementById('detailModal').classList.remove('active'));
-    document.getElementById('detailModal')?.addEventListener('click',e=>{ if(e.target===document.getElementById('detailModal')) e.target.classList.remove('active'); });
-    document.getElementById('submitFeedbackBtn')?.addEventListener('click',async function(){
-        const name=document.getElementById('feedbackName')?.value.trim()||'', msg=document.getElementById('feedbackMessage')?.value.trim()||'';
-        if(!msg) return showToast('请填写留言内容','error');
-        this.disabled=true; this.innerHTML='<i class="fas fa-spinner fa-pulse"></i> 提交中...';
-        try{
-            await submitMessage(name,msg);
-            showToast('留言提交成功！');
-            if(document.getElementById('feedbackName')) document.getElementById('feedbackName').value='';
-            if(document.getElementById('feedbackMessage')) document.getElementById('feedbackMessage').value='';
-            await renderFeedbackList();
-        }catch(e){ showToast('提交失败: '+e.message,'error'); }
-        finally{ this.disabled=false; this.innerHTML='<i class="fas fa-paper-plane"></i> 提交留言'; }
-    });
-    document.getElementById('loadMoreBtn')?.addEventListener('click',()=>{ showAll=true; renderGrid(); });
-    const backTop=document.getElementById('backToTop'); window.addEventListener('scroll',()=>backTop?.classList.toggle('show',window.scrollY>300)); if(backTop) backTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
-    function addBaiduPush(){ const bp=document.createElement('script'); bp.async=true; bp.src='https://zz.bdstatic.com/linksubmit/push.js'; document.head.appendChild(bp); }
-
-    // ---------- 初始化 ----------
-    function showSkeleton(){
-        const grid = document.getElementById('softwareGridContainer');
-        if(grid) grid.innerHTML = `<div class="loading-container"><div class="loading-spinner-large"></div><div class="loading-text">正在加载软件库...</div></div>`;
-        if(bannerSlides) bannerSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
-        if(sidebarSlides) sidebarSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
-    }
-    async function initData(){
-        showSkeleton();
-        // 优先从缓存读取
-        const cachedSoft = localStorage.getItem('cachedSoftwares');
-        const cachedBanner = localStorage.getItem('cachedBannerAds');
-        const cachedSidebar = localStorage.getItem('cachedSidebarAds');
-        if(cachedSoft && cachedBanner && cachedSidebar){
+        async function fetchAirtableSoftwares() {
             try{
-                softwares = JSON.parse(cachedSoft);
-                bannerAds = JSON.parse(cachedBanner);
-                sidebarAds = JSON.parse(cachedSidebar);
+                const data=await airtableRequest('GET','softwares?maxRecords=100');
+                return data.records.map(rec=>{
+                    const f=rec.fields;
+                    const name=getField(f,['A name','name','Name'],'未命名');
+                    const cat=getField(f,['A category','category','Category'],'other');
+                    const ver=getField(f,['version','Version'],'');
+                    const desc=getField(f,['description','Description'],'');
+                    const iconParsed=parseIcon(getField(f,['icon','Icon'],null),name);
+                    const url=getField(f,['url','URL'],'#');
+                    const added=getField(f,['addedDate','AddedDate'],new Date().toISOString().split('T')[0]);
+                    let downloads=Number(getField(f,['downloads','Downloads'],-1));
+                    if(downloads===-1) downloads=Math.floor(Math.random()*4951)+50;
+                    let osArr=['Windows','Mac']; const osField=getField(f,['os','OS'],null);
+                    if(osField){ if(Array.isArray(osField)) osArr=osField; else if(typeof osField==='string') osArr=osField.split(',').map(s=>s.trim()); }
+                    return { id:rec.id, name, category:cat, os:osArr, version:ver, description:desc, icon:iconParsed, url, noVerify:!!getField(f,['noVerify','NoVerify'],false), addedDate:added, downloads };
+                });
+            }catch(e){ console.warn(e); return []; }
+        }
+        function getOptimizedAdImageUrl(originalUrl) {
+            if(!originalUrl) return '';
+            if(originalUrl.includes('dl.airtable.com')||originalUrl.includes('api.airtable.com')) {
+                return `https://images.weserv.nl/?url=${encodeURIComponent(originalUrl)}&w=1200&h=500&fit=cover&we&q=80`;
+            }
+            return originalUrl;
+        }
+        async function fetchAirtableAds() {
+            try{
+                const data=await airtableRequest('GET','Ads?maxRecords=50');
+                return data.records.map(r=>{
+                    const f=r.fields;
+                    let img=f.Image||f.image||'';
+                    if(Array.isArray(img)&&img[0]&&img[0].url) img=img[0].url;
+                    return { image: img, link: f.Link||f.link||'#', title: f.Title||f.title||'', position: (f.Position||f.position||'sidebar').toLowerCase(), enabled: f.Enabled!==false };
+                }).filter(a=>a.enabled && a.image && a.link);
+            }catch(e){ console.warn(e); return []; }
+        }
+
+        async function findUserByEmail(email) {
+            const data = await airtableRequest('GET', `Users?filterByFormula={Email}="${encodeURIComponent(email)}"`);
+            return data.records.length ? data.records[0] : null;
+        }
+        async function registerUser(email, password, username, role='user') {
+            const hash = CryptoJS.SHA256(password).toString();
+            await airtableRequest('POST', 'Users', { fields: { Email: email, Password: hash, Username: username, Role: role } });
+        }
+        async function loginUser(email, password) {
+            const rec = await findUserByEmail(email);
+            if(!rec) throw new Error('邮箱未注册');
+            if(rec.fields.Password !== CryptoJS.SHA256(password).toString()) throw new Error('密码错误');
+            return { id: rec.id, email: rec.fields.Email, username: rec.fields.Username||email.split('@')[0], role: rec.fields.Role||'user' };
+        }
+        async function updatePassword(email, newPass) {
+            const rec = await findUserByEmail(email);
+            if(!rec) throw new Error('邮箱不存在');
+            await airtableRequest('PATCH', `Users/${rec.id}`, { fields: { Password: CryptoJS.SHA256(newPass).toString() } });
+        }
+
+        function updateUserUI(){
+            const area = document.getElementById('userArea');
+            if(!area) return;
+            if(currentUser){
+                area.innerHTML = `<div style="position:relative;"><button class="user-name-btn" id="userMenuBtn"><i class="fas fa-user-circle"></i> ${escapeHtml(currentUser.username)} <i class="fas fa-chevron-down"></i></button><div class="dropdown-content" id="userDropdown"><button id="profileBtn">个人中心</button>${currentUser.role==='admin'?'<button id="adminBtn">管理后台</button>':''}<button id="logoutBtn">退出登录</button></div></div>`;
+                const userMenuBtn = document.getElementById('userMenuBtn');
+                const dropdown = document.getElementById('userDropdown');
+                if(userMenuBtn){
+                    userMenuBtn.addEventListener('click', (e)=>{
+                        e.stopPropagation();
+                        if(dropdown) dropdown.classList.toggle('show');
+                    });
+                }
+                const logoutBtn = document.getElementById('logoutBtn');
+                if(logoutBtn){
+                    logoutBtn.addEventListener('click', ()=>{
+                        currentUser = null;
+                        localStorage.removeItem('lezhe_user');
+                        updateUserUI();
+                        showToast('已退出');
+                    });
+                }
+                document.getElementById('profileBtn')?.addEventListener('click', ()=>showToast('个人中心开发中'));
+                if(currentUser.role==='admin'){
+                    document.getElementById('adminBtn')?.addEventListener('click', ()=>showToast('管理后台开发中'));
+                }
+                window.addEventListener('click', function closeDrop(e){
+                    if(dropdown && !dropdown.contains(e.target) && e.target !== userMenuBtn){
+                        dropdown.classList.remove('show');
+                        window.removeEventListener('click', closeDrop);
+                    }
+                });
+            } else {
+                area.innerHTML = '<button class="auth-btn" id="showAuthBtn"><i class="fas fa-user-lock"></i> 登录 / 注册</button>';
+                const showAuthBtn = document.getElementById('showAuthBtn');
+                if(showAuthBtn){
+                    showAuthBtn.addEventListener('click', (e)=>{
+                        e.preventDefault();
+                        openAuthModal('login');
+                    });
+                }
+            }
+        }
+
+        function openAuthModal(tab='login'){
+            const modal = document.getElementById('authModal');
+            if(!modal) return;
+            const loginForm = document.getElementById('loginForm');
+            const regForm = document.getElementById('registerForm');
+            const forgotForm = document.getElementById('forgotForm');
+            if(loginForm) loginForm.style.display = 'none';
+            if(regForm) regForm.style.display = 'none';
+            if(forgotForm) forgotForm.style.display = 'none';
+            if(tab === 'login' && loginForm) loginForm.style.display = 'block';
+            else if(tab === 'register' && regForm) regForm.style.display = 'block';
+            else if(tab === 'forgot' && forgotForm) forgotForm.style.display = 'block';
+            const tabs = document.querySelectorAll('.auth-tab');
+            tabs.forEach(t=>{
+                if(t.dataset.tab === tab) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+            document.getElementById('authModalTitle').innerText = tab === 'register' ? '注册' : (tab === 'forgot' ? '找回密码' : '登录');
+            modal.classList.add('active');
+            if(tab === 'login') refreshCaptcha('loginCaptchaQuestion', 'loginCaptchaInput');
+            else if(tab === 'register') refreshCaptcha('regCaptchaQuestion', 'regCaptchaInput');
+            else if(tab === 'forgot') refreshCaptcha('forgotCaptchaQuestion', 'forgotCaptchaInput');
+        }
+
+        function bindModalEvents(){
+            document.getElementById('refreshLoginCaptcha')?.addEventListener('click',()=>refreshCaptcha('loginCaptchaQuestion','loginCaptchaInput'));
+            document.getElementById('refreshRegCaptcha')?.addEventListener('click',()=>refreshCaptcha('regCaptchaQuestion','regCaptchaInput'));
+            document.getElementById('refreshForgotCaptcha')?.addEventListener('click',()=>refreshCaptcha('forgotCaptchaQuestion','forgotCaptchaInput'));
+            document.getElementById('registerBtn')?.addEventListener('click',async function(){
+                const username = document.getElementById('regUsername').value.trim();
+                const email = document.getElementById('regEmail').value.trim();
+                const pwd = document.getElementById('regPassword').value;
+                const conf = document.getElementById('regConfirm').value;
+                const cap = document.getElementById('regCaptchaInput').value.trim();
+                if(!username) return showToast('请输入用户名','error');
+                if(!email) return showToast('请输入邮箱','error');
+                if(pwd !== conf) return showToast('两次密码不一致','error');
+                if(pwd.length < 6) return showToast('密码至少6位','error');
+                if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
+                try{
+                    const exists = await findUserByEmail(email);
+                    if(exists) return showToast('该邮箱已被注册','error');
+                    await registerUser(email,pwd,username);
+                    showToast('注册成功，请登录');
+                    openAuthModal('login');
+                }catch(e){ showToast('注册失败: '+e.message,'error'); }
+            });
+            document.getElementById('loginBtn')?.addEventListener('click',async function(){
+                const email = document.getElementById('loginEmail').value.trim();
+                const pwd = document.getElementById('loginPassword').value;
+                const cap = document.getElementById('loginCaptchaInput').value.trim();
+                if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
+                try{
+                    currentUser = await loginUser(email,pwd);
+                    localStorage.setItem('lezhe_user',JSON.stringify(currentUser));
+                    updateUserUI();
+                    document.getElementById('authModal').classList.remove('active');
+                    showToast('登录成功');
+                }catch(e){ showToast(e.message,'error'); }
+            });
+            document.getElementById('resetPasswordBtn')?.addEventListener('click',async function(){
+                const email = document.getElementById('forgotEmail').value.trim();
+                const newPwd = document.getElementById('newPassword').value;
+                const conf = document.getElementById('confirmNewPassword').value;
+                const cap = document.getElementById('forgotCaptchaInput').value.trim();
+                if(!email) return showToast('请输入邮箱','error');
+                if(newPwd !== conf) return showToast('两次密码不一致','error');
+                if(newPwd.length < 6) return showToast('密码至少6位','error');
+                if(!cap || parseInt(cap) !== currentCaptcha.answer) return showToast('验证码错误','error');
+                try{
+                    await updatePassword(email,newPwd);
+                    showToast('密码已重置，请登录');
+                    openAuthModal('login');
+                }catch(e){ showToast('重置失败: '+e.message,'error'); }
+            });
+            document.getElementById('showForgotBtn')?.addEventListener('click',()=>openAuthModal('forgot'));
+            document.getElementById('backToLoginFromForgot')?.addEventListener('click',()=>openAuthModal('login'));
+            document.getElementById('closeAuthModal')?.addEventListener('click',()=>document.getElementById('authModal').classList.remove('active'));
+            // 绑定标签切换
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    if(tabName) openAuthModal(tabName);
+                });
+            });
+        }
+
+        let bannerInterval=null, sidebarInterval=null;
+        let curBanner=0, curSidebar=0;
+        const bannerSlides = document.getElementById('categoryBannerSlides');
+        const bannerDots = document.getElementById('categoryBannerDots');
+        const sidebarSlides = document.getElementById('sidebarCarouselSlides');
+        const sidebarDots = document.getElementById('sidebarCarouselDots');
+        function renderCarousel(containerSlides, containerDots, ads, isBanner=true){
+            if(!containerSlides || !containerDots) return;
+            const slideClass = isBanner ? 'banner-carousel-slide' : 'sidebar-carousel-slide';
+            const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
+            containerSlides.innerHTML = ads.map((ad,i)=>`
+                <div class="${slideClass}"><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" onload="this.classList.add('loaded');" onerror="this.onerror=null; this.src='https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb';"></a></div>
+            `).join('');
+            if(ads.length <= 1){
+                containerDots.style.display = 'none';
+                return;
+            }
+            containerDots.style.display = 'flex';
+            containerDots.innerHTML = ads.map((_,i)=>`<div class="${dotClass} ${i===0?'active':''}" data-index="${i}"></div>`).join('');
+            const update = (idx)=>{
+                if(isBanner) curBanner = idx;
+                else curSidebar = idx;
+                containerSlides.style.transform = `translateX(-${idx*100}%)`;
+                const dots = containerDots.querySelectorAll(`.${dotClass}`);
+                dots.forEach((d,ii)=>d.classList.toggle('active',ii===idx));
+            };
+            containerDots.querySelectorAll(`.${dotClass}`).forEach(dot=>{
+                dot.addEventListener('click',(e)=>{
+                    const idx = parseInt(e.target.dataset.index);
+                    update(idx);
+                    resetCarousel(isBanner);
+                });
+            });
+            return update;
+        }
+        function startCarousel(isBanner){
+            const ref = isBanner ? bannerInterval : sidebarInterval;
+            if(ref) clearInterval(ref);
+            const ads = isBanner ? bannerAds : sidebarAds;
+            if(ads.length <= 1) return;
+            const interval = setInterval(()=>{
+                const cur = isBanner ? curBanner : curSidebar;
+                const nxt = (cur+1) % ads.length;
+                if(isBanner) curBanner = nxt;
+                else curSidebar = nxt;
+                const slides = isBanner ? bannerSlides : sidebarSlides;
+                slides.style.transform = `translateX(-${nxt*100}%)`;
+                const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
+                const dots = isBanner ? bannerDots : sidebarDots;
+                const dts = dots.querySelectorAll(`.${dotClass}`);
+                dts.forEach((d,i)=>d.classList.toggle('active',i===nxt));
+            },4000);
+            if(isBanner) bannerInterval = interval;
+            else sidebarInterval = interval;
+        }
+        function resetCarousel(isBanner){
+            if(isBanner && bannerInterval) clearInterval(bannerInterval);
+            else if(!isBanner && sidebarInterval) clearInterval(sidebarInterval);
+            startCarousel(isBanner);
+        }
+
+        const CATEGORY_DISPLAY = {'adobe':'Adobe系列','autodesk':'Autodesk系列','c4d':'Cinema 4D','sketchup':'草图大师','rhino':'犀牛软件','plugin':'插件工具','other':'其他'};
+        function renderCategories(){
+            const catEl = document.getElementById('categoryTabs');
+            if(!catEl) return;
+            const catMap = new Map();
+            softwares.forEach(s=>catMap.set(CATEGORY_DISPLAY[s.category]||s.category, s.category));
+            let html = `<button class="cat-chip ${currentCategory==='all'?'active':''}" data-cat="all">全部</button>`;
+            Array.from(catMap.entries()).sort().forEach(([d,k])=>{
+                html += `<button class="cat-chip ${currentCategory===k?'active':''}" data-cat="${k}">${d}</button>`;
+            });
+            catEl.innerHTML = html;
+            catEl.querySelectorAll('.cat-chip').forEach(btn=>{
+                btn.addEventListener('click',()=>{
+                    currentCategory = btn.dataset.cat;
+                    showAll = false;
+                    renderCategories();
+                    renderGrid();
+                });
+            });
+        }
+        function renderGrid(){
+            const filtered = softwares.filter(s=>(currentCategory==='all'||s.category===currentCategory) && s.name.toLowerCase().includes(searchKeyword.toLowerCase()));
+            const items = showAll ? filtered : filtered.slice(0,DEFAULT_LIMIT);
+            const container = document.getElementById('softwareGridContainer');
+            if(!container) return;
+            if(!items.length){
+                container.innerHTML = '<div class="no-results"><i class="fas fa-box-open"></i> 没有找到相关软件</div>';
+                document.getElementById('loadMoreContainer').style.display = 'none';
+                return;
+            }
+            const liked = JSON.parse(localStorage.getItem('likedSoftwares')) || [];
+            container.innerHTML = items.map(sw=>{
+                const osTags = sw.os.map(o=>`<span class="os-badge">${o==='Windows'?'<i class="fab fa-windows"></i>':'<i class="fab fa-apple"></i>'} ${o}</span>`).join('');
+                const isNew = (new Date() - new Date(sw.addedDate||'2024-01-01')) < 7*86400000;
+                const isHot = sw.downloads > 2000;
+                const badge = isNew ? '<span class="new-badge">✨ 新</span>' : (isHot ? '<span class="hot-badge">🔥 热门</span>' : '');
+                const isLiked = liked.includes(sw.name);
+                const iconHtml = renderIconHtml(sw.icon, sw.name);
+                return `<div class="software-card" data-name="${escapeHtml(sw.name)}">
+                    ${badge}
+                    <div class="card-header"><div class="card-icon">${iconHtml}</div><div class="software-name">${escapeHtml(sw.name)}</div></div>
+                    <div class="version">版本 ${escapeHtml(sw.version)}</div>
+                    <div class="description">${escapeHtml(sw.description)}</div>
+                    <div class="os-tags">${osTags}</div>
+                    <div class="card-footer">
+                        <div class="added-date"><i class="far fa-calendar-alt"></i> ${escapeHtml(sw.addedDate)}</div>
+                        <div><span class="download-count"><i class="fas fa-download"></i> ${sw.downloads||0}</span><button class="like-btn" data-name="${escapeHtml(sw.name)}"><i class="${isLiked?'fas':'far'} fa-heart"></i></button></div>
+                    </div>
+                </div>`;
+            }).join('');
+            const loadDiv = document.getElementById('loadMoreContainer');
+            if(loadDiv) loadDiv.style.display = (!showAll && filtered.length>DEFAULT_LIMIT) ? 'block' : 'none';
+            container.querySelectorAll('.software-card').forEach(card=>{
+                card.addEventListener('click',(e)=>{
+                    if(e.target.closest('.like-btn')) return;
+                    const sw = softwares.find(s=>s.name===card.dataset.name);
+                    if(sw){
+                        if(!currentUser){
+                            openAuthModal('login');
+                            showToast('请先登录','error');
+                            return;
+                        }
+                        downloadSoftware(sw);
+                    }
+                });
+            });
+            container.querySelectorAll('.like-btn').forEach(btn=>{
+                btn.addEventListener('click',(e)=>{
+                    e.stopPropagation();
+                    let likedArr = JSON.parse(localStorage.getItem('likedSoftwares')) || [];
+                    if(likedArr.includes(btn.dataset.name)) likedArr = likedArr.filter(n=>n!==btn.dataset.name);
+                    else likedArr.push(btn.dataset.name);
+                    localStorage.setItem('likedSoftwares', JSON.stringify(likedArr));
+                    renderGrid();
+                });
+            });
+        }
+        function downloadSoftware(sw){
+            addToHistory(sw);
+            window.open(sw.url, '_blank');
+            if(sw.id && !sw.id.startsWith('b')) incrementDownloadCount(sw.id);
+        }
+        function addToHistory(sw){
+            let h = JSON.parse(localStorage.getItem('browseHistory')) || [];
+            h = h.filter(i=>i.name!==sw.name);
+            h.unshift({name:sw.name, icon:sw.icon, category:sw.category});
+            if(h.length>10) h.pop();
+            localStorage.setItem('browseHistory', JSON.stringify(h));
+            renderHistoryList();
+        }
+        function renderHistoryList(){
+            const history = JSON.parse(localStorage.getItem('browseHistory')) || [];
+            const container = document.getElementById('historyList');
+            if(!container) return;
+            if(!history.length){
+                container.innerHTML = '<div style="color:#94a3b8; padding:8px 0;">暂无浏览记录</div>';
+                return;
+            }
+            container.innerHTML = history.map(h=>`<div class="history-item" data-name="${escapeHtml(h.name)}"><i class="fas fa-clock"></i> ${escapeHtml(h.name)}</div>`).join('');
+            container.querySelectorAll('.history-item').forEach(item=>{
+                item.addEventListener('click',()=>{
+                    const sw = softwares.find(s=>s.name===item.dataset.name);
+                    if(sw) downloadSoftware(sw);
+                });
+            });
+        }
+        document.getElementById('clearHistoryBtn')?.addEventListener('click',()=>{
+            localStorage.removeItem('browseHistory');
+            renderHistoryList();
+            showToast('浏览历史已清空');
+        });
+        async function incrementDownloadCount(id){
+            if(!id || id.startsWith('b')) return;
+            try{
+                const rec = await airtableRequest('GET', `softwares/${id}`);
+                await airtableRequest('PATCH', `softwares/${id}`, { fields: { downloads: (rec.fields.downloads||0)+1 } });
+                const sw = softwares.find(s=>s.id===id);
+                if(sw) sw.downloads = (sw.downloads||0)+1;
+                renderRankList(); renderHotSection();
+            }catch(e){ console.warn(e); }
+        }
+
+        const hotScroll = document.getElementById('hotScroll');
+        let hotInterval = null;
+        function startHotAutoScroll(){
+            if(!hotScroll) return;
+            if(hotInterval) clearInterval(hotInterval);
+            hotInterval = setInterval(()=>{
+                const max = hotScroll.scrollWidth - hotScroll.clientWidth;
+                if(hotScroll.scrollLeft >= max-10) hotScroll.scrollTo({ left: 0, behavior: 'smooth' });
+                else hotScroll.scrollBy({ left: 220, behavior: 'smooth' });
+            },2000);
+        }
+        function stopHotAutoScroll(){ if(hotInterval){ clearInterval(hotInterval); hotInterval=null; } }
+        document.getElementById('hotArrowLeft')?.addEventListener('click',()=>{ hotScroll.scrollBy({ left: -220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
+        document.getElementById('hotArrowRight')?.addEventListener('click',()=>{ hotScroll.scrollBy({ left: 220, behavior: 'smooth' }); stopHotAutoScroll(); startHotAutoScroll(); });
+        function renderHotSection(){
+            if(!hotScroll || !softwares.length) return;
+            const sorted = [...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
+            const top6 = sorted.slice(0,6);
+            hotScroll.innerHTML = top6.map(sw=>`<div class="hot-card" data-name="${escapeHtml(sw.name)}">
+                <div class="hot-icon">${renderIconHtml(sw.icon, sw.name)}</div>
+                <div class="hot-name">${escapeHtml(sw.name)}</div>
+                <div class="hot-meta"><span>${sw.os.join(' · ')}</span><span class="hot-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</span></div>
+            </div>`).join('');
+            hotScroll.querySelectorAll('.hot-card').forEach(card=>{
+                card.addEventListener('click',()=>{
+                    const sw = softwares.find(s=>s.name===card.dataset.name);
+                    if(sw) downloadSoftware(sw);
+                });
+            });
+            if(hotScroll){
+                hotScroll.removeEventListener('mouseenter',stopHotAutoScroll);
+                hotScroll.removeEventListener('mouseleave',startHotAutoScroll);
+                hotScroll.addEventListener('mouseenter',stopHotAutoScroll);
+                hotScroll.addEventListener('mouseleave',startHotAutoScroll);
+            }
+            startHotAutoScroll();
+        }
+        function renderRankList(){
+            const rankEl = document.getElementById('rankList');
+            if(!rankEl) return;
+            const sorted = [...softwares].sort((a,b)=>(b.downloads||0)-(a.downloads||0));
+            const top5 = sorted.slice(0,5);
+            rankEl.innerHTML = top5.map((sw,i)=>`<div class="rank-item" data-name="${escapeHtml(sw.name)}">
+                <div class="rank-index ${i===0?'top1':i===1?'top2':i===2?'top3':''}">${i+1}</div>
+                <div class="rank-info"><div class="rank-name">${escapeHtml(sw.name)}</div><div class="rank-downloads"><i class="fas fa-download"></i> ${sw.downloads||0}</div></div>
+            </div>`).join('');
+            rankEl.querySelectorAll('.rank-item').forEach(item=>{
+                item.addEventListener('click',()=>{
+                    const sw = softwares.find(s=>s.name===item.dataset.name);
+                    if(sw) downloadSoftware(sw);
+                });
+            });
+        }
+        function renderRandomArticles(){
+            const randomEl = document.getElementById('randomArticles');
+            if(!randomEl || !softwares.length) return;
+            const shuffled = [...softwares].sort(()=>0.5-Math.random()).slice(0,5);
+            randomEl.innerHTML = shuffled.map(sw=>`<div class="random-article-item" data-name="${escapeHtml(sw.name)}">
+                <div class="random-article-icon">${renderIconHtml(sw.icon, sw.name)}</div>
+                <div class="random-article-info"><div class="random-article-name">${escapeHtml(sw.name)}</div><div class="random-article-os">${sw.os.join(' · ')}</div></div>
+            </div>`).join('');
+            randomEl.querySelectorAll('.random-article-item').forEach(item=>{
+                item.addEventListener('click',()=>{
+                    const sw = softwares.find(s=>s.name===item.dataset.name);
+                    if(sw) downloadSoftware(sw);
+                });
+            });
+        }
+
+        async function fetchMessages(){ try{ const data=await airtableRequest('GET','Messages?maxRecords=50'); return data.records; } catch{ return []; } }
+        async function submitMessage(name,msg){ await airtableRequest('POST','Messages',{fields:{Name:name||'热心网友',Message:msg}}); }
+        async function renderFeedbackList(){
+            try{
+                const msgs=await fetchMessages();
+                const cont=document.getElementById('feedbackListContainer');
+                if(!cont) return;
+                if(!msgs.length){ cont.innerHTML='<div style="text-align:center; padding:20px;">暂无留言，快来抢沙发~</div>'; return; }
+                cont.innerHTML=msgs.slice().reverse().slice(0,20).map(m=>`<div style="padding:16px 0; border-bottom:1px solid rgba(0,0,0,0.05);"><strong>${escapeHtml(m.fields.Name||'匿名')}</strong><span style="font-size:12px; color:#94a3b8; margin-left:12px;">${m.fields.CreatedAt?new Date(m.fields.CreatedAt).toLocaleString('zh-CN'):''}</span><div style="margin-top:6px;">${escapeHtml(m.fields.Message||'')}</div></div>`).join('');
+            }catch(e){ console.warn(e); }
+        }
+
+        document.getElementById('searchInput')?.addEventListener('input',e=>{ searchKeyword=e.target.value; renderGrid(); });
+        document.getElementById('searchBtn')?.addEventListener('click',()=>renderGrid());
+        document.getElementById('closeDetailModal')?.addEventListener('click',()=>document.getElementById('detailModal').classList.remove('active'));
+        document.getElementById('detailModal')?.addEventListener('click',e=>{ if(e.target===document.getElementById('detailModal')) e.target.classList.remove('active'); });
+        document.getElementById('submitFeedbackBtn')?.addEventListener('click',async function(){
+            const name=document.getElementById('feedbackName')?.value.trim()||'', msg=document.getElementById('feedbackMessage')?.value.trim()||'';
+            if(!msg) return showToast('请填写留言内容','error');
+            this.disabled=true; this.innerHTML='<i class="fas fa-spinner fa-pulse"></i> 提交中...';
+            try{
+                await submitMessage(name,msg);
+                showToast('留言提交成功！');
+                if(document.getElementById('feedbackName')) document.getElementById('feedbackName').value='';
+                if(document.getElementById('feedbackMessage')) document.getElementById('feedbackMessage').value='';
+                await renderFeedbackList();
+            }catch(e){ showToast('提交失败: '+e.message,'error'); }
+            finally{ this.disabled=false; this.innerHTML='<i class="fas fa-paper-plane"></i> 提交留言'; }
+        });
+        document.getElementById('loadMoreBtn')?.addEventListener('click',()=>{ showAll=true; renderGrid(); });
+        const backTop=document.getElementById('backToTop'); window.addEventListener('scroll',()=>backTop?.classList.toggle('show',window.scrollY>300)); if(backTop) backTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+        function addBaiduPush(){ const bp=document.createElement('script'); bp.async=true; bp.src='https://zz.bdstatic.com/linksubmit/push.js'; document.head.appendChild(bp); }
+
+        function showSkeleton(){
+            const grid = document.getElementById('softwareGridContainer');
+            if(grid) grid.innerHTML = `<div class="loading-container"><div class="loading-spinner-large"></div><div class="loading-text">正在加载软件库...</div></div>`;
+            if(bannerSlides) bannerSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
+            if(sidebarSlides) sidebarSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
+        }
+        async function initData(){
+            showSkeleton();
+            const cachedSoft = localStorage.getItem('cachedSoftwares');
+            const cachedBanner = localStorage.getItem('cachedBannerAds');
+            const cachedSidebar = localStorage.getItem('cachedSidebarAds');
+            if(cachedSoft && cachedBanner && cachedSidebar){
+                try{
+                    softwares = JSON.parse(cachedSoft);
+                    bannerAds = JSON.parse(cachedBanner);
+                    sidebarAds = JSON.parse(cachedSidebar);
+                    renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
+                    if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); startCarousel(true); }
+                    if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); startCarousel(false); }
+                }catch(e){}
+            }
+            try{
+                const [softData, adsData] = await Promise.all([fetchAirtableSoftwares(), fetchAirtableAds()]);
+                if(softData.length){
+                    softwares = softData;
+                    localStorage.setItem('cachedSoftwares', JSON.stringify(softwares));
+                }
+                if(adsData.length){
+                    const newBanner = adsData.filter(a=>a.position==='banner').map(a=>({image:getOptimizedAdImageUrl(a.image), link:a.link, title:a.title}));
+                    const newSidebar = adsData.filter(a=>a.position==='sidebar').map(a=>({image:getOptimizedAdImageUrl(a.image), link:a.link, title:a.title}));
+                    if(newBanner.length) bannerAds = newBanner;
+                    if(newSidebar.length) sidebarAds = newSidebar;
+                    localStorage.setItem('cachedBannerAds', JSON.stringify(bannerAds));
+                    localStorage.setItem('cachedSidebarAds', JSON.stringify(sidebarAds));
+                }
                 renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
-                if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); startCarousel(true); }
-                if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); startCarousel(false); }
-            }catch(e){}
-        }
-        // 后台拉取最新
-        try{
-            const [softData, adsData] = await Promise.all([fetchAirtableSoftwares(), fetchAirtableAds()]);
-            if(softData.length){
-                softwares = softData;
-                localStorage.setItem('cachedSoftwares', JSON.stringify(softwares));
+                if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); resetCarousel(true); }
+                if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); resetCarousel(false); }
+            }catch(e){
+                console.warn('后台更新失败', e);
+                if(!cachedSoft) document.getElementById('softwareGridContainer').innerHTML = '<div class="no-results">加载失败，请稍后刷新</div>';
             }
-            if(adsData.length){
-                const newBanner = adsData.filter(a=>a.position==='banner').map(a=>({image:getOptimizedAdImageUrl(a.image), link:a.link, title:a.title}));
-                const newSidebar = adsData.filter(a=>a.position==='sidebar').map(a=>({image:getOptimizedAdImageUrl(a.image), link:a.link, title:a.title}));
-                if(newBanner.length) bannerAds = newBanner;
-                if(newSidebar.length) sidebarAds = newSidebar;
-                localStorage.setItem('cachedBannerAds', JSON.stringify(bannerAds));
-                localStorage.setItem('cachedSidebarAds', JSON.stringify(sidebarAds));
-            }
-            renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
-            if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); resetCarousel(true); }
-            if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); resetCarousel(false); }
-        }catch(e){
-            console.warn('后台更新失败', e);
-            if(!cachedSoft) document.getElementById('softwareGridContainer').innerHTML = '<div class="no-results">加载失败，请稍后刷新</div>';
         }
-    }
-    async function initAll(){
-        await initData();
-        addBaiduPush();
-        await renderFeedbackList();
-        const saved = localStorage.getItem('lezhe_user');
-        if(saved){ try{ currentUser = JSON.parse(saved); }catch(e){} }
-        updateUserUI();
-        bindModalEvents();
-        let initCap = generateCaptcha();
-        currentCaptcha = initCap;
-        let loginCap = document.getElementById('loginCaptchaQuestion');
-        if(loginCap) loginCap.innerText = initCap.question;
-    }
-    initAll();
-})();
+        async function initAll(){
+            await initData();
+            addBaiduPush();
+            await renderFeedbackList();
+            const saved = localStorage.getItem('lezhe_user');
+            if(saved){ try{ currentUser = JSON.parse(saved); }catch(e){} }
+            updateUserUI();
+            bindModalEvents();
+            let initCap = generateCaptcha();
+            currentCaptcha = initCap;
+            let loginCap = document.getElementById('loginCaptchaQuestion');
+            if(loginCap) loginCap.innerText = initCap.question;
+        }
+        initAll();
+    })();
 </script>
 </body>
 </html>
