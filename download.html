@@ -10,8 +10,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -266,7 +264,7 @@
         const placeholderClass = isBanner?'banner-loading-placeholder':'ad-loading-placeholder';
         const dotClass = isBanner?'banner-carousel-dot':'sidebar-carousel-dot';
         containerSlides.innerHTML = ads.map((ad,i)=>`
-            <div class="${slideClass}"><div class="${placeholderClass}"></div><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" decoding="async" onload="this.classList.add('loaded'); this.parentElement.querySelector('.${placeholderClass}').style.display='none';"></a></div>
+            <div class="${slideClass}"><div class="${placeholderClass}"></div><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" decoding="async" onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none';"></a></div>
         `).join('');
         if(ads.length <= 1){
             containerDots.style.display = 'none';
@@ -430,13 +428,13 @@
     }
     document.getElementById('clearHistoryBtn').addEventListener('click', ()=>{ localStorage.removeItem('browseHistory'); renderHistoryList(); showToast('浏览历史已清空'); });
 
-    // 图标渲染：直接使用原始 URL，不做代理，增加降级
+    // **** 关键修复：安全可靠的图标渲染（无乱码）****
     function renderIconHtml(icon, name){
         if(!icon) icon = { type:'text', value: getStandardAbbreviation(name) };
         if(icon.type === 'image'){
             let imgUrl = icon.value;
-            // 直接使用原始 URL，不做加速代理
-            return `<img src="${escapeHtml(imgUrl)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\"icon-fallback\" style=\"background: ${getColorFromName(name)};\">${getStandardAbbreviation(name)}</div>';">`;
+            // 直接使用原始 URL，不经过任何代理
+            return `<img src="${escapeHtml(imgUrl)}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" onload="this.style.display='block'; this.nextElementSibling.style.display='none';">`;
         }
         if(icon.type === 'icon'){
             return `<i class="fas ${escapeHtml(icon.value)}"></i>`;
@@ -446,6 +444,7 @@
         return `<div class="icon-fallback" style="background: ${color};">${escapeHtml(abbr)}</div>`;
     }
 
+    // 修正了 downloadSoftware 无需登录
     function downloadSoftware(sw){
         addToHistory(sw);
         window.open(sw.url, '_blank');
@@ -508,7 +507,8 @@
             const isHot = sw.downloads>2000;
             const badge = isNew?'<span class="new-badge">✨ 新</span>':(isHot?'<span class="hot-badge">🔥 热门</span>':'');
             const isLiked = liked.includes(sw.name);
-            return `<div class="software-card" data-name="${escapeHtml(sw.name)}">${badge}<div class="card-header"><div class="card-icon">${renderIconHtml(sw.icon, sw.name)}</div><div class="software-name">${escapeHtml(sw.name)}</div></div><div class="version">版本 ${escapeHtml(sw.version)}</div><div class="description">${escapeHtml(sw.description)}</div><div class="os-tags">${osTags}</div><div class="card-footer"><div class="added-date"><i class="far fa-calendar-alt"></i> ${escapeHtml(sw.addedDate)}</div><div><span class="download-count"><i class="fas fa-download"></i> ${sw.downloads||0}</span><button class="like-btn" data-name="${escapeHtml(sw.name)}"><i class="${isLiked?'fas':'far'} fa-heart"></i></button></div></div></div>`;
+            const iconHtml = renderIconHtml(sw.icon, sw.name);
+            return `<div class="software-card" data-name="${escapeHtml(sw.name)}">${badge}<div class="card-header"><div class="card-icon">${iconHtml}</div><div class="software-name">${escapeHtml(sw.name)}</div></div><div class="version">版本 ${escapeHtml(sw.version)}</div><div class="description">${escapeHtml(sw.description)}</div><div class="os-tags">${osTags}</div><div class="card-footer"><div class="added-date"><i class="far fa-calendar-alt"></i> ${escapeHtml(sw.addedDate)}</div><div><span class="download-count"><i class="fas fa-download"></i> ${sw.downloads||0}</span><button class="like-btn" data-name="${escapeHtml(sw.name)}"><i class="${isLiked?'fas':'far'} fa-heart"></i></button></div></div></div>`;
         }).join('');
         document.getElementById('loadMoreContainer').style.display = (!showAll && filtered.length>DEFAULT_LIMIT)?'block':'none';
         container.querySelectorAll('.software-card').forEach(card=>{ card.addEventListener('click', (e)=>{ if(e.target.closest('.like-btn')) return; const sw = softwares.find(s=>s.name===card.dataset.name); if(sw) downloadSoftware(sw); }); });
