@@ -1,997 +1,535 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>乐哲软件 | 正版软件推荐·创意工具与插件服务</title>
-    <!-- 预连接加速资源加载 -->
-    <link rel="dns-prefetch" href="//cdn.tailwindcss.com">
-    <link rel="preconnect" href="https://cdn.tailwindcss.com">
-    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="//busuanzi.ibruce.info">
-    <link rel="preconnect" href="https://busuanzi.ibruce.info">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 不蒜子访问统计 -->
-    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#165DFF',
-                        dark: '#1E293B',
-                        wechat: '#07C160'
-                    },
-                }
-            }
-        }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            .glass {
-                backdrop-filter: blur(10px);
-                background: rgba(255,255,255,0.8);
-            }
-            .animate-slide {
-                animation: slide 25s linear infinite;
-            }
-            @keyframes slide {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(-50%); }
-            }
-            .fade-in {
-                animation: fadeIn 0.3s ease forwards;
-            }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: scale(0.95) translateY(10px); }
-                to { opacity: 1; transform: scale(1) translateY(0); }
-            }
-            /* 主营业务卡片动画 */
-            .service-card {
-                transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-                transform-style: preserve-3d;
-                perspective: 800px;
-            }
-            .service-card:hover {
-                transform: translateY(-6px) scale(1.02);
-                box-shadow: 0 20px 30px -12px rgba(0,0,0,0.2);
-            }
-            .service-card:hover .service-icon {
-                transform: scale(1.1);
-                color: #165dff;
-            }
-            .service-icon {
-                transition: transform 0.2s ease;
-            }
-            /* 滚动渐显动画 */
-            .animate-on-scroll {
-                opacity: 0;
-                transform: translateY(30px);
-                transition: opacity 0.7s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.7s cubic-bezier(0.2, 0.9, 0.3, 1);
-            }
-            .animate-on-scroll.visible {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            /* 返回顶部按钮动画 */
-            #back-to-top {
-                transition: all 0.3s ease;
-                opacity: 0;
-                visibility: hidden;
-                transform: translateY(10px);
-            }
-            #back-to-top.show {
-                opacity: 1;
-                visibility: visible;
-                transform: translateY(0);
-            }
-            /* 流光按钮 */
-            .btn-shine {
-                position: relative;
-                overflow: hidden;
-            }
-            .btn-shine::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-                transition: left 0.5s;
-            }
-            .btn-shine:hover::after {
-                left: 100%;
-            }
-        }
-        /* 深色模式全局样式 */
-        .dark-mode {
-            background-color: #0f172a !important;
-            color: #e2e8f0 !important;
-        }
-        .dark-mode .bg-white,
-        .dark-mode .bg-slate-50,
-        .dark-mode .bg-slate-100,
-        .dark-mode .bg-gradient-to-r.from-slate-100,
-        .dark-mode .bg-gradient-to-br.from-slate-50 {
-            background-color: #1e293b !important;
-            background-image: none !important;
-        }
-        .dark-mode .bg-white\/70,
-        .dark-mode .bg-white\/80,
-        .dark-mode .bg-white\/90 {
-            background-color: rgba(30,41,59,0.9) !important;
-        }
-        .dark-mode .text-slate-600,
-        .dark-mode .text-slate-500,
-        .dark-mode .text-slate-700,
-        .dark-mode .text-gray-700,
-        .dark-mode .text-slate-800,
-        .dark-mode .text-dark,
-        .dark-mode .text-gray-800 {
-            color: #cbd5e1 !important;
-        }
-        .dark-mode .text-slate-400 {
-            color: #94a3b8 !important;
-        }
-        .dark-mode .text-primary {
-            color: #60a5fa !important;
-        }
-        .dark-mode .border-slate-100,
-        .dark-mode .border-slate-200 {
-            border-color: #334155 !important;
-        }
-        .dark-mode .shadow-sm,
-        .dark-mode .shadow-md {
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3) !important;
-        }
-        .dark-mode .service-card {
-            background: #334155 !important;
-            border-color: #475569 !important;
-        }
-        .dark-mode .service-card .text-gray-800 {
-            color: #f1f5f9 !important;
-        }
-        .dark-mode .bg-slate-50\/80 {
-            background-color: rgba(30,41,59,0.8) !important;
-        }
-        .dark-mode .bg-gradient-to-br.from-primary.to-primary\/80 {
-            background: linear-gradient(135deg, #1e40af, #0f172a) !important;
-        }
-        .dark-mode .bg-gradient-to-br.from-slate-50.to-white {
-            background: #1e293b !important;
-        }
-        .dark-mode .bg-green-50 {
-            background-color: rgba(22, 163, 74, 0.2) !important;
-        }
-        .dark-mode .text-green-600 {
-            color: #4ade80 !important;
-        }
-        .dark-mode .bg-white\/30 {
-            background-color: rgba(30,41,59,0.5) !important;
-        }
-        .dark-mode .bg-white\/50 {
-            background-color: rgba(30,41,59,0.7) !important;
-        }
-        .dark-mode .font-semibold.text-dark {
-            color: #e2e8f0 !important;
-        }
-        .dark-mode .text-slate-700.font-medium {
-            color: #e2e8f0 !important;
-        }
-        .dark-mode #contactModal .bg-white {
-            background-color: #1e293b !important;
-        }
-        .dark-mode #contactModal .text-slate-700,
-        .dark-mode #contactModal .text-slate-600,
-        .dark-mode #contactModal .text-slate-800 {
-            color: #e2e8f0 !important;
-        }
-        .dark-mode #contactModal .bg-slate-100 {
-            background-color: #334155 !important;
-        }
-        .dark-mode #contactModal .border-slate-100 {
-            border-color: #475569 !important;
-        }
-        /* 鼠标光环 */
-        .cursor-glow {
-            position: fixed;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(22,93,255,0.12) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s;
-        }
-        .dark-mode .cursor-glow {
-            background: radial-gradient(circle, rgba(96,165,250,0.18) 0%, transparent 70%);
-        }
-        /* 在线指示灯 */
-        .online-dot {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(7,193,96,0.6); }
-            70% { box-shadow: 0 0 0 8px rgba(7,193,96,0); }
-            100% { box-shadow: 0 0 0 0 rgba(7,193,96,0); }
-        }
-        /* 预加载动画 */
-        #preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #165DFF;
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s, visibility 0.5s;
-        }
-        #preloader.hide {
-            opacity: 0;
-            visibility: hidden;
-        }
-        .loader-logo {
-            font-size: 4rem;
-            color: white;
-            animation: logoBounce 1.2s ease forwards;
-        }
-        @keyframes logoBounce {
-            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
-            60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-        /* 滚动进度条 */
-        #progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(to right, #165DFF, #07C160);
-            z-index: 9999;
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-        /* 涟漪 */
-        .ripple {
-            position: fixed;
-            border-radius: 50%;
-            background: rgba(22,93,255,0.2);
-            transform: scale(0);
-            animation: rippleEffect 0.8s ease-out forwards;
-            pointer-events: none;
-            z-index: 9998;
-        }
-        @keyframes rippleEffect {
-            to { transform: scale(4); opacity: 0; }
-        }
-        /* 视差背景装饰 */
-        .parallax-bg {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: rgba(22,93,255,0.05);
-            filter: blur(60px);
-            z-index: 0;
-        }
-        .parallax-bg-1 { top: 10%; left: 5%; }
-        .parallax-bg-2 { bottom: 10%; right: 5%; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>乐哲软件 | 正版软件·插件与创意工具服务</title>
+  <link rel="dns-prefetch" href="//cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="//busuanzi.ibruce.info">
+  <link rel="preconnect" href="https://busuanzi.ibruce.info">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #14141f;
+      --border: rgba(255,255,255,0.06);
+      --text: #ffffff;
+      --text-secondary: #9ca3af;
+      --primary: #3b82f6;
+      --primary-glow: rgba(59,130,246,0.15);
+      --card-bg: rgba(20,20,31,0.8);
+      --shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .light {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.06);
+      --text: #0f172a;
+      --text-secondary: #475569;
+      --primary: #2563eb;
+      --primary-glow: rgba(37,99,235,0.1);
+      --card-bg: rgba(255,255,255,0.9);
+      --shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+    #progress-bar {
+      position: fixed; top: 0; left: 0; height: 2px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6); z-index: 10001;
+      width: 0%; transition: width 0.1s linear;
+    }
+    #preloader {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg); z-index: 10000;
+      display: flex; justify-content: center; align-items: center;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+    #preloader.hide { opacity: 0; visibility: hidden; }
+    .loader-logo {
+      font-size: 3.5rem; font-weight: 800; color: var(--primary);
+      animation: logoReveal 1.2s cubic-bezier(0.2,0.9,0.3,1) forwards;
+    }
+    @keyframes logoReveal {
+      0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+      60% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .tilt {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      transition: all 0.3s;
+    }
+    .card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow), 0 0 0 1px var(--primary);
+      transform: translateY(-6px);
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--primary); color: white;
+      padding: 14px 28px; border-radius: 14px;
+      font-weight: 600; transition: all 0.2s;
+      text-decoration: none; border: none;
+    }
+    .btn-primary:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -8px var(--primary-glow);
+    }
+    .btn-ghost {
+      background: transparent; border: 2px solid var(--primary); color: var(--primary);
+    }
+    .btn-ghost:hover { background: var(--primary); color: white; }
+    .section-title {
+      font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em;
+    }
+    .online-dot { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+      100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+    }
+    #back-to-top {
+      position: fixed; right: 20px; bottom: 20px; z-index: 40;
+      background: var(--card-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 12px; border-radius: 50%;
+      transition: all 0.3s; opacity: 0; visibility: hidden; transform: translateY(10px);
+      cursor: pointer;
+    }
+    #back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+    .cursor-glow {
+      position: fixed; width: 400px; height: 400px; border-radius: 50%;
+      background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+      pointer-events: none; z-index: 9998; transform: translate(-50%, -50%);
+    }
+    .nav-blur {
+      background: rgba(10,10,15,0.8); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .light .nav-blur {
+      background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);
+    }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800" id="app-body">
-<!-- 预加载动画 -->
-<div id="preloader">
-    <div class="loader-logo font-bold tracking-tight">乐哲</div>
-</div>
-<!-- 滚动进度条 -->
+<body>
+<div id="preloader"><div class="loader-logo">乐哲</div></div>
 <div id="progress-bar"></div>
-<!-- 鼠标跟随光晕元素 -->
 <div class="cursor-glow" id="cursorGlow"></div>
 
 <!-- 导航栏 -->
-<nav class="bg-white shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-            <a href="https://www.lezhesoft.cn/index.html" class="text-xl md:text-2xl font-bold text-primary tracking-tight">乐哲软件</a>
-            <div class="hidden md:flex gap-10 items-center">
-                <a href="https://www.lezhesoft.cn/service.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">服务项目</a>
-                <a href="https://www.lezhesoft.cn/download.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">软件下载</a>
-                <a href="https://www.lezhesoft.cn/copyright.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">版权声明</a>
-                <a href="https://www.lezhesoft.cn/index.html#contact" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">联系我们</a>
-                <a href="https://www.lezhesoft.cn/query.html" class="text-slate-600 hover:text-primary transition-colors text-base font-medium">🔍 Adobe订阅状态查询</a>
-                <!-- 深色模式切换按钮 -->
-                <button id="themeToggle" class="text-slate-600 hover:text-primary transition-colors text-xl focus:outline-none">
-                    <i id="themeIcon" class="fa fa-moon-o"></i>
-                </button>
-            </div>
-            <button class="md:hidden text-slate-600 text-xl" id="mobile-menu-btn">
-                <i class="fa fa-bars"></i>
-            </button>
-        </div>
+<nav class="nav-blur fixed top-0 left-0 w-full z-50 py-4">
+  <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
+    <a href="#" class="text-2xl font-extrabold" style="color: var(--primary);">乐哲软件</a>
+    <div class="hidden md:flex gap-8 items-center text-sm font-medium" style="color: var(--text-secondary);">
+      <a href="#" class="hover:text-[var(--primary)] transition">服务项目</a>
+      <a href="#" class="hover:text-[var(--primary)] transition">软件下载</a>
+      <a href="#" class="hover:text-[var(--primary)] transition">版权声明</a>
+      <a href="#" class="hover:text-[var(--primary)] transition">联系我们</a>
+      <button id="themeToggle" class="text-xl transition hover:text-[var(--primary)]">
+        <i id="themeIcon" class="fa fa-sun-o"></i>
+      </button>
     </div>
-    <div class="md:hidden hidden bg-white border-t" id="mobile-menu">
-        <div class="px-4 py-3 space-y-2">
-            <a href="https://www.lezhesoft.cn/service.html" class="block py-2 text-slate-600 hover:text-primary">服务项目</a>
-            <a href="https://www.lezhesoft.cn/download.html" class="block py-2 text-slate-600 hover:text-primary">软件下载</a>
-            <a href="https://www.lezhesoft.cn/copyright.html" class="block py-2 text-slate-600 hover:text-primary">版权声明</a>
-            <a href="https://www.lezhesoft.cn/index.html#contact" class="block py-2 text-slate-600 hover:text-primary">联系我们</a>
-            <a href="https://www.lezhesoft.cn/query.html" class="block py-2 text-slate-600 hover:text-primary">🔍 Adobe订阅状态查询</a>
-        </div>
-    </div>
+    <button class="md:hidden text-xl"><i class="fa fa-bars"></i></button>
+  </div>
 </nav>
 
-    <!-- 首屏Banner（粒子背景） -->
-    <header class="bg-gradient-to-br from-primary to-primary/80 text-white py-20 relative overflow-hidden">
-        <canvas id="particleCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;"></canvas>
-        <div class="max-w-5xl mx-auto px-4 text-center relative z-10">
-            <div class="flex justify-center items-center gap-3 mb-6">
-                <i class="fa fa-cloud-upload text-4xl md:text-5xl text-white/90"></i>
-                <span class="text-xl md:text-2xl font-semibold tracking-wide bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full">Adobe Creative Cloud</span>
-            </div>
-            <h1 class="text-[clamp(2rem,5vw,3.2rem)] font-bold mb-6 text-shadow leading-tight">
-                靠谱正版软件服务<br>为您解决所有软件需求
-            </h1>
-            <p class="text-[clamp(1.1rem,2vw,1.3rem)] opacity-95 mb-8 max-w-2xl mx-auto leading-relaxed">
-                专业技术团队，官方正版授权，售后全程无忧，一站式解决软件、系统、数据需求
-            </p>
-            <a href="javascript:void(0)" id="openContact" class="inline-block bg-white text-primary font-semibold px-8 py-3 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 btn-shine">
-                立即咨询
-            </a>
-        </div>
-    </header>
-
-    <!-- 品牌轮播图区域 -->
-    <section class="py-12 px-4 bg-white overflow-hidden">
-        <div class="max-w-5xl mx-auto mb-8 text-center">
-            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-dark">支持全品类主流设计软件</h2>
-            <p class="text-slate-500 text-lg mt-2">覆盖设计、视频、音频、工程全场景需求</p>
-        </div>
-        <div class="relative max-w-5xl mx-auto bg-slate-50 rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <div class="absolute left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-r from-slate-50 to-transparent"></div>
-            <div class="absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-slate-50 to-transparent"></div>
-            <div class="flex whitespace-nowrap py-14 overflow-hidden">
-                <div class="flex animate-slide items-center gap-16 px-16">
-                    <!-- 软件图标组 (重复部分保持不变，为节省长度此处省略重复代码) -->
-                    <!-- 直接复制你原来代码中的那两组图标即可，完全一致 -->
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#31A8FF]/10 rounded-lg mb-2">
-                            <span class="text-[#31A8FF] text-2xl font-bold">Ps</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Photoshop</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#FF61F6]/10 rounded-lg mb-2">
-                            <span class="text-[#FF61F6] text-2xl font-bold">Ai</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Illustrator</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#9933FF]/10 rounded-lg mb-2">
-                            <span class="text-[#9933FF] text-2xl font-bold">Ae</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">After Effects</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#9999FF]/10 rounded-lg mb-2">
-                            <span class="text-[#9999FF] text-2xl font-bold">Pr</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Premiere Pro</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#00CCFF]/10 rounded-lg mb-2">
-                            <span class="text-[#00CCFF] text-2xl font-bold">Au</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Audition</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#000000]/10 rounded-lg mb-2">
-                            <span class="text-[#000000] text-2xl font-bold">CAD</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">AutoCAD</span>
-                    </div>
-                    <!-- 复制一份实现无缝滚动 -->
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#31A8FF]/10 rounded-lg mb-2">
-                            <span class="text-[#31A8FF] text-2xl font-bold">Ps</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Photoshop</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#FF61F6]/10 rounded-lg mb-2">
-                            <span class="text-[#FF61F6] text-2xl font-bold">Ai</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Illustrator</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#9933FF]/10 rounded-lg mb-2">
-                            <span class="text-[#9933FF] text-2xl font-bold">Ae</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">After Effects</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#9999FF]/10 rounded-lg mb-2">
-                            <span class="text-[#9999FF] text-2xl font-bold">Pr</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Premiere Pro</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#00CCFF]/10 rounded-lg mb-2">
-                            <span class="text-[#00CCFF] text-2xl font-bold">Au</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">Audition</span>
-                    </div>
-                    <div class="flex flex-col items-center justify-center w-28 opacity-100 transition-all">
-                        <div class="h-14 w-14 flex items-center justify-center bg-[#000000]/10 rounded-lg mb-2">
-                            <span class="text-[#000000] text-2xl font-bold">CAD</span>
-                        </div>
-                        <span class="text-xl font-medium text-slate-700">AutoCAD</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 插件推荐板块（带视差背景） -->
-    <section id="plugins" class="py-16 px-4 bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
-        <div class="parallax-bg parallax-bg-1" id="parallax1"></div>
-        <div class="parallax-bg parallax-bg-2" id="parallax2"></div>
-        <div class="max-w-6xl mx-auto relative z-10">
-            <div class="text-center mb-10 md:mb-12 animate-on-scroll">
-                <span class="text-primary font-semibold tracking-wide uppercase text-xs md:text-sm bg-primary/10 px-4 py-1.5 rounded-full inline-block">正版插件专家</span>
-                <h2 class="text-2xl md:text-4xl font-bold text-dark mt-4">专业插件推荐渠道</h2>
-                <p class="text-slate-600 text-base md:text-lg max-w-2xl mx-auto mt-3 px-3">分享Adobe、Autodesk等软件的正版插件资讯，提供合规授权指引与技术支持</p>
-            </div>
-            <div class="grid md:grid-cols-3 gap-6 md:gap-8">
-                <div class="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-md border border-white/50 hover:border-primary/30 transition-all duration-300 animate-on-scroll">
-                    <div class="w-12 h-12 md:w-14 md:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
-                        <i class="fa fa-plug text-primary text-xl md:text-2xl"></i>
-                    </div>
-                    <h3 class="text-lg md:text-xl font-bold text-dark">全系列增效工具</h3>
-                    <p class="text-slate-500 text-sm md:text-base mt-2 leading-relaxed">Red Giant、Trapcode、Magic Bullet、Element 3D 等正版插件授权指引，合规使用更安心。</p>
-                </div>
-                <div class="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-md border border-white/50 hover:border-primary/30 transition-all duration-300 animate-on-scroll">
-                    <div class="w-12 h-12 md:w-14 md:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
-                        <i class="fa fa-diamond text-primary text-xl md:text-2xl"></i>
-                    </div>
-                    <h3 class="text-lg md:text-xl font-bold text-dark">正版插件合作渠道</h3>
-                    <p class="text-slate-500 text-sm md:text-base mt-2 leading-relaxed">Adobe Creative Cloud 插件正版授权渠道参考，全系列插件安装、脚本适配，版权合规无忧。</p>
-                </div>
-                <div class="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-md border border-white/50 hover:border-primary/30 transition-all duration-300 animate-on-scroll">
-                    <div class="w-12 h-12 md:w-14 md:h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
-                        <i class="fa fa-shield text-primary text-xl md:text-2xl"></i>
-                    </div>
-                    <h3 class="text-lg md:text-xl font-bold text-dark">专业技术支持分享</h3>
-                    <p class="text-slate-500 text-sm md:text-base mt-2 leading-relaxed">技术团队提供插件适配、性能优化经验分享，帮助用户稳定工作流，售后7x24小时响应。</p>
-                </div>
-            </div>
-            <div class="mt-10 text-center animate-on-scroll">
-                <a href="javascript:void(0)" id="openPluginsContact" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-indigo-600 text-white font-semibold px-7 py-3.5 rounded-xl shadow-md hover:shadow-xl transition-all active:scale-95 text-base md:text-lg btn-shine">
-                    查询插件报价 <i class="fa fa-arrow-circle-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- 主营业务预览（卡片3D倾斜） -->
-    <section class="py-16 px-4 bg-white">
-        <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-[clamp(1.6rem,3vw,2.2rem)] font-bold text-dark mb-3 animate-on-scroll">我们的主营业务</h2>
-            <p class="text-slate-500 text-lg mb-10 animate-on-scroll">全品类正版软件+专业技术服务，覆盖各类办公设计需求</p>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto mb-10">
-                <!-- 卡片添加 data-tilt 自定义属性，JS 监听处理 3D 效果 -->
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
-                    <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-paint-brush text-primary text-2xl"></i>
-                    </div>
-                    <p class="text-gray-800 font-bold text-lg mb-1">Adobe 正版授权</p>
-                    <p class="text-slate-500 text-sm">Photoshop, Premiere, AE 全系列</p>
-                </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
-                    <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-cube text-primary text-2xl"></i>
-                    </div>
-                    <p class="text-gray-800 font-bold text-lg mb-1">Autodesk 正版授权</p>
-                    <p class="text-slate-500 text-sm">AutoCAD, Maya, 3ds Max 专业版</p>
-                </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
-                    <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-file-excel-o text-primary text-2xl"></i>
-                    </div>
-                    <p class="text-gray-800 font-bold text-lg mb-1">Office 正版授权</p>
-                    <p class="text-slate-500 text-sm">Microsoft 365 商业/个人版</p>
-                </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
-                    <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-windows text-primary text-2xl"></i>
-                    </div>
-                    <p class="text-gray-800 font-bold text-lg mb-1">系统重装优化</p>
-                    <p class="text-slate-500 text-sm">Windows/macOS 极速优化</p>
-                </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
-                    <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-puzzle-piece text-primary text-2xl"></i>
-                    </div>
-                    <p class="text-gray-800 font-bold text-lg mb-1">Adobe插件安装</p>
-                    <p class="text-slate-500 text-sm">正版插件一站式部署</p>
-                </div>
-                <div class="service-card bg-white rounded-2xl p-6 shadow-md border border-slate-100 hover:border-primary/30 animate-on-scroll" data-tilt>
-                    <div class="service-icon w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <i class="fa fa-database text-primary text-2xl"></i>
-                    </div>
-                    <p class="text-gray-800 font-bold text-lg mb-1">专业数据恢复</p>
-                    <p class="text-slate-500 text-sm">误删/格式化/损坏救援</p>
-                </div>
-            </div>
-            <a href="https://www.lezhesoft.cn/service.html" class="inline-flex items-center gap-2 text-primary font-semibold text-lg hover:gap-3 transition-all animate-on-scroll">
-                查看详细服务介绍
-                <i class="fa fa-arrow-right"></i>
-            </a>
-        </div>
-    </section>
-
-    <!-- 信任背书（数字滚动计数） -->
-    <section class="py-14 px-4 bg-gradient-to-r from-slate-100 to-slate-50">
-        <div class="max-w-5xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-on-scroll">
-                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <i class="fa fa-user-o text-primary text-xl"></i>
-                    </div>
-                    <p class="text-3xl font-bold text-primary mb-2">
-                        <span class="count-up" data-target="100">0</span><span class="text-xl align-top">+</span>
-                    </p>
-                    <p class="text-slate-600 text-base">服务客户</p>
-                </div>
-                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-on-scroll">
-                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <i class="fa fa-users text-primary text-xl"></i>
-                    </div>
-                    <p class="text-3xl font-bold text-primary mb-2">专业团队</p>
-                    <p class="text-slate-600 text-base">一对一服务</p>
-                </div>
-                <div class="text-center p-8 bg-white rounded-xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 animate-on-scroll">
-                    <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <i class="fa fa-headphones text-primary text-xl"></i>
-                    </div>
-                    <p class="text-3xl font-bold text-primary mb-2">7<span class="text-xl align-top">*</span>24</p>
-                    <p class="text-slate-600 text-base">售后技术支持</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 联系我们区块 -->
-    <section id="contact" class="py-20 px-4 bg-white">
-        <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-[clamp(1.8rem,4vw,2.4rem)] font-bold text-dark mb-4 animate-on-scroll">立即咨询获取服务</h2>
-            <p class="text-slate-600 text-lg mb-10 animate-on-scroll">有任何需求都可以直接联系我们，1小时内响应，当日即可完成服务</p>
-
-            <div class="bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl shadow-lg p-10 max-w-lg mx-auto hover:shadow-xl transition-all duration-300 animate-on-scroll">
-                <div class="flex items-center justify-between mb-7 pb-7 border-b border-slate-200">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-green-50 rounded-full flex items-center justify-center">
-                            <i class="fa fa-weixin text-green-600 text-2xl"></i>
-                        </div>
-                        <span class="text-xl text-slate-700 font-medium">官方微信</span>
-                    </div>
-                    <span class="text-xl font-semibold text-dark tracking-wide">Win_Mac_123</span>
-                </div>
-            </div>
-            <div class="mt-8 animate-on-scroll">
-                <a href="javascript:void(0)" id="openContactBtn" class="inline-flex items-center gap-2 bg-wechat text-white font-semibold px-10 py-4 rounded-lg text-xl shadow-lg hover:bg-wechat/90 hover:shadow-xl transition-all btn-shine">
-                    <i class="fa fa-weixin"></i>
-                    立刻添加微信咨询
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- 右侧固定悬浮按钮（含在线指示灯） -->
-    <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center gap-3">
-        <button id="openFloatContact" class="bg-wechat text-white px-4 py-6 rounded-full shadow-xl hover:bg-wechat/90 hover:scale-105 transition-all flex flex-col items-center gap-1 relative">
-            <i class="fa fa-weixin text-2xl"></i>
-            <span class="text-sm font-medium whitespace-nowrap">添加微信</span>
-            <span class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-green-500 border-2 border-white online-dot"></span>
-        </button>
-        <button id="back-to-top" class="bg-white text-primary w-12 h-12 rounded-full shadow-lg hover:bg-primary hover:text-white transition-all flex items-center justify-center border border-slate-200">
-            <i class="fa fa-arrow-up text-xl"></i>
-        </button>
+<!-- Hero 区域 -->
+<section class="relative h-screen flex items-center justify-center overflow-hidden pt-20">
+  <canvas id="particleCanvas" class="absolute inset-0 z-0"></canvas>
+  <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--primary-glow)] opacity-30"></div>
+  <div class="relative z-10 max-w-4xl mx-auto px-6 text-center">
+    <div class="inline-flex items-center gap-2 text-sm font-medium px-4 py-1.5 rounded-full mb-8"
+         style="background: var(--primary-glow); color: var(--primary);">
+      <i class="fa fa-cloud-upload"></i> Adobe Creative Cloud 正版授权
     </div>
-
-    <!-- 弹窗遮罩 -->
-    <div id="contactModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-md w-full fade-in overflow-hidden">
-            <div class="p-6 flex justify-between items-center border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <i class="fa fa-weixin text-wechat text-3xl"></i>
-                    <h3 class="text-3xl font-bold text-slate-700">添加微信</h3>
-                </div>
-                <button id="closeModal" class="text-slate-400 hover:text-slate-600 transition-colors">
-                    <i class="fa fa-times text-2xl"></i>
-                </button>
-            </div>
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <p class="text-slate-600 text-lg">添加请备注来意</p>
-                </div>
-                <div class="bg-slate-100 rounded-full px-6 py-4 flex items-center gap-3 mb-6">
-                    <i class="fa fa-weixin text-wechat text-2xl"></i>
-                    <span class="text-2xl font-semibold text-slate-700">微信号：Win_Mac_123</span>
-                </div>
-                <button id="copyBtn" class="w-full bg-primary hover:bg-primary/90 text-white text-xl font-semibold py-4 rounded-full transition-all mb-4 flex items-center justify-center gap-2 btn-shine">
-                    <i class="fa fa-copy"></i>
-                    复制微信号
-                </button>
-            </div>
-        </div>
+    <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-6">
+      <span style="background: linear-gradient(135deg, var(--primary), #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        靠谱正版软件服务
+      </span>
+    </h1>
+    <p class="text-xl mb-12 max-w-2xl mx-auto" style="color: var(--text-secondary);">
+      专业技术团队 · 官方正版授权 · 售后无忧 · 覆盖设计/工程/办公全品类
+    </p>
+    <div class="flex justify-center gap-4">
+      <button id="hero-cta" class="btn-primary">立即咨询 <i class="fa fa-arrow-right"></i></button>
+      <button class="btn-primary btn-ghost">了解服务 <i class="fa fa-angle-down"></i></button>
     </div>
+  </div>
+</section>
 
-    <!-- 页脚 -->
-    <footer class="bg-dark text-slate-300 py-10">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <div class="flex flex-wrap justify-center items-center gap-6 mb-4">
-                <div class="flex items-center gap-2">
-                    <i class="fa fa-eye text-primary"></i>
-                    <span>总访问：<span id="busuanzi_value_site_pv" class="text-white">--</span></span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <i class="fa fa-users text-primary"></i>
-                    <span>独立访客：<span id="busuanzi_value_site_uv" class="text-white">--</span></span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <i class="fa fa-link text-primary"></i>
-                    <span>本站域名：<a href="https://www.lezhesoft.cn" target="_blank" class="text-white hover:text-primary transition-colors">www.lezhesoft.cn</a></span>
-                </div>
-            </div>
-            <p class="text-lg mb-2">版权所有 © 2026 乐哲软件 保留所有权利</p>
-            <p class="text-slate-400">专业正版软件服务提供商</p>
-            <p class="text-slate-400 mt-2">访问域名：<a href="https://www.lezhesoft.cn" target="_blank" class="text-white hover:text-primary">www.lezhesoft.cn</a> 可正常访问全站</p>
+<!-- 软件支持网格 -->
+<section class="py-24 relative" style="background: var(--surface);">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <h2 class="section-title">全品类设计软件</h2>
+      <p class="text-lg mt-4" style="color: var(--text-secondary);">覆盖设计、视频、音频、工程全场景需求</p>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+      <div class="card tilt text-center p-6 !rounded-2xl">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: rgba(59,130,246,0.1);">
+          <span class="text-xl font-bold" style="color: #3b82f6;">Ps</span>
         </div>
-    </footer>
+        <span class="text-sm font-medium">Photoshop</span>
+      </div>
+      <div class="card tilt text-center p-6 !rounded-2xl">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: rgba(236,72,153,0.1);">
+          <span class="text-xl font-bold" style="color: #ec4899;">Ai</span>
+        </div>
+        <span class="text-sm font-medium">Illustrator</span>
+      </div>
+      <div class="card tilt text-center p-6 !rounded-2xl">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: rgba(139,92,246,0.1);">
+          <span class="text-xl font-bold" style="color: #8b5cf6;">Ae</span>
+        </div>
+        <span class="text-sm font-medium">After Effects</span>
+      </div>
+      <div class="card tilt text-center p-6 !rounded-2xl">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: rgba(99,102,241,0.1);">
+          <span class="text-xl font-bold" style="color: #6366f1;">Pr</span>
+        </div>
+        <span class="text-sm font-medium">Premiere Pro</span>
+      </div>
+      <div class="card tilt text-center p-6 !rounded-2xl">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: rgba(6,182,212,0.1);">
+          <span class="text-xl font-bold" style="color: #06b6d4;">Au</span>
+        </div>
+        <span class="text-sm font-medium">Audition</span>
+      </div>
+      <div class="card tilt text-center p-6 !rounded-2xl">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3" style="background: rgba(148,163,184,0.1);">
+          <span class="text-xl font-bold" style="color: #94a3b8;">CAD</span>
+        </div>
+        <span class="text-sm font-medium">AutoCAD</span>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <script>
-        // ========== 预加载动画 ==========
-        window.addEventListener('load', () => {
-            const preloader = document.getElementById('preloader');
-            if (preloader) {
-                setTimeout(() => {
-                    preloader.classList.add('hide');
-                }, 800);
-            }
-        });
+<!-- 插件推荐 -->
+<section class="py-24 relative" style="background: var(--bg);">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <span class="text-sm font-mono tracking-widest px-4 py-1 rounded-full" style="background: var(--primary-glow); color: var(--primary);">正版插件专家</span>
+      <h2 class="section-title mt-4">专业插件渠道</h2>
+      <p class="text-lg mt-4" style="color: var(--text-secondary);">Red Giant、Trapcode、Element 3D…… 合规授权，安全稳定</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="card tilt reveal" style="transform: translateY(-12px);">
+        <i class="fa fa-plug text-3xl mb-5" style="color: var(--primary);"></i>
+        <h3 class="text-xl font-bold mb-3">全系列增效工具</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">Red Giant、Magic Bullet 等正版插件采集指引，合规更安心。</p>
+      </div>
+      <div class="card tilt reveal" style="transition-delay: 0.1s;">
+        <i class="fa fa-diamond text-3xl mb-5" style="color: #8b5cf6;"></i>
+        <h3 class="text-xl font-bold mb-3">正版合作授权</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">Adobe、Autodesk 官方插件商店授权渠道，版权清晰无忧。</p>
+      </div>
+      <div class="card tilt reveal" style="transition-delay: 0.2s; transform: translateY(12px);">
+        <i class="fa fa-shield text-3xl mb-5" style="color: #06b6d4;"></i>
+        <h3 class="text-xl font-bold mb-3">技术支持保障</h3>
+        <p class="text-sm leading-relaxed" style="color: var(--text-secondary);">专业团队负责插件适配、性能优化，7x24小时响应。</p>
+      </div>
+    </div>
+    <div class="text-center mt-12 reveal">
+      <button class="btn-primary btn-ghost">查询全部插件报价 <i class="fa fa-arrow-right"></i></button>
+    </div>
+  </div>
+</section>
 
-        // ========== 滚动进度条 ==========
-        window.addEventListener('scroll', () => {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = (winScroll / height) * 100;
-            document.getElementById('progress-bar').style.width = scrolled + '%';
-        });
+<!-- 主营业务 -->
+<section class="py-24 relative" style="background: var(--surface);">
+  <div class="max-w-6xl mx-auto px-6">
+    <div class="text-center mb-16 reveal">
+      <h2 class="section-title">核心主营业务</h2>
+      <p class="text-lg mt-4" style="color: var(--text-secondary);">正版授权 + 专业技术服务</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="card tilt reveal flex items-start gap-4">
+        <i class="fa fa-paint-brush text-3xl" style="color: var(--primary);"></i>
+        <div>
+          <h4 class="font-bold text-lg">Adobe 正版授权</h4>
+          <p class="text-sm mt-1" style="color: var(--text-secondary);">Photoshop, Premiere, AE 全系列</p>
+        </div>
+      </div>
+      <div class="card tilt reveal flex items-start gap-4">
+        <i class="fa fa-cube text-3xl" style="color: #8b5cf6;"></i>
+        <div>
+          <h4 class="font-bold text-lg">Autodesk 授权</h4>
+          <p class="text-sm mt-1" style="color: var(--text-secondary);">AutoCAD, Maya, 3ds Max</p>
+        </div>
+      </div>
+      <div class="card tilt reveal flex items-start gap-4">
+        <i class="fa fa-file-excel-o text-3xl" style="color: #10b981;"></i>
+        <div>
+          <h4 class="font-bold text-lg">Office 365</h4>
+          <p class="text-sm mt-1" style="color: var(--text-secondary);">商业/个人版正版授权</p>
+        </div>
+      </div>
+      <div class="card tilt reveal flex items-start gap-4">
+        <i class="fa fa-windows text-3xl" style="color: #0ea5e9;"></i>
+        <div>
+          <h4 class="font-bold text-lg">系统重装优化</h4>
+          <p class="text-sm mt-1" style="color: var(--text-secondary);">Windows/macOS 极速优化</p>
+        </div>
+      </div>
+      <div class="card tilt reveal flex items-start gap-4">
+        <i class="fa fa-puzzle-piece text-3xl" style="color: #6366f1;"></i>
+        <div>
+          <h4 class="font-bold text-lg">Adobe插件部署</h4>
+          <p class="text-sm mt-1" style="color: var(--text-secondary);">正版插件一站式安装</p>
+        </div>
+      </div>
+      <div class="card tilt reveal flex items-start gap-4">
+        <i class="fa fa-database text-3xl" style="color: #06b6d4;"></i>
+        <div>
+          <h4 class="font-bold text-lg">数据恢复</h4>
+          <p class="text-sm mt-1" style="color: var(--text-secondary);">误删/格式化救援</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        // ========== 时间更新 ==========
-        function updateTime() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hour = String(now.getHours()).padStart(2, '0');
-            const minute = String(now.getMinutes()).padStart(2, '0');
-            const second = String(now.getSeconds()).padStart(2, '0');
-            const weekArr = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-            const week = weekArr[now.getDay()];
-            const timeElement = document.getElementById('current-time');
-            if (timeElement) timeElement.innerText = `${year}年${month}月${day}日 ${hour}:${minute}:${second} ${week}`;
-        }
-        updateTime();
-        setInterval(updateTime, 1000);
+<!-- 信任数字 -->
+<section class="py-24 relative" style="background: var(--bg);">
+  <div class="max-w-5xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 text-center reveal">
+    <div>
+      <div class="text-7xl font-black" style="background: linear-gradient(135deg, var(--primary), #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        <span class="count-up" data-target="200">0</span>+
+      </div>
+      <div class="text-sm mt-2 uppercase tracking-widest" style="color: var(--text-secondary);">服务客户</div>
+    </div>
+    <div>
+      <div class="text-7xl font-black" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">1V1</div>
+      <div class="text-sm mt-2 uppercase tracking-widest" style="color: var(--text-secondary);">专业顾问</div>
+    </div>
+    <div>
+      <div class="text-7xl font-black" style="background: linear-gradient(135deg, #06b6d4, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">7×24</div>
+      <div class="text-sm mt-2 uppercase tracking-widest" style="color: var(--text-secondary);">技术支持</div>
+    </div>
+  </div>
+</section>
 
-        // ========== 深色模式切换 ==========
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const body = document.getElementById('app-body');
-        const isDarkMode = localStorage.getItem('darkMode') === 'true';
-        if (isDarkMode) {
-            body.classList.add('dark-mode');
-            themeIcon.className = 'fa fa-sun-o';
-        } else {
-            body.classList.remove('dark-mode');
-            themeIcon.className = 'fa fa-moon-o';
-        }
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDark = body.classList.contains('dark-mode');
-            localStorage.setItem('darkMode', isDark);
-            themeIcon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
-        });
+<!-- 联系区域 -->
+<section class="py-24 relative" style="background: var(--surface);">
+  <div class="max-w-2xl mx-auto px-6 text-center reveal">
+    <h2 class="section-title">开启合规之旅</h2>
+    <p class="text-lg mt-4 mb-12" style="color: var(--text-secondary);">添加微信，1小时内获取专属方案</p>
+    <div class="card flex flex-col items-center gap-6 !p-10">
+      <div class="w-16 h-16 rounded-2xl flex items-center justify-center" style="background: rgba(16,185,129,0.1);">
+        <i class="fa fa-weixin text-3xl" style="color: #10b981;"></i>
+      </div>
+      <div>
+        <p class="text-sm" style="color: var(--text-secondary);">官方微信号</p>
+        <p class="text-3xl font-bold">Win_Mac_123</p>
+      </div>
+      <button id="contact-cta" class="btn-primary" style="background: #10b981;">
+        <i class="fa fa-weixin"></i> 添加微信咨询
+        <span class="relative flex h-3 w-3 ml-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+        </span>
+      </button>
+    </div>
+  </div>
+</section>
 
-        // ========== 弹窗控制 ==========
-        const modal = document.getElementById('contactModal');
-        const closeModalBtn = document.getElementById('closeModal');
-        function openModalHandler(e) {
-            if (e && e.preventDefault) e.preventDefault();
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                document.body.style.overflow = 'hidden';
-            }
-        }
-        function closeModalFunction() {
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                document.body.style.overflow = '';
-            }
-        }
-        document.getElementById('openContact')?.addEventListener('click', openModalHandler);
-        document.getElementById('openContactBtn')?.addEventListener('click', openModalHandler);
-        document.getElementById('openFloatContact')?.addEventListener('click', openModalHandler);
-        document.getElementById('openPluginsContact')?.addEventListener('click', openModalHandler);
-        closeModalBtn?.addEventListener('click', closeModalFunction);
-        modal?.addEventListener('click', (e) => { if (e.target === modal) closeModalFunction(); });
+<!-- 悬浮微信 -->
+<div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3">
+  <button id="float-cta" class="btn-primary !p-3 !rounded-full relative group" style="background: #10b981;">
+    <i class="fa fa-weixin text-xl"></i>
+    <span class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-green-300 border-2 border-white online-dot"></span>
+    <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">添加微信</span>
+  </button>
+</div>
 
-        // ========== 复制微信号 ==========
-        const copyBtn = document.getElementById('copyBtn');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const wechatId = 'Win_Mac_123';
-                try {
-                    await navigator.clipboard.writeText(wechatId);
-                    showCopySuccessFeedback();
-                } catch (err) {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = wechatId;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    const success = document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    if (success) showCopySuccessFeedback();
-                    else alert('复制失败，请手动复制微信号：Win_Mac_123');
-                }
-            });
-        }
-        function showCopySuccessFeedback() {
-            if (!copyBtn) return;
-            const originalHTML = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fa fa-check"></i> 复制成功！';
-            copyBtn.classList.remove('bg-primary', 'hover:bg-primary/90');
-            copyBtn.classList.add('bg-wechat', 'hover:bg-wechat/90');
-            setTimeout(() => {
-                copyBtn.innerHTML = originalHTML;
-                copyBtn.classList.remove('bg-wechat', 'hover:bg-wechat/90');
-                copyBtn.classList.add('bg-primary', 'hover:bg-primary/90');
-            }, 2000);
-        }
+<button id="back-to-top"><i class="fa fa-arrow-up"></i></button>
 
-        // ========== 移动端菜单 ==========
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
-        }
+<!-- 弹窗 -->
+<div id="contactModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+  <div class="card max-w-md w-full !p-8" style="background: var(--card-bg);">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-2xl font-bold"><i class="fa fa-weixin text-green-500 mr-2"></i>添加微信</h3>
+      <button id="closeModal" class="text-2xl" style="color: var(--text-secondary);"><i class="fa fa-times"></i></button>
+    </div>
+    <p class="mb-6" style="color: var(--text-secondary);">添加请备注来意</p>
+    <div class="rounded-xl px-4 py-3 flex items-center gap-3 mb-6" style="background: rgba(0,0,0,0.05);">
+      <i class="fa fa-weixin text-green-500 text-xl"></i>
+      <span class="text-lg font-semibold">Win_Mac_123</span>
+    </div>
+    <button id="copyBtn" class="btn-primary w-full justify-center">复制微信号</button>
+  </div>
+</div>
 
-        // ========== 粒子背景 ==========
-        (function() {
-            const canvas = document.getElementById('particleCanvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-            let w, h;
+<footer class="py-10 text-center text-sm" style="color: var(--text-secondary); border-top: 1px solid var(--border);">
+  <div class="max-w-3xl mx-auto px-6 space-y-6">
+    <div class="flex flex-wrap justify-center gap-6">
+      <span>总访问 <span id="busuanzi_value_site_pv" style="color: var(--text);">--</span></span>
+      <span>独立访客 <span id="busuanzi_value_site_uv" style="color: var(--text);">--</span></span>
+    </div>
+    <div class="text-left space-y-3" style="font-size: 0.9rem; line-height: 1.7;">
+      <p><strong style="color: var(--text);">合规声明</strong></p>
+      <p><strong style="color: var(--text);">1. 授权合规</strong> — 本站提供的所有软件均来自官方授权渠道，确保用户获得正版许可，遵守软件发行商的使用条款。</p>
+      <p><strong style="color: var(--text);">2. 版权声明</strong> — Adobe、Autodesk、Microsoft 等商标均为其各自所有者的财产。本站仅为用户提供购买指引与技术咨询服务，不拥有任何软件的源代码或知识产权。</p>
+      <p><strong style="color: var(--text);">3. 禁止盗版</strong> — 我们坚决反对任何形式的软件盗版行为，建议用户通过正规途径获取软件授权。</p>
+      <p><strong style="color: var(--text);">4. 免责说明</strong> — 本站提供的技术建议仅供参考，用户应自行判断并承担使用风险。因软件使用造成的任何损失，本站不承担责任。</p>
+    </div>
+    <p>© 2026 乐哲软件 | www.lezhesoft.cn</p>
+  </div>
+</footer>
 
-            function resize() {
-                const header = canvas.parentElement;
-                w = header.offsetWidth;
-                h = header.offsetHeight;
-                canvas.width = w;
-                canvas.height = h;
-            }
+<script>
+  (function() {
+    // 预加载
+    window.addEventListener('load', () => {
+      setTimeout(() => document.getElementById('preloader').classList.add('hide'), 700);
+    });
 
-            class Particle {
-                constructor() {
-                    this.reset();
-                }
-                reset() {
-                    this.x = Math.random() * w;
-                    this.y = Math.random() * h;
-                    this.size = Math.random() * 2.5 + 0.8;
-                    this.speedX = (Math.random() - 0.5) * 0.6;
-                    this.speedY = (Math.random() - 0.5) * 0.6;
-                    this.opacity = Math.random() * 0.5 + 0.15;
-                }
-                update() {
-                    this.x += this.speedX;
-                    this.y += this.speedY;
-                    if (this.x < -10 || this.x > w + 10 || this.y < -10 || this.y > h + 10) {
-                        this.reset();
-                        if (Math.random() > 0.5) this.x = this.speedX > 0 ? -10 : w + 10;
-                        else this.y = this.speedY > 0 ? -10 : h + 10;
-                    }
-                }
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255,255,255,${this.opacity})`;
-                    ctx.fill();
-                }
-            }
+    // 进度条
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      document.getElementById('progress-bar').style.width = (winScroll / height) * 100 + '%';
+    });
 
-            function initParticles(count) {
-                particles = [];
-                for (let i = 0; i < count; i++) {
-                    const p = new Particle();
-                    p.x = Math.random() * w;
-                    p.y = Math.random() * h;
-                    particles.push(p);
-                }
-            }
+    // 主题切换（默认黑夜模式）
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    let isLight = localStorage.getItem('theme') === 'light';
+    function setTheme() {
+      if (isLight) {
+        html.classList.add('light');
+        themeIcon.className = 'fa fa-moon-o';
+      } else {
+        html.classList.remove('light');
+        themeIcon.className = 'fa fa-sun-o';
+      }
+    }
+    setTheme();
+    themeToggle.addEventListener('click', () => {
+      isLight = !isLight;
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      setTheme();
+    });
 
-            function animate() {
-                ctx.clearRect(0, 0, w, h);
-                for (let i = 0; i < particles.length; i++) {
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const dx = particles[i].x - particles[j].x;
-                        const dy = particles[i].y - particles[j].y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < 100) {
-                            ctx.beginPath();
-                            ctx.moveTo(particles[i].x, particles[i].y);
-                            ctx.lineTo(particles[j].x, particles[j].y);
-                            ctx.strokeStyle = `rgba(255,255,255,${0.08 * (1 - dist / 100)})`;
-                            ctx.lineWidth = 0.5;
-                            ctx.stroke();
-                        }
-                    }
-                }
-                particles.forEach(p => { p.update(); p.draw(); });
-                requestAnimationFrame(animate);
-            }
+    // 弹窗
+    const modal = document.getElementById('contactModal');
+    const openModal = () => { modal.classList.add('flex'); modal.classList.remove('hidden'); };
+    const closeModal = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+    document.getElementById('hero-cta').addEventListener('click', openModal);
+    document.getElementById('float-cta').addEventListener('click', openModal);
+    document.getElementById('contact-cta').addEventListener('click', openModal);
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.getElementById('copyBtn').addEventListener('click', async () => {
+      await navigator.clipboard.writeText('Win_Mac_123');
+      const btn = document.getElementById('copyBtn');
+      btn.innerHTML = '<i class="fa fa-check"></i> 复制成功';
+      btn.style.background = '#10b981';
+      setTimeout(() => {
+        btn.innerHTML = '复制微信号';
+        btn.style.background = '';
+      }, 2000);
+    });
 
-            window.addEventListener('resize', () => {
-                resize();
-                initParticles(Math.floor(w * h / 12000));
-            });
+    // 粒子背景
+    const canvas = document.getElementById('particleCanvas');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let w, h, particles = [];
+      function resize() { w = canvas.parentElement.offsetWidth; h = canvas.parentElement.offsetHeight; canvas.width = w; canvas.height = h; }
+      class Particle {
+        constructor() { this.x = Math.random() * w; this.y = Math.random() * h; this.r = Math.random() * 2 + 1; this.sx = (Math.random() - 0.5) * 0.3; this.sy = (Math.random() - 0.5) * 0.3; }
+        update() { this.x += this.sx; this.y += this.sy; if (this.x < 0 || this.x > w) this.sx *= -1; if (this.y < 0 || this.y > h) this.sy *= -1; }
+        draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fill(); }
+      }
+      function init() { particles = Array.from({ length: 60 }, () => new Particle()); }
+      function animate() { ctx.clearRect(0, 0, w, h); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+      window.addEventListener('resize', () => { resize(); init(); });
+      resize(); init(); animate();
+    }
 
-            resize();
-            initParticles(Math.floor(w * h / 12000));
-            animate();
-        })();
+    // 数字滚动
+    function countUp(el) {
+      const target = +el.getAttribute('data-target');
+      let start = null;
+      function step(timestamp) {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / 2000, 1);
+        el.textContent = Math.floor(progress * target);
+        if (progress < 1) requestAnimationFrame(step);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(step);
+    }
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) { countUp(entry.target); observer.unobserve(entry.target); } });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.count-up').forEach(el => observer.observe(el));
 
-        // ========== 数字滚动计数 ==========
-        function countUp(el) {
-            const target = parseInt(el.getAttribute('data-target'));
-            const duration = 2000;
-            const startTime = performance.now();
-            const startVal = 0;
+    // 滚动渐现
+    const revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('visible'); revealObserver.unobserve(entry.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-            function update(now) {
-                const elapsed = now - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 3);
-                el.textContent = Math.floor(startVal + (target - startVal) * eased);
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                } else {
-                    el.textContent = target;
-                }
-            }
-            requestAnimationFrame(update);
-        }
+    // 3D倾斜
+    document.querySelectorAll('.tilt').forEach(card => {
+      card.addEventListener('mousemove', e => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const rotateX = (y - rect.height / 2) / rect.height * -6;
+        const rotateY = (x - rect.width / 2) / rect.width * 6;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      });
+      card.addEventListener('mouseleave', () => card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)');
+    });
 
-        const countUpObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const el = entry.target;
-                    countUp(el);
-                    countUpObserver.unobserve(el);
-                }
-            });
-        }, { threshold: 0.5 });
-        document.querySelectorAll('.count-up').forEach(el => countUpObserver.observe(el));
+    // 鼠标光晕
+    const glow = document.getElementById('cursorGlow');
+    document.addEventListener('mousemove', e => { glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; });
 
-        // ========== 滚动渐显动画 ==========
-        const scrollObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    scrollObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
-        document.querySelectorAll('.animate-on-scroll').forEach(el => scrollObserver.observe(el));
+    // 返回顶部
+    const backBtn = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => backBtn.classList.toggle('show', window.scrollY > 500));
+    backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        // ========== 返回顶部按钮 ==========
-        const backToTopBtn = document.getElementById('back-to-top');
-        if (backToTopBtn) {
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 500) {
-                    backToTopBtn.classList.add('show');
-                } else {
-                    backToTopBtn.classList.remove('show');
-                }
-            });
-            backToTopBtn.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        }
-
-        // ========== 鼠标跟随光晕 ==========
-        const cursorGlow = document.getElementById('cursorGlow');
-        if (cursorGlow) {
-            document.addEventListener('mousemove', (e) => {
-                cursorGlow.style.left = e.clientX + 'px';
-                cursorGlow.style.top = e.clientY + 'px';
-            });
-            document.addEventListener('mouseleave', () => {
-                cursorGlow.style.opacity = '0';
-            });
-            document.addEventListener('mouseenter', () => {
-                cursorGlow.style.opacity = '1';
-            });
-        }
-
-        // ========== 鼠标涟漪效果（点击时） ==========
-        document.addEventListener('click', (e) => {
-            const ripple = document.createElement('div');
-            ripple.className = 'ripple';
-            ripple.style.left = e.clientX - 10 + 'px';
-            ripple.style.top = e.clientY - 10 + 'px';
-            ripple.style.width = '20px';
-            ripple.style.height = '20px';
-            document.body.appendChild(ripple);
-            ripple.addEventListener('animationend', () => ripple.remove());
-        });
-
-        // ========== 3D 卡片倾斜效果 ==========
-        document.querySelectorAll('[data-tilt]').forEach(card => {
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                const rotateX = (y - centerY) / centerY * -10; // 上下倾斜 ±10度
-                const rotateY = (x - centerX) / centerX * 10;  // 左右倾斜 ±10度
-                card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02,1.02,1.02)`;
-                card.style.boxShadow = `${(x - centerX)/10}px ${(y - centerY)/10}px 20px rgba(0,0,0,0.15)`;
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) scale3d(1,1,1)';
-                card.style.boxShadow = '0 4px 6px -1px rgba(0,0,0,0.1)';
-            });
-        });
-
-        // ========== 视差背景移动 ==========
-        window.addEventListener('scroll', () => {
-            const scrolled = window.pageYOffset;
-            const p1 = document.getElementById('parallax1');
-            const p2 = document.getElementById('parallax2');
-            if (p1) p1.style.transform = `translateY(${scrolled * 0.05}px)`;
-            if (p2) p2.style.transform = `translateY(${scrolled * -0.03}px)`;
-        });
-
-        // 百度自动推送
-        (function(){
-            var bp = document.createElement('script');
-            var curProtocol = window.location.protocol.split(':')[0];
-            if (curProtocol === 'https') {
-                bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
-            } else {
-                bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-            }
-            var s = document.getElementsByTagName("script")[0];
-            s.parentNode.insertBefore(bp, s);
-        })();
-    </script>
+    // 百度自动推送
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') { bp.src = 'https://zz.bdstatic.com/linksubmit/push.js'; }
+      else { bp.src = 'http://push.zhanzhang.baidu.com/push.js'; }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  })();
+</script>
 </body>
 </html>
