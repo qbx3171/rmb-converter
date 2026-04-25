@@ -140,24 +140,43 @@
 <div id="progress-bar"></div>
 <div class="cursor-glow" id="cursorGlow"></div>
 
-<!-- 导航栏 -->
+<!-- 导航栏（PC一行，移动端汉堡菜单） -->
 <nav class="nav-blur fixed top-0 left-0 w-full z-50 py-4">
   <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
-    <a href="#" class="text-2xl font-extrabold" style="color: var(--primary);">乐哲软件</a>
+    <a href="index.html" class="text-2xl font-extrabold" style="color: var(--primary);">乐哲软件</a>
+    
+    <!-- 桌面端导航 -->
     <div class="hidden md:flex gap-8 items-center text-sm font-medium" style="color: var(--text-secondary);">
-      <a href="#" class="hover:text-[var(--primary)] transition">服务项目</a>
-      <a href="#" class="hover:text-[var(--primary)] transition">软件下载</a>
-      <a href="#" class="hover:text-[var(--primary)] transition">版权声明</a>
-      <a href="#" class="hover:text-[var(--primary)] transition">联系我们</a>
+      <a href="service.html" class="hover:text-[var(--primary)] transition">服务项目</a>
+      <a href="download.html" class="hover:text-[var(--primary)] transition">软件下载</a>
+      <a href="copyright.html" class="hover:text-[var(--primary)] transition">版权声明</a>
+      <a href="#contact" class="hover:text-[var(--primary)] transition">联系我们</a>
+      <a href="query.html" class="hover:text-[var(--primary)] transition">🔍 Adobe订阅查询</a>
       <button id="themeToggle" class="text-xl transition hover:text-[var(--primary)]">
         <i id="themeIcon" class="fa fa-sun-o"></i>
       </button>
     </div>
-    <button class="md:hidden text-xl"><i class="fa fa-bars"></i></button>
+
+    <!-- 移动端汉堡按钮 -->
+    <button id="menuToggle" class="md:hidden text-xl" style="color: var(--text);">
+      <i class="fa fa-bars"></i>
+    </button>
+  </div>
+
+  <!-- 移动端下拉菜单 -->
+  <div id="mobileMenu" class="md:hidden hidden px-6 pb-4 space-y-3 text-sm font-medium" style="color: var(--text-secondary);">
+    <a href="service.html" class="block py-2 hover:text-[var(--primary)] transition">服务项目</a>
+    <a href="download.html" class="block py-2 hover:text-[var(--primary)] transition">软件下载</a>
+    <a href="copyright.html" class="block py-2 hover:text-[var(--primary)] transition">版权声明</a>
+    <a href="#contact" class="block py-2 hover:text-[var(--primary)] transition">联系我们</a>
+    <a href="query.html" class="block py-2 hover:text-[var(--primary)] transition">🔍 Adobe订阅查询</a>
+    <button id="themeToggleMobile" class="block py-2 text-left hover:text-[var(--primary)] transition">
+      <i id="themeIconMobile" class="fa fa-sun-o"></i> 切换主题
+    </button>
   </div>
 </nav>
 
-<!-- Hero 区域 -->
+<!-- Hero 区域（保持原样） -->
 <section class="relative h-screen flex items-center justify-center overflow-hidden pt-20">
   <canvas id="particleCanvas" class="absolute inset-0 z-0"></canvas>
   <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--primary-glow)] opacity-30"></div>
@@ -181,7 +200,7 @@
   </div>
 </section>
 
-<!-- 软件支持网格 -->
+<!-- 软件支持网格（保留） -->
 <section class="py-24 relative" style="background: var(--surface);">
   <div class="max-w-6xl mx-auto px-6">
     <div class="text-center mb-16 reveal">
@@ -229,7 +248,7 @@
   </div>
 </section>
 
-<!-- 插件推荐 -->
+<!-- 插件推荐（保留） -->
 <section class="py-24 relative" style="background: var(--bg);">
   <div class="max-w-6xl mx-auto px-6">
     <div class="text-center mb-16 reveal">
@@ -260,7 +279,7 @@
   </div>
 </section>
 
-<!-- 主营业务 -->
+<!-- 主营业务（保留） -->
 <section class="py-24 relative" style="background: var(--surface);">
   <div class="max-w-6xl mx-auto px-6">
     <div class="text-center mb-16 reveal">
@@ -335,7 +354,7 @@
 </section>
 
 <!-- 联系区域 -->
-<section class="py-24 relative" style="background: var(--surface);">
+<section id="contact" class="py-24 relative" style="background: var(--surface);">
   <div class="max-w-2xl mx-auto px-6 text-center reveal">
     <h2 class="section-title">开启合规之旅</h2>
     <p class="text-lg mt-4 mb-12" style="color: var(--text-secondary);">添加微信，1小时内获取专属方案</p>
@@ -358,7 +377,7 @@
   </div>
 </section>
 
-<!-- 悬浮微信 -->
+<!-- 悬浮微信 / 返回顶部 -->
 <div class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col gap-3">
   <button id="float-cta" class="btn-primary !p-3 !rounded-full relative group" style="background: #10b981;">
     <i class="fa fa-weixin text-xl"></i>
@@ -366,7 +385,6 @@
     <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">添加微信</span>
   </button>
 </div>
-
 <button id="back-to-top"><i class="fa fa-arrow-up"></i></button>
 
 <!-- 弹窗 -->
@@ -416,11 +434,20 @@
       document.getElementById('progress-bar').style.width = (winScroll / height) * 100 + '%';
     });
 
-    // 主题切换（默认黑夜模式）
+    // 主题切换
     const html = document.documentElement;
     const themeToggle = document.getElementById('themeToggle');
     const themeIcon = document.getElementById('themeIcon');
+    const themeToggleMobile = document.getElementById('themeToggleMobile');
+    const themeIconMobile = document.getElementById('themeIconMobile');
     let isLight = localStorage.getItem('theme') === 'light';
+
+    function syncMobileIcon() {
+      if (themeIcon && themeIconMobile) {
+        themeIconMobile.className = themeIcon.className;
+      }
+    }
+
     function setTheme() {
       if (isLight) {
         html.classList.add('light');
@@ -429,13 +456,35 @@
         html.classList.remove('light');
         themeIcon.className = 'fa fa-sun-o';
       }
+      syncMobileIcon();
     }
     setTheme();
+
     themeToggle.addEventListener('click', () => {
       isLight = !isLight;
       localStorage.setItem('theme', isLight ? 'light' : 'dark');
       setTheme();
     });
+    if (themeToggleMobile) {
+      themeToggleMobile.addEventListener('click', () => {
+        isLight = !isLight;
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        setTheme();
+      });
+    }
+
+    // 移动端菜单
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (menuToggle && mobileMenu) {
+      menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+        const icon = menuToggle.querySelector('i');
+        if (icon) {
+          icon.className = mobileMenu.classList.contains('hidden') ? 'fa fa-bars' : 'fa fa-times';
+        }
+      });
+    }
 
     // 弹窗
     const modal = document.getElementById('contactModal');
@@ -520,7 +569,7 @@
     window.addEventListener('scroll', () => backBtn.classList.toggle('show', window.scrollY > 500));
     backBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-    // 百度自动推送
+    // 百度推送
     (function(){
       var bp = document.createElement('script');
       var curProtocol = window.location.protocol.split(':')[0];
