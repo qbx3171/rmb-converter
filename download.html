@@ -164,7 +164,6 @@
         .pay-tab { flex: 1; padding: 10px; border: none; background: transparent; font-weight: 600; color: #6c86a3; cursor: pointer; border-radius: 20px; }
         .pay-tab.active { background: rgba(30,107,223,0.1); color: #1e6bdf; }
         .pay-qr-container img { width: 200px; height: 200px; object-fit: contain; border-radius: 16px; background: white; padding: 12px; }
-        /* 侧边栏文章样式 */
         .sidebar-article-card { border-radius: 28px; padding: 20px; margin-bottom: 24px; background: rgba(255,255,255,0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.4); }
         .sidebar-article-card h3 { font-size: 18px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
         .article-list-compact .article-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; }
@@ -173,14 +172,20 @@
         .article-list-compact .article-info { flex: 1; }
         .article-list-compact .article-title-sm { font-size: 14px; font-weight: 600; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .article-list-compact .article-date-sm { font-size: 11px; color: #64748b; }
+        /* 广告占位动画 */
+        .banner-carousel-container.loading, .sidebar-carousel-container.loading {
+            animation: adPulse 1.8s ease-in-out infinite;
+        }
+        @keyframes adPulse {
+            0%, 100% { background: #e2e8f0; }
+            50% { background: #cbd5e1; }
+        }
     </style>
 </head>
 <body>
 <div class="top-nav" id="topNav">
     <div class="nav-inner">
-        <div class="logo-area">
-            <span class="logo">乐哲软件</span>
-        </div>
+        <div class="logo-area"><span class="logo">乐哲软件</span></div>
         <button class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></button>
         <div class="nav-links" id="navLinks">
             <a href="index.html">首页</a>
@@ -188,15 +193,18 @@
             <a href="download.html" class="active">软件下载</a>
             <a href="copyright.html">版权声明</a>
         </div>
-        <div class="user-area">
-            <div id="userArea"></div>
-        </div>
+        <div class="user-area"><div id="userArea"></div></div>
     </div>
 </div>
 <div class="main">
     <div class="content-wrapper">
         <div class="main-content">
-            <div class="category-banner-ad" id="categoryBannerAd"><div class="banner-carousel-container" id="categoryBannerContainer"><div class="banner-carousel-slides" id="categoryBannerSlides"></div><div class="banner-carousel-dots" id="categoryBannerDots"></div></div></div>
+            <div class="category-banner-ad" id="categoryBannerAd">
+                <div class="banner-carousel-container loading" id="categoryBannerContainer">
+                    <div class="banner-carousel-slides" id="categoryBannerSlides"></div>
+                    <div class="banner-carousel-dots" id="categoryBannerDots"></div>
+                </div>
+            </div>
             <div class="hot-section"><div class="hot-header"><h3><i class="fas fa-fire"></i> 热门推荐</h3></div><div class="hot-wrapper"><div class="hot-arrow left" id="hotArrowLeft"><i class="fas fa-chevron-left"></i></div><div class="hot-scroll" id="hotScroll"></div><div class="hot-arrow right" id="hotArrowRight"><i class="fas fa-chevron-right"></i></div></div></div>
             <div class="category-row" id="categoryTabs"></div>
             <div id="softwareGridContainer" class="grid"></div>
@@ -206,10 +214,14 @@
         </div>
         <div class="sidebar">
             <div class="sidebar-search"><div class="search-bar"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="搜软件..." autocomplete="off"><button id="searchBtn"><i class="fas fa-arrow-right"></i></button></div><div class="search-suggestions" id="searchSuggestions"></div></div>
-            <div class="sidebar-ad" id="adCarouselSidebar"><div class="sidebar-carousel-container" id="adContainer"><div class="sidebar-carousel-slides" id="sidebarCarouselSlides"></div><div class="sidebar-carousel-dots" id="sidebarCarouselDots"></div></div></div>
+            <div class="sidebar-ad" id="adCarouselSidebar">
+                <div class="sidebar-carousel-container loading" id="adContainer">
+                    <div class="sidebar-carousel-slides" id="sidebarCarouselSlides"></div>
+                    <div class="sidebar-carousel-dots" id="sidebarCarouselDots"></div>
+                </div>
+            </div>
             <div class="sidebar-card"><div class="calendar-header"><span id="calendarMonthYear"></span><div><button id="prevMonth"><i class="fas fa-chevron-left"></i></button><button id="nextMonth"><i class="fas fa-chevron-right"></i></button></div></div><div class="calendar-grid" id="calendarDays"></div></div>
             
-            <!-- 文章板块放在日历下方 -->
             <div class="sidebar-article-card" id="articleSidebar">
                 <h3><i class="fas fa-newspaper"></i> 最新文章
                     <button id="manageArticlesBtn" style="background:#1e6bdf; color:white; border:none; border-radius:30px; padding:4px 12px; font-size:12px; cursor:pointer; display:none;">管理</button>
@@ -843,7 +855,7 @@
             });
         }
 
-        // 广告轮播 (保持原有)
+        // 广告轮播
         let bannerInterval=null, sidebarInterval=null;
         let curBanner=0, curSidebar=0;
         const bannerSlides = document.getElementById('categoryBannerSlides');
@@ -855,7 +867,7 @@
             const slideClass = isBanner ? 'banner-carousel-slide' : 'sidebar-carousel-slide';
             const dotClass = isBanner ? 'banner-carousel-dot' : 'sidebar-carousel-dot';
             containerSlides.innerHTML = ads.map((ad,i)=>`
-                <div class="${slideClass}"><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" onload="this.classList.add('loaded');" onerror="this.onerror=null; this.src='https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb';"></a></div>
+                <div class="${slideClass}"><a href="${escapeHtml(ad.link)}" target="_blank"><img src="${escapeHtml(ad.image)}" alt="${escapeHtml(ad.title)}" loading="${i===0?'eager':'lazy'}" onload="this.classList.add('loaded');" onerror="this.onerror=null; this.src='';"></a></div>
             `).join('');
             if(ads.length <= 1){ containerDots.style.display = 'none'; return; }
             containerDots.style.display = 'flex';
@@ -1216,66 +1228,118 @@
             alert('请联系客服微信：Win_Mac_123');
         });
 
-        function showSkeleton(){
-            const grid = document.getElementById('softwareGridContainer');
-            if(grid) grid.innerHTML = `<div class="loading-container"><div class="loading-spinner-large"></div><div class="loading-text">正在加载软件库...</div></div>`;
-            if(bannerSlides) bannerSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
-            if(sidebarSlides) sidebarSlides.innerHTML = `<div class="loading-container" style="min-height:200px;"><div class="loading-spinner-large"></div></div>`;
-        }
-        async function initData(){
-            showSkeleton();
-            const cachedSoft = localStorage.getItem('cachedSoftwares');
-            const cachedBanner = localStorage.getItem('cachedBannerAds');
-            const cachedSidebar = localStorage.getItem('cachedSidebarAds');
-            if(cachedSoft && cachedBanner && cachedSidebar){
-                try{
-                    softwares = JSON.parse(cachedSoft);
-                    bannerAds = JSON.parse(cachedBanner);
-                    sidebarAds = JSON.parse(cachedSidebar);
-                    renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
-                    if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); startCarousel(true); }
-                    if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); startCarousel(false); }
-                }catch(e){}
+        // 快速占位渲染（无缓存时软件网格）
+        function renderQuickPlaceholders() {
+            const container = document.getElementById('softwareGridContainer');
+            if (!container || softwares.length) return;
+            let placeholderHtml = '';
+            for (let i = 0; i < 4; i++) {
+                placeholderHtml += `<div class="software-card" style="opacity:0.7;">
+                    <div class="card-header"><div class="card-icon"><div class="icon-fallback" style="background:#e2e8f0; color:#94a3b8;">...</div></div><div class="software-name" style="background:#e2e8f0; height:20px; width:80px; border-radius:6px;"></div></div>
+                    <div class="version" style="background:#e2e8f0; height:16px; width:50px; border-radius:6px;"></div>
+                    <div class="description" style="background:#e2e8f0; height:14px; width:100%; border-radius:4px; margin-bottom:8px;"></div>
+                    <div class="card-footer"><div class="added-date" style="background:#e2e8f0; height:12px; width:60px; border-radius:4px;"></div></div>
+                </div>`;
             }
-            try{
-                const [softData, adsData] = await Promise.all([fetchAirtableSoftwares(), fetchAirtableAds()]);
-                if(softData.length){
+            container.innerHTML = placeholderHtml;
+        }
+
+        // 核心并行数据加载
+        async function loadCoreData() {
+            try {
+                const [softData, adsData] = await Promise.all([
+                    fetchAirtableSoftwares(),
+                    fetchAirtableAds()
+                ]);
+                if (softData.length) {
                     softwares = softData;
                     localStorage.setItem('cachedSoftwares', JSON.stringify(softwares));
                 }
-                if(adsData.length){
-                    const newBanner = adsData.filter(a=>a.position==='banner').map(a=>({image:getOptimizedAdImageUrl(a.image), link:a.link, title:a.title}));
-                    const newSidebar = adsData.filter(a=>a.position==='sidebar').map(a=>({image:getOptimizedAdImageUrl(a.image), link:a.link, title:a.title}));
-                    if(newBanner.length) bannerAds = newBanner;
-                    if(newSidebar.length) sidebarAds = newSidebar;
+                if (adsData.length) {
+                    const newBanner = adsData.filter(a=>a.position==='banner').map(a=>({image: getOptimizedAdImageUrl(a.image), link: a.link, title: a.title}));
+                    const newSidebar = adsData.filter(a=>a.position==='sidebar').map(a=>({image: getOptimizedAdImageUrl(a.image), link: a.link, title: a.title}));
+                    if (newBanner.length) bannerAds = newBanner;
+                    if (newSidebar.length) sidebarAds = newSidebar;
                     localStorage.setItem('cachedBannerAds', JSON.stringify(bannerAds));
                     localStorage.setItem('cachedSidebarAds', JSON.stringify(sidebarAds));
                 }
-                renderCategories(); renderGrid(); renderHotSection(); renderRankList(); renderRandomArticles(); renderHistoryList();
-                if(bannerSlides && bannerDots) { renderCarousel(bannerSlides, bannerDots, bannerAds, true); resetCarousel(true); }
-                if(sidebarSlides && sidebarDots) { renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false); resetCarousel(false); }
-            }catch(e){
-                console.warn('后台更新失败', e);
-                if(!cachedSoft) document.getElementById('softwareGridContainer').innerHTML = '<div class="no-results">加载失败，请稍后刷新</div>';
+                renderAll();
+            } catch (e) {
+                console.warn('并行加载失败，尝试缓存', e);
+                const cachedSoft = localStorage.getItem('cachedSoftwares');
+                const cachedBanner = localStorage.getItem('cachedBannerAds');
+                const cachedSidebar = localStorage.getItem('cachedSidebarAds');
+                if (cachedSoft) try { softwares = JSON.parse(cachedSoft); } catch(e){}
+                if (cachedBanner) try { bannerAds = JSON.parse(cachedBanner); } catch(e){}
+                if (cachedSidebar) try { sidebarAds = JSON.parse(cachedSidebar); } catch(e){}
+                if (softwares.length || bannerAds.length) renderAll();
             }
-            await loadArticlesAndRender();
+        }
+
+        function renderAll() {
+            renderCategories();
+            renderGrid();
+            renderHotSection();
+            renderRankList();
+            renderRandomArticles();
+            renderHistoryList();
+            const bnCont = document.getElementById('categoryBannerContainer');
+            const sbCont = document.getElementById('adContainer');
+            if (bannerAds.length && bannerSlides && bannerDots) {
+                bnCont.classList.remove('loading');
+                renderCarousel(bannerSlides, bannerDots, bannerAds, true);
+                startCarousel(true);
+            }
+            if (sidebarAds.length && sidebarSlides && sidebarDots) {
+                sbCont.classList.remove('loading');
+                renderCarousel(sidebarSlides, sidebarDots, sidebarAds, false);
+                startCarousel(false);
+            }
         }
 
         async function initAll(){
+            // 用户状态恢复
             const saved = localStorage.getItem('lezhe_user');
             if(saved){ try{ currentUser = JSON.parse(saved); }catch(e){} }
             updateUserUI();
             bindModalEvents();
             let initCap = generateCaptcha();
             currentCaptcha = initCap;
-            let loginCap = document.getElementById('loginCaptchaQuestion');
-            if(loginCap) loginCap.innerText = initCap.question;
-            await initData();
+            document.getElementById('loginCaptchaQuestion').innerText = initCap.question;
+            renderCalendar();
+
+            // 尝试缓存优先渲染
+            const cachedSoft = localStorage.getItem('cachedSoftwares');
+            const cachedBanner = localStorage.getItem('cachedBannerAds');
+            const cachedSidebar = localStorage.getItem('cachedSidebarAds');
+            if (cachedSoft && cachedBanner && cachedSidebar) {
+                try {
+                    softwares = JSON.parse(cachedSoft);
+                    bannerAds = JSON.parse(cachedBanner);
+                    sidebarAds = JSON.parse(cachedSidebar);
+                    renderAll();
+                } catch(e){}
+            } else {
+                // 无缓存：显示软件快速占位，广告区保持loading动画
+                renderQuickPlaceholders();
+            }
+            // 发起并行请求（不阻塞）
+            loadCoreData();
+            // 加载文章
+            loadArticlesAndRender();
+            // 留言
+            renderFeedbackList();
+            // 百度推送
             function addBaiduPush(){ const bp=document.createElement('script'); bp.async=true; bp.src='https://zz.bdstatic.com/linksubmit/push.js'; document.head.appendChild(bp); }
             addBaiduPush();
-            renderFeedbackList();
         }
         initAll();
+
+        // 返回顶部
+        window.addEventListener('scroll',()=>{
+            document.getElementById('backToTop').classList.toggle('show', window.scrollY > 500);
+        });
+        document.getElementById('backToTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
     })();
 </script>
 </body>
