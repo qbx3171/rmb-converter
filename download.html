@@ -8,9 +8,11 @@
     <meta name="keywords" content="乐哲软件,软件下载,Adobe下载,Autodesk,正版软件推荐,Mac软件,Windows软件,C4D,草图大师,犀牛,插件">
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//api.airtable.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://api.airtable.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -383,27 +385,68 @@
             function resetCar(isB){clearInterval(isB?bannerInt:sidebarInt);startCar(isB);}
 
             function renderAllFromCache(){
-                const cs=localStorage.getItem('cachedSoft'),cb=localStorage.getItem('cachedAds');
-                if(cs){softwares=JSON.parse(cs);renderCats();renderGrid();renderHot();renderRank();renderHist();}
-                if(cb){const ads=JSON.parse(cb);const bn=ads.filter(a=>a.position==='banner'),sb=ads.filter(a=>a.position==='sidebar');
-                if(bn.length){bannerAds=bn;renderCarousel(document.getElementById('categoryBannerSlides'),document.getElementById('categoryBannerDots'),bn,true);startCar(true);}
-                if(sb.length){sidebarAds=sb;renderCarousel(document.getElementById('sidebarCarouselSlides'),document.getElementById('sidebarCarouselDots'),sb,false);startCar(false);}}
+                const cachedSoft = localStorage.getItem('cachedSoft');
+                const cachedAds = localStorage.getItem('cachedAds');
+                if(cachedSoft) {
+                    try {
+                        softwares = JSON.parse(cachedSoft);
+                        if(softwares.length) {
+                            renderCats();
+                            renderGrid();
+                            renderHot();
+                            renderRank();
+                            renderHist();
+                        }
+                    } catch(e) {}
+                }
+                if(cachedAds) {
+                    try {
+                        const ads = JSON.parse(cachedAds);
+                        if(Array.isArray(ads)) {
+                            const bn = ads.filter(a => a.position === 'banner');
+                            const sb = ads.filter(a => a.position === 'sidebar');
+                            if(bn.length) {
+                                bannerAds = bn;
+                                renderCarousel(document.getElementById('categoryBannerSlides'), document.getElementById('categoryBannerDots'), bn, true);
+                                startCar(true);
+                            }
+                            if(sb.length) {
+                                sidebarAds = sb;
+                                renderCarousel(document.getElementById('sidebarCarouselSlides'), document.getElementById('sidebarCarouselDots'), sb, false);
+                                startCar(false);
+                            }
+                        }
+                    } catch(e) {}
+                }
             }
+
             async function loadAll(){
                 renderAllFromCache();
-                try{
-                    const[swData,adData]=await Promise.all([fetchSoftwares(),fetchAds()]);
-                    if(swData.length)softwares=swData;
-                    const bn=adData.filter(a=>a.position==='banner'),sb=adData.filter(a=>a.position==='sidebar');
-                    if(bn.length){bannerAds=bn;renderCarousel(document.getElementById('categoryBannerSlides'),document.getElementById('categoryBannerDots'),bn,true);startCar(true);}
-                    if(sb.length){sidebarAds=sb;renderCarousel(document.getElementById('sidebarCarouselSlides'),document.getElementById('sidebarCarouselDots'),sb,false);startCar(false);}
-                    renderCats();renderGrid();renderHot();renderRank();renderHist();
-                }catch(e){console.warn('更新数据失败',e);}
-                articles=await fetchArticles();renderArtsList();
+                try {
+                    const [swData, adData] = await Promise.all([fetchSoftwares(), fetchAds()]);
+                    if(swData.length) softwares = swData;
+                    const bn = adData.filter(a => a.position === 'banner');
+                    const sb = adData.filter(a => a.position === 'sidebar');
+                    if(bn.length) {
+                        bannerAds = bn;
+                        renderCarousel(document.getElementById('categoryBannerSlides'), document.getElementById('categoryBannerDots'), bn, true);
+                        startCar(true);
+                    }
+                    if(sb.length) {
+                        sidebarAds = sb;
+                        renderCarousel(document.getElementById('sidebarCarouselSlides'), document.getElementById('sidebarCarouselDots'), sb, false);
+                        startCar(false);
+                    }
+                    renderCats(); renderGrid(); renderHot(); renderRank(); renderHist();
+                } catch(e) {
+                    console.warn('网络数据加载失败，保留缓存显示', e);
+                }
+                articles = await fetchArticles();
+                renderArtsList();
             }
 
             if(localStorage.getItem('lezhe_user')){try{currentUser=JSON.parse(localStorage.getItem('lezhe_user'));}catch(e){}}
-            updateUserUI();bindEvents();refCap('loginCaptchaQuestion','loginCaptchaInput');loadAll();
+            updateUserUI(); bindEvents(); refCap('loginCaptchaQuestion','loginCaptchaInput'); loadAll();
             window.addEventListener('scroll',()=>document.getElementById('backToTop').classList.toggle('show',window.scrollY>500));
             document.getElementById('backToTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
         })();
